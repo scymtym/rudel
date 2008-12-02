@@ -297,18 +297,6 @@ See after-change-functions for more information."
 	(rudel-local-delete document from to length))
   )))
 
-;; (defun rudel-handle-remote-insert (user from what)
-;;   ""
-;;   (when rudel-buffer-document
-;;     (let ((document rudel-buffer-document))
-;;       (rudel-remote-insert document user from what))))
-;; 
-;; (defun rudel-handle-remote-delete (user from to length)
-;;   ""
-;;   (when rudel-buffer-document
-;;     (let ((document rudel-buffer-document))
-;;       (rudel-remote-delete document user from to length))))
-
 
 ;;; Backend functions
 ;;
