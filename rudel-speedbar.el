@@ -1,34 +1,39 @@
-;;; rudel-speedbar.el --- Speedbar viewing of RUDEL projects
-
-;;;  Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005, 2007, 2008  Eric M. Ludlam
-
-;; Author: Eric M. Ludlam <zappo@gnu.org>
-;; Keywords: project, make, tags
-;; RCS: $Id: rudel-speedbar.el,v 1.32 2008/10/10 21:47:28 zappo Exp $
-
-;; This file is NOT part of GNU Emacs.
-
-;; GNU Emacs is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 3, or (at your option)
-;; any later version.
-
-;; GNU Emacs is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
+;;; rudel-speedbar.el --- Speedbar rendering of Rudel objects
+;;
+;; Copyright (C) 2008 Jan Moringen
+;;
+;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;; Keywords: rudel, collaboration, speedbar
+;; X-RCS: $Id: rudel-speedbar.el,v 1.32 2008/10/10 21:47:28 zappo Exp $
+;;
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 3, or (at
+;; your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+;; General Public License for more details.
+;;
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; along with this program; see the file COPYING. If not, write to the
 ;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-;; Boston, MA 02110-1301, USA.
+;; Boston, MA 02110-1301, USA, or see <http://www.gnu.org/licenses>.
 
 ;;; Commentary:
 ;;
-;; Display a project's hierarchy in speedbar.
+;; This implements rendering of Rudel objects in speedbar.
+
+
+;;;  History:
+;;
+;; 0.1 - Initial revision.
+
+
+;;; Code:
 ;;
 
-;;; Code:
 (require 'speedbar)
 (require 'eieio-speedbar)
 
@@ -42,11 +47,7 @@
 
 (defmethod eieio-speedbar-object-buttonname ((this rudel-user))
   "Return a string to use as a speedbar button for OBJECT."
-    (format "%s" (object-name-string this)))
-
-;;;     (with-slots (color) this
-;;;       (put-text-property 0 (length name) 'face '(:background color) name)
-;;;       name)))
+  (format "%s" (object-name-string this)))
 
 
 ;;; Class rudel-document methods
