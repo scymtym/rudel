@@ -1,0 +1,16 @@
+REQUIREMENTS
+
+  cedet
+  ert (optional)
+
+LOAD-PATH
+
+  (add-to-list 'load-path "SOMEDIR/site-lisp/rudel/")
+
+AUTOLOADS
+
+  (load "SOMEDIR/rudel-autoloads.el")
+
+COMPILING
+
+  
