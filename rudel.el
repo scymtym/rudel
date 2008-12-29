@@ -192,6 +192,10 @@ will be associated."
   "Close the connection."
   (error "Needs to be implemented in derived classes"))
 
+(defmethod rudel-change-color- ((this rudel-connection) color)
+  ""
+  (error "Needs to be implemented in derived classes"))
+
 (defmethod rudel-publish ((this rudel-connection) document)
   ""
   (error "Needs to be implemented in derived classes"))
@@ -424,15 +428,32 @@ interactively."
   (interactive)
   (unless rudel-current-session
     (error "No active Rudel session"))
+
   (rudel-end rudel-current-session)
-  (setq rudel-current-session nil)) ; TODO cleanup
+  (setq rudel-current-session nil)
+  )
 
 ;;;###autoload
 (defun rudel-change-color ()
   "Change the color associated with the local user.
 Not all backends support this operation."
   (interactive)
-  (error "not implemented"))
+  ;; Make sure we have a session.
+  (unless rudel-current-session
+    (error "No active Rudel session"))
+
+  (with-slots (backend connection self) rudel-current-session
+    ;; Make sure the backend can change colors.
+    (unless (rudel-capable-of-p backend 'change-color)
+      (error "Backend `%s' cannot change colors" 
+	     (object-name-string backend)))
+
+    ;; Ask the user for a new color, tell the connection to announce
+    ;; the change and change it in our user object.
+    (with-slots (color) self
+      (setq color (read-color "New Color: " 't))
+      (rudel-change-color- connection color)))
+  )
 
 ;;;###autoload
 (defun rudel-subscribe (document)
