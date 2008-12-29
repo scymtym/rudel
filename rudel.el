@@ -3,6 +3,7 @@
 ;; Copyright (C) 2008 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;; Keywords: rudel, collaboration
 ;; X-RCS: $Id:$
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -16,8 +17,8 @@
 ;; General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING. If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+;; along with this program; see the file COPYING. If not, write to the
+;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ;; Boston, MA 02110-1301, USA, or see <http://www.gnu.org/licenses>.
 
 ;;; Commentary:
@@ -32,10 +33,10 @@
 
 ;;; Code:
 
-(require 'eieio)
-
 (eval-when-compile
   (require 'cl))
+
+(require 'eieio)
 
 
 ;;; Global variables
@@ -55,79 +56,6 @@ nil if there is no active session.")
 (defvar rudel-buffer-document nil
   "Buffer-local variable which holds the rudel document associated with the buffer.")
 (make-variable-buffer-local 'rudel-buffer-document)
-
-
-;;; Class rudel-session
-;;
-
-(defclass rudel-session ()
-  ((connection :initarg :connection
-	       :documentation
-	       "")
-   (users      :initarg  :users
-	       :type     list
-	       :initform nil
-	       :documentation
-	       "")
-   (self       :initarg  :self
-	       :type     rudel-user ; TODO initform?
-	       :documentation
-	       "Points into USERS to the user object representing the local user")
-   (documents  :initarg  :documents
-	       :type     list
-	       :initform nil
-	       :documentation
-	       ""))
-  "Class rudel-session ")
-
-(defmethod rudel-end ((this rudel-session))
-  ""
-  ;; Clean everything up
-  (with-slots (connection users documents) this
-    (mapc 'rudel-detach-from-buffer documents)
-    ;; Terminate the connection
-    (rudel-disconnect connection))
-  )
-
-(defmethod rudel-add-user ((this rudel-session) user)
-  ""
-  (with-slots (users) this
-    (push user users)))
-
-(defmethod rudel-remove-user ((this rudel-session) user)
-  ""
-  (with-slots (users) this
-    (setq users (remove user users))))
-
-(defmethod rudel-find-user ((this rudel-session)
-			    which &optional test key)
-  ""
-  (unless test
-    (setq test 'string=))
-  (unless key
-    (setq key 'object-name-string))
-  (with-slots (users) this
-    (find which users :key key :test test))
-  )
-
-(defmethod rudel-add-document ((this rudel-session) document)
-  ""
-  (unless (slot-boundp document :session)
-    (oset document :session this)) ; TODO do we want to do this here?
-  (with-slots (documents) this
-    (push document documents))
-  )
-
-(defmethod rudel-find-document ((this rudel-session)
-				which &optional test key)
-  ""
-  (unless test
-    (setq test 'string=))
-  (unless key
-    (setq key 'object-name-string))
-  (with-slots (documents) this
-    (find which documents :key key :test test))
-  )
 
 
 ;;; Class rudel-backend
@@ -166,6 +94,88 @@ will be associated."
   ""
   (error "Needs to be implemented in derived classes"))
 
+(defmethod rudel-make-document ((this rudel-backend) name session)
+  ""
+  (error "Needs to be implemented in derived classes"))
+
+
+;;; Class rudel-session
+;;
+
+(defclass rudel-session ()
+  ((connection :initarg :connection
+	       :documentation
+	       "")
+   (users      :initarg  :users
+	       :type     list
+	       :initform nil
+	       :documentation
+	       "")
+   (self       :initarg  :self
+	       :type     rudel-user ; TODO initform?
+	       :documentation
+	       "Points into USERS to the user object representing the local user")
+   (documents  :initarg  :documents
+	       :type     list
+	       :initform nil
+	       :documentation
+	       ""))
+  "Class rudel-session ")
+
+(defmethod rudel-end ((this rudel-session))
+  "Terminate THIS session performing all necessary cleanup."
+  ;; Clean everything up
+  (with-slots (connection users documents) this
+    (mapc 'rudel-detach-from-buffer documents)
+    ;; Terminate the connection
+    (rudel-disconnect connection))
+  )
+
+(defmethod rudel-add-user ((this rudel-session) user)
+  "Add USER to the user list of THIS session."
+  (with-slots (users) this
+    (push user users)))
+
+(defmethod rudel-remove-user ((this rudel-session) user)
+  "Remove USER from the user list of THIS session."
+  (with-slots (users) this
+    (setq users (remove user users))))
+
+(defmethod rudel-find-user ((this rudel-session)
+			    which &optional test key)
+  ""
+  (unless test
+    (setq test 'string=))
+  (unless key
+    (setq key 'object-name-string))
+  (with-slots (users) this
+    (find which users :key key :test test))
+  )
+
+(defmethod rudel-add-document ((this rudel-session) document)
+  ""
+  (unless (slot-boundp document :session)
+    (oset document :session this)) ; TODO do we want to do this here?
+  (with-slots (documents) this
+    (push document documents))
+  )
+
+(defmethod rudel-remove-document ((this rudel-session) document)
+  ""
+  (with-slots (documents) this
+    (setq documents (remove document documents))))
+
+(defmethod rudel-find-document ((this rudel-session)
+				which &optional test key)
+  ""
+  (unless test
+    (setq test 'string=))
+  (unless key
+    (setq key 'object-name-string))
+  (with-slots (documents) this
+    (find which documents :key key :test test))
+  )
+
 
 ;;; Class rudel-connection
 ;;
@@ -182,8 +192,15 @@ will be associated."
   "Close the connection."
   (error "Needs to be implemented in derived classes"))
 
+(defmethod rudel-publish ((this rudel-connection) document)
+  ""
+  (error "Needs to be implemented in derived classes"))
+
 (defmethod rudel-subscribe-to ((this rudel-connection) document) ; TODO name should be rudel-subscribe
   ""
+  (error "Needs to be implemented in derived classes"))
+
+(defmethod rudel-unsubscribe-from ((this rudel-connection) document) ; TODO name should be rudel-unsubscribe
   (error "Needs to be implemented in derived classes"))
 
 (defmethod rudel-local-insert ((this rudel-connection))
@@ -208,9 +225,13 @@ will be associated."
 
 (defclass rudel-user (eieio-speedbar-file-button)
   ((color :initarg :color
-	  :documentation ;type color
-	  ""))
-  "Class rudel-user ")
+	  :documentation
+	  "Color used to indicate ownership or authorship by the
+user. Examples includes text written by the user or the user name
+itself."))
+  "Objects of this class represent users participating in
+collaborative editing session. Note that a participating user
+does not have to be connected to the session at any given time.")
 ; abstract
 
 
@@ -218,15 +239,18 @@ will be associated."
 ;;
 
 (defclass rudel-document (eieio-speedbar-file-button)
-  ((buffer  :initarg :buffer ;type buffer
+  ((session :initarg  :session
+	    :type     rudel-session
 	    :documentation
 	    "")
-   (session :initarg :session
-	    :type    rudel-session
+   (buffer  :initarg  :buffer ;type buffer
+	    :type     (or null buffer)
+	    :initform nil
 	    :documentation
 	    ""))
-  "Class rudel-document ")
-;abstract
+  "This class represents a document, which participants of a
+collaborative editing session can subscribe to."
+  :abstract 't)
 
 (defmethod rudel-attach-to-buffer ((this rudel-document) the-buffer)
   ""
@@ -234,8 +258,12 @@ will be associated."
     (setq buffer the-buffer)
     (with-current-buffer buffer
       (setq rudel-buffer-document this)
+
+      ;; Add the handler function for buffer changes to the buffer's
+      ;; change hook.
       (add-hook 'after-change-functions
-		'rudel-handle-buffer-change)))
+		'rudel-handle-buffer-change
+		nil 't)))
   )
 
 (defmethod rudel-detach-from-buffer ((this rudel-document))
@@ -245,7 +273,8 @@ will be associated."
       (setq rudel-buffer-document nil)
       (remove-hook 'after-change-functions
 		   'rudel-handle-buffer-change)
-      (setq buffer nil)))) ; TODO we could also use unbound
+      (setq buffer nil)))
+  )
 
 (defmethod rudel-local-insert ((this rudel-document) from to what)
   ""
@@ -260,6 +289,7 @@ will be associated."
 (defmethod rudel-remote-insert ((this rudel-document) user from what)
   ""
   (with-slots (buffer) this
+    ;; Perform insert operation
     (save-excursion
       (with-current-buffer buffer
 	(when (< from 0)
@@ -273,6 +303,7 @@ will be associated."
 (defmethod rudel-remote-delete ((this rudel-document) user from to length)
   ""
   (with-slots (buffer) this
+    ;; Perform delete operation
     (save-excursion
       (with-current-buffer buffer
 	(let ((inhibit-modification-hooks 't))
@@ -289,13 +320,15 @@ See after-change-functions for more information."
   (when rudel-buffer-document
     (let ((document rudel-buffer-document)
 	  (text)) ; TODO with-rudel-buffer-document?
-      (if (eq length 0)
-	  (progn
-	    (with-current-buffer (oref document :buffer)
+      (if (zerop length)
+	  ;; The change was an insert
+	  (with-slots (buffer) document
+	    (with-current-buffer buffer
 	      (setq text (buffer-substring-no-properties from to)))
 	    (rudel-local-insert document from to text))
-	(rudel-local-delete document from to length))
-  )))
+	;; The change was a delete
+	(rudel-local-delete document from to length))))
+  )
 
 
 ;;; Backend functions
@@ -332,12 +365,19 @@ Backends are loaded, if necessary."
   (let ((backends (rudel-suitable-backends predicate)))
     (unless backends
       (error "No backends available"))
+
     (if (eq (length backends) 1)
+	;; If there is only one backend, we can choose that one right
+	;; away.
 	(prog1
 	  (cdar backends)
 	  (when (interactive-p)
 	    (message "Using backend `%s'" (object-name-string backend))
 	    (sit-for 0 500)))
+
+      ;; When we have more than one backend, we have to ask the user,
+      ;; which one she wants.
+      (require 'rudel-interactive)
       (rudel-read-backend backends nil 'object)))
   )
 
@@ -382,6 +422,8 @@ interactively."
 (defun rudel-end-session ()
   "End the current collaborative editing session."
   (interactive)
+  (unless rudel-current-session
+    (error "No active Rudel session"))
   (rudel-end rudel-current-session)
   (setq rudel-current-session nil)) ; TODO cleanup
 
@@ -403,36 +445,57 @@ When called interactively, DOCUMENT is prompted for interactively."
 	   (unless rudel-current-session
 	     (error "No active Rudel session"))
 	   ;; Select unsubscribed documents.
-	   (let ((documents (remove-if
-			     (lambda (document)
-			       (oref document :subscribed))
-			     (oref rudel-current-session :documents))))
+	   (let ((documents (rudel-unsubscribed-documents
+			     rudel-current-session)))
 	     ;; Already subscribed to all documents. This is an error.
 	     (when (null documents)
 	       (error "No unsubscribed documents"))
 	     ;; Read an unsubscribed document.
 	     (rudel-read-document documents nil 'object)))))
+
+  ;; Make sure we have a session.
+  (unless rudel-current-session
+    (error "No active Rudel session"))
+
   ;; Create a new buffer and attach the document to it.
   (let* ((name   (object-name-string document))
 	 (buffer (get-buffer-create name)))
-    (rudel-attach-to-buffer document buffer))
-  (let ((connection (oref (oref document :session) :connection)))
-    (rudel-subscribe-to connection document))) ; TODO we must not subscribe to our own buffers!
+    (rudel-attach-to-buffer document buffer)
+
+    (let ((connection (oref (oref document :session) :connection)))
+      (rudel-subscribe-to connection document))
+
+    ;; Show the new buffer.
+    (show-buffer nil buffer))
+  )
 
 ;;;###autoload
 (defun rudel-publish-buffer (&optional buffer)
   "Make the BUFFER available for subscription to peers in a collaborative editing session.
 If BUFFER is nil, the current buffer is used."
   (interactive (list nil))
+
+  ;; Make sure we have a session.
+  (unless rudel-current-session
+    (error "No active Rudel session"))
+
   (unless buffer
     (setq buffer (current-buffer)))
-  (unless rudel-current-session
-    (error "No current session"))
-  (let ((document (rudel-document (buffer-name buffer)
-		   :session rudel-current-session)))
-    (with-slots (connection) rudel-current-session
+
+  (with-current-buffer buffer
+    (when rudel-buffer-document
+      (error "Buffer already published or subscribed"))) ; TODO keep this?
+
+  ;;
+  (with-slots (backend connection self) rudel-current-session
+    (let ((document (rudel-make-document backend
+					 (buffer-name buffer)
+					 rudel-current-session)))
+      (rudel-add-document rudel-current-session document)
+
       (rudel-attach-to-buffer document buffer)
-      (rudel-add-document rudel-current-session document)))
+
+      (rudel-publish connection document)))
   )
 
 ;;;###autoload
@@ -440,12 +503,25 @@ If BUFFER is nil, the current buffer is used."
   "Deny peers access to BUFFER in a collaborative editing session.
 If BUFFER is nil, the current is used."
   (interactive)
+
+  ;; Make sure we have a session.
+  (unless rudel-current-session
+    (error "No active Rudel session"))
+
   (unless buffer
     (setq buffer (current-buffer)))
+
   (with-current-buffer buffer
     (unless rudel-buffer-document
-      (error "Buffer is not published"))
-    (rudel-detach-from-buffer rudel-buffer-document))
+      (error "Buffer is not published")))
+
+  ;;
+  (with-slots (connection) rudel-current-session
+    (let ((document (with-current-buffer buffer
+		      rudel-buffer-document)))
+      (rudel-detach-from-buffer document)
+
+      (rudel-unsubscribe-from connection document)))
   )
 
 (provide 'rudel)
