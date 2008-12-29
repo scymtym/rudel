@@ -62,6 +62,17 @@ which the communication happens."))
   (with-slots (socket) this
     (delete-process socket)))
 
+(defmethod rudel-state-change ((this rudel-socket-owner) state message-)
+  "Called when the state of THIS changes to STATE.
+MESSAGE- is the message emitted when the state transition
+occurred."
+  (with-slots (socket) this
+    (case state
+      ((closed failed) (rudel-close this)))))
+
+(defmethod rudel-close ((this rudel-socket-owner))
+  "Called when the connection associated to THIS is closed.")
+
 
 ;;; Networking helper functions and macros
 ;;
@@ -83,10 +94,11 @@ which the communication happens."))
   (let ((object (rudel-process-object process)))
     (rudel-receive object data)))
 
-(defun rudel-sentinel-dispatch (process state)
-  "Call `rudel-state-change' method of object attached to PROCESS with state."
-  (let ((object (rudel-process-object process)))
-    (rudel-state-change object state)))
+(defun rudel-sentinel-dispatch (process message)
+  "Call `rudel-state-change' method of the object attached to PROCESS with state and MESSAGE."
+  (let ((object (rudel-process-object process))
+	(state  (process-status process)))
+    (rudel-state-change object state message)))
 
 
 ;;; Fragmentation and assembling functions.
