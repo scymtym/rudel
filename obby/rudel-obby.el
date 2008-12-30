@@ -162,23 +162,24 @@
 ;;
 
 (defclass rudel-obby-document (rudel-document)
-  ((id         :initarg  :id
-	       :type     integer
-	       :accessor rudel-id
-	       :documentation
-	       "The id of this document.
+  ((id       :initarg  :id
+	     :type     integer
+	     :accessor rudel-id
+	     :documentation
+	     "The id of this document.
 The id has to be unique only with respect to the other documents
 owned by the owner.")
-   (owner-id   :initarg  :owner-id
-	       :type     integer
-	       :documentation
-	       "")
-   (revision   :initarg  :revision
-	       :type     integer
-	       :initform 0
-	       :documentation
-	       ""))
-  "Class rudel-obby-document ")
+   (owner-id :initarg  :owner-id
+	     :type     integer
+	     :documentation
+	     "")
+   (revision :initarg  :revision
+	     :type     integer
+	     :initform 0
+	     :documentation
+	     ""))
+  "Objects of the class rudel-obby-document represent shared
+documents in obby sessions.")
 
 (defmethod eieio-speedbar-description ((this rudel-obby-document))
   "Construct a description for from the name of document object THIS."
