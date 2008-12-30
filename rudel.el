@@ -58,6 +58,14 @@ nil if there is no active session.")
 (make-variable-buffer-local 'rudel-buffer-document)
 
 
+;;; Customization
+;;
+
+(defgroup rudel nil
+  "Rudel collaborative editing framework."
+  :group 'applications)
+
+
 ;;; Class rudel-backend
 ;;
 
