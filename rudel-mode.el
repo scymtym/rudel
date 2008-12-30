@@ -92,8 +92,7 @@
       "---"
       [ "Rudel Overview"           rudel-speedbar t ]
       "---"
-      ( "Options"
-	())
+      ( "Options")
       ))
   )
 
