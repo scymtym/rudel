@@ -38,7 +38,7 @@
 
 (require 'eieio)
 
-(require 'rudel)
+(require 'rudel-util)
 
 
 ;;; Class rudel-obby-backend
@@ -65,6 +65,7 @@
   ""
   ;; Before we start, load the client functionality.
   (require 'rudel-obby-client)
+  ;; Create the network process
   (let* ((session    (plist-get info :session))
 	 (host       (plist-get info :host))
 	 (port       (plist-get info :port))
@@ -82,6 +83,8 @@
 	 (connection (rudel-obby-connection host
                       :socket socket
 		      :info   info)))
+    (with-slots (socket) connection
+      (rudel-set-process-object socket connection))
     connection)
   )
 
@@ -174,11 +177,6 @@ owned by the owner.")
 	       :type     integer
 	       :initform 0
 	       :documentation
-	       "")
-   (subscribed :initarg  :subscribed
-	       :type     boolean
-	       :initform nil
-	       :documentation
 	       ""))
   "Class rudel-obby-document ")
 
@@ -212,14 +210,14 @@ whose cdr is the replacement for the pattern."
 
 (defun rudel-obby-escape-string (string)
   "Replace meta characters in STRING with their escape sequences."
-  (obby-replace-in-string 
+  (rudel-obby-replace-in-string 
    string 
    '(("\\\\" . "\\b") ("\n" . "\\n") (":" . "\\d")))
   )
 
 (defun rudel-obby-unescape-string (string)
   "Replace escaped versions of obby meta characters in STRING with the actual meta characters."
-  (obby-replace-in-string 
+  (rudel-obby-replace-in-string 
    string 
    '(("\\\\n" . "\n") ("\\\\d" . ":") ("\\\\b" . "\\")))
   )

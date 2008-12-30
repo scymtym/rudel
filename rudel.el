@@ -243,15 +243,20 @@ does not have to be connected to the session at any given time.")
 ;;
 
 (defclass rudel-document (eieio-speedbar-file-button)
-  ((session :initarg  :session
-	    :type     rudel-session
-	    :documentation
-	    "")
-   (buffer  :initarg  :buffer ;type buffer
-	    :type     (or null buffer)
-	    :initform nil
-	    :documentation
-	    ""))
+  ((session    :initarg  :session
+	       :type     rudel-session
+	       :documentation
+	       "")
+   (buffer     :initarg  :buffer
+	       :type     (or null buffer)
+	       :initform nil
+	       :documentation
+	       "")
+   (subscribed :initarg  :subscribed
+	       :type     list ; TODO of rudel-user-child
+	       :initform nil
+	       :documentation
+	       ""))
   "This class represents a document, which participants of a
 collaborative editing session can subscribe to."
   :abstract 't)
@@ -466,8 +471,7 @@ When called interactively, DOCUMENT is prompted for interactively."
 	   (unless rudel-current-session
 	     (error "No active Rudel session"))
 	   ;; Select unsubscribed documents.
-	   (let ((documents (rudel-unsubscribed-documents
-			     rudel-current-session)))
+	   (let ((documents (oref rudel-current-session :documents)))
 	     ;; Already subscribed to all documents. This is an error.
 	     (when (null documents)
 	       (error "No unsubscribed documents"))
@@ -515,6 +519,7 @@ If BUFFER is nil, the current buffer is used."
       (rudel-add-document rudel-current-session document)
 
       (rudel-attach-to-buffer document buffer)
+      (object-add-to-list document :subscribed self)
 
       (rudel-publish connection document)))
   )

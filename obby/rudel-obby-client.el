@@ -37,7 +37,7 @@
 
 (require 'rudel-obby)
 
- 
+
 ;;; Class rudel-obby-connection
 ;;
 
@@ -56,6 +56,9 @@
   (with-slots (socket) this
     (delete-process socket)))
 
+(defmethod rudel-state-change ((this rudel-obby-connection) state message)
+  )
+
 (defmethod rudel-subscribe-to ((this rudel-obby-connection) document)
   ""
   (let* ((session (oref this :session))
@@ -64,8 +67,7 @@
       (rudel-send this "obby_document" 
 		  (format "%x %x" owner-id id) 
 		  "subscribe"
-		  (format "%x" user-id))
-      (setq subscribed 't)))
+		  (format "%x" user-id))))
   )
 
 (defmethod rudel-local-insert ((this rudel-obby-connection) document from to what)
@@ -184,24 +186,45 @@
 	(oset user :color (rudel-obby-parse-color color))))
     )
 
-(defmethod rudel-obby/obby_sync_doclist_document 
-  ((this rudel-obby-connection) 
-   owner-id doc-id name suffix encoding &rest subscribed-users)
+(defmethod rudel-obby/obby_sync_doclist_document
+  ((this rudel-obby-connection)
+   owner-id doc-id name suffix encoding &rest subscribed-user-ids)
   ""
   (with-slots (session) this
-    (rudel-add-document session (rudel-obby-document name 
-				 :id       (string-to-number doc-id 16)
-				 :owner-id (string-to-number owner-id 16))))
-  (message "New document %s" name))
 
-(defmethod rudel-obby/obby_document_create ((this rudel-obby-connection) 
+    ;; Retrieve the subscribed users
+    (let ((subscribed-users
+	   (mapcar
+	    (lambda (user-id)
+	      (rudel-find-user 
+	       session (string-to-number user-id 16)
+	       '= 'rudel-id))
+	    subscribed-user-ids))
+	  (doc-id-numeric   (string-to-number doc-id 16))
+	  (owner-id-numeric (string-to-number owner-id 16)))
+
+      ;; Make a new document with the list of subscribed users.
+      (rudel-add-document session (rudel-obby-document name
+				   :subscribed subscribed-users
+				   :id         doc-id-numeric
+				   :owner-id   owner-id-numeric)))
+  (message "New document %s" name))
+  )
+
+(defmethod rudel-obby/obby_document_create ((this rudel-obby-connection)
 					    owner-id doc-id name suffix encoding)
   ""
   (with-slots (session) this
-    (rudel-add-document session (rudel-obby-document name 
-				 :id       (string-to-number doc-id 16)
-				 :owner-id (string-to-number owner-id 16)))) ; TODO same code in obby_sync_doclist_document
-  (message "New document %s" name))
+    (let* ((owner-id-numeric (string-to-number owner-id 16))
+	   (doc-id-numeric   (string-to-number doc-id 16))
+	   (owner            (rudel-find-user session owner-id-numeric
+					      '= 'rudel-id)))
+      (rudel-add-document session (rudel-obby-document name
+				   :subscribed (list owner)
+				   :id         doc-id-numeric
+				   :owner-id   owner-id-numeric))))
+  (message "New document %s" name)
+  )
 
 (defmethod rudel-obby/obby_document_remove ((this rudel-obby-connection) doc-id)
   ""
@@ -234,6 +257,22 @@
 (defmethod rudel-obby/obby_document/subscribe ((this rudel-obby-connection)
 					       document user-id)
   ""
+  (with-slots (session) this
+    (let* ((user-id-numeric (string-to-number user-id 16))
+	   (user            (rudel-find-user
+			     session (string-to-number user-id 16)
+			     '= 'rudel-id)))
+      (object-add-to-list document :subscribed user)))
+  )
+
+(defmethod rudel-obby/obby_document/unsubscribe ((this rudel-obby-connection)
+						 document user-id)
+  ""
+  (with-slots (session) this
+    (let* ((user-id-numeric (string-to-number user-id 16))
+	   (user            (rudel-find-user session user-id-numeric
+					     '= 'rudel-id)))
+      (object-remove-from-list document :subscribed user)))
   )
 
 (defmethod rudel-obby/obby_document/sync_init ((this rudel-obby-connection)
