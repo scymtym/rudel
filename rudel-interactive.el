@@ -94,5 +94,28 @@ return the name as string."
      (t document-name)))
   )
 
+
+;;; Buffer allocation functions
+;;
+
+(defun rudel-allocate-buffer-clear-existing (name)
+  ""
+  (let ((buffer (get-buffer name)))
+    (if buffer
+	(progn
+	  (unless (yes-or-no-p (format 
+				"Buffer `%s' already exists; Erase contents? "
+				name))
+	    (error "Buffer `%s' already exists" name)) ;; TODO throw or signal; not error
+	  (with-current-buffer buffer
+	    (erase-buffer)))
+      (setq buffer (get-buffer-create name)))
+    buffer)
+  )
+
+(defun rudel-allocate-buffer-make-unique (name)
+  ""
+  (get-buffer-create (generate-new-buffer-name name)))
+
 (provide 'rudel-interactive)
 ;;; rudel-interactive.el ends here

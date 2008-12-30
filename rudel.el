@@ -65,6 +65,17 @@ nil if there is no active session.")
   "Rudel collaborative editing framework."
   :group 'applications)
 
+(defcustom rudel-allocate-buffer-function 
+  'rudel-allocate-buffer-clear-existing
+  "*"
+  :group   'rudel
+  :type    '(choice (const :tag "Clear content of existing buffer"
+			   rudel-allocate-buffer-clear-existing )
+		    (const :tag "Create a new uniquely named buffer"
+			   rudel-allocate-buffer-make-unique )
+		    (function :tag "Other function"))
+  :require 'rudel-interactive)
+
 
 ;;; Class rudel-backend
 ;;
@@ -492,7 +503,7 @@ When called interactively, DOCUMENT is prompted for interactively."
 
   ;; Create a new buffer and attach the document to it.
   (let* ((name   (object-name-string document))
-	 (buffer (get-buffer-create name)))
+	 (buffer (funcall rudel-allocate-buffer-function name)))
     (rudel-attach-to-buffer document buffer)
 
     (let ((connection (oref (oref document :session) :connection)))
