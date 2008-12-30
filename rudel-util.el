@@ -62,12 +62,14 @@ which the communication happens."))
   (with-slots (socket) this
     (delete-process socket)))
 
-(defmethod rudel-state-change ((this rudel-socket-owner) state message-)
+(defmethod rudel-state-change ((this rudel-socket-owner) state message)
   "Called when the state of THIS changes to STATE.
-MESSAGE- is the message emitted when the state transition
+MESSAGE is the message emitted when the state transition
 occurred."
   (with-slots (socket) this
     (case state
+      ;; Dispatch events which indicate the termination of the
+      ;; connection to `rudel-close'.
       ((closed failed) (rudel-close this)))))
 
 (defmethod rudel-close ((this rudel-socket-owner))
