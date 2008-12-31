@@ -122,43 +122,35 @@ will be associated."
 ;;
 
 (defclass rudel-session ()
-  ((connection :initarg :connection
-	       :documentation
-	       "")
-   (users      :initarg  :users
-	       :type     list
-	       :initform nil
-	       :documentation
-	       "")
-   (self       :initarg  :self
-	       :type     rudel-user ; TODO initform?
-	       :documentation
-	       "Points into USERS to the user object representing the local user")
-   (documents  :initarg  :documents
-	       :type     list
-	       :initform nil
-	       :documentation
-	       ""))
-  "Class rudel-session ")
+  ((backend   :initarg  :backend
+	      :type     rudel-backend-child
+	      :documentation
+	      "The backend used by this session.")
+   (users     :initarg  :users
+	      :type     list
+	      :initform nil
+	      :documentation
+	      "The list of users participating in this session.")
+   (documents :initarg  :documents
+	      :type     list
+	      :initform nil
+	      :documentation
+	      "This list of documents available in this session."))
+  "This class serves as a base class for rudel-client-session and
+possibly rudel-server-session. Consequently, it consists of slots
+common to client and server sessions."
+  :abstract 't)
 
 (defmethod rudel-end ((this rudel-session))
-  "Terminate THIS session performing all necessary cleanup."
-  ;; Clean everything up
-  (with-slots (connection users documents) this
-    (mapc 'rudel-detach-from-buffer documents)
-    ;; Terminate the connection
-    (rudel-disconnect connection))
-  )
+  "Terminate THIS session performing all necessary cleanup.")
 
 (defmethod rudel-add-user ((this rudel-session) user)
   "Add USER to the user list of THIS session."
-  (with-slots (users) this
-    (push user users)))
+  (object-add-to-list this :users user))
 
 (defmethod rudel-remove-user ((this rudel-session) user)
   "Remove USER from the user list of THIS session."
-  (with-slots (users) this
-    (setq users (remove user users))))
+  (object-remove-from-list this :users user))
 
 (defmethod rudel-find-user ((this rudel-session)
 			    which &optional test key)
@@ -174,15 +166,13 @@ will be associated."
 (defmethod rudel-add-document ((this rudel-session) document)
   ""
   (unless (slot-boundp document :session)
-    (oset document :session this)) ; TODO do we want to do this here?
-  (with-slots (documents) this
-    (push document documents))
-  )
+    (oset document :session this))
+
+  (object-add-to-list this :documents document))
 
 (defmethod rudel-remove-document ((this rudel-session) document)
   ""
-  (with-slots (documents) this
-    (setq documents (remove document documents))))
+  (object-remove-from-list this :documents document))
 
 (defmethod rudel-find-document ((this rudel-session)
 				which &optional test key)
@@ -196,6 +186,35 @@ will be associated."
   )
 
 
+;;; Class rudel-client-session
+;;
+(defclass rudel-client-session (rudel-session)
+  ((connection :initarg  :connection
+	       :type     rudel-connection-child
+	       :documentation
+	       "")
+   (self       :initarg  :self
+	       :type     rudel-user-child
+	       :documentation
+	       "Points into USERS to the user object representing
+the local user"))
+  "Objects represent a collaborative editing session from a
+client perspective.")
+
+(defmethod rudel-end ((this rudel-client-session))
+  ;; Clean everything up
+  (with-slots (connection users documents) this
+    ;; Detach all documents from their buffers
+    (mapc 'rudel-detach-from-buffer documents)
+
+    ;; Terminate the connection
+    (rudel-disconnect connection))
+
+  ;; 
+  (call-next-method)
+  )
+
+
 ;;; Class rudel-connection
 ;;
 
@@ -204,7 +223,8 @@ will be associated."
 	    :type    rudel-session-child
 	    :documentation
 	    ""))
-  "Class rudel-connection "
+  "This abstract class defines the interface implementations of
+client protocols have to obey."
   :abstract 't)
 
 (defmethod rudel-disconnect ((this rudel-connection))
@@ -300,7 +320,8 @@ collaborative editing session can subscribe to."
     (with-current-buffer buffer
       (setq rudel-buffer-document nil)
       (remove-hook 'after-change-functions
-		   'rudel-handle-buffer-change)
+		   'rudel-handle-buffer-change
+		   't)
       (setq buffer nil)))
   )
 
@@ -424,17 +445,22 @@ All data required to join a session will be prompted for interactively."
 		    (rudel-capable-of-p backend 'join))))
 	(connect-info)
 	(connection))
-    (setq connect-info (rudel-ask-connect-info backend)) ; TODO use let
+    (setq connect-info (rudel-ask-connect-info backend))
+    ;; Try to connect
     (condition-case error-data
 	(setq connection (rudel-connect backend connect-info))
       ('error (error "Could not connect using backend `%s' with %s: %s"
 		     (object-name-string backend)
 		     connect-info
 		     (car error-data))))
-    (setq rudel-current-session (rudel-session "bla" ; TODO
+    ;; Store the new session object globally.
+    (setq rudel-current-session (rudel-client-session
+				 (format "%s session" 
+					 (object-name-string backend))
+				 :backend    backend
 			         :connection connection))
-    (oset connection :session rudel-current-session)))
-    ;(add-to-list 'rudel-sessions session)) ; only one session for now
+    (oset connection :session rudel-current-session))
+  )
 
 ;;;###autoload
 (defun rudel-host-session ()
