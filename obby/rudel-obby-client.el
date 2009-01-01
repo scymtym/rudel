@@ -1,8 +1,10 @@
 ;;; rudel-obby-client.el --- Client functions of the Rudel obby backend
 ;;
-;; Copyright (C) 2008 Jan Moringen
+;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;; Keywords: Rudel, obby, backend, client
+;; X-RCS: $Id:$
 ;;
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -59,6 +61,18 @@
 (defmethod rudel-state-change ((this rudel-obby-connection) state message)
   )
 
+(defmethod rudel-publish ((this rudel-obby-connection) document)
+  ""
+  (let ((name (object-name-string document)))
+    (with-slots (id buffer) document
+      (rudel-send this "obby_document_create"
+		  (format "%x" id)
+		  name
+		  "UTF-8"
+		  (with-current-buffer buffer
+		    (buffer-string)))))
+  )
+
 (defmethod rudel-subscribe-to ((this rudel-obby-connection) document)
   ""
   (let* ((session (oref this :session))
@@ -70,7 +84,23 @@
 		  (format "%x" user-id))))
   )
 
-(defmethod rudel-local-insert ((this rudel-obby-connection) document from to what)
+(defmethod rudel-unsubscribe-from ((this rudel-obby-connection) document)
+  ""
+  (with-slots (session) this
+    (with-slots (user-id) (oref session :self)
+      (with-slots (id owner-id subscribed) document
+	(rudel-send this "obby_document"
+		    (format "%x %x" owner-id id)
+		    "unsubscribe"
+		    (format "%x" user-id)))))
+  
+  ;; We receive a notification of the end of our own subscription from
+  ;; the server. Consequently we do not remove SELF from the list of
+  ;; subscribed users of DOCUMENT.
+  )
+
+(defmethod rudel-local-insert ((this rudel-obby-connection) 
+			       document from to what)
   ""
   (with-slots (owner-id (doc-id :id) (local-revision :revision)) document
     (let ((remote-revision 0))
@@ -78,16 +108,29 @@
 		  "obby_document" 
 		  (format "%x %x" owner-id doc-id)
 		  "record"
-		  (format "%x" local-revision) ; user-id may be wrong
+		  (format "%x" local-revision)
 		  (format "%x" remote-revision)
 		  "ins"
 		  (format "%x" (- from 1))
-		  what)) ; TODO escape
+		  what))
     (incf local-revision))
   )
 
-(defmethod rudel-local-delete ((this rudel-obby-connection))
+(defmethod rudel-local-delete ((this rudel-obby-connection)
+			       document from to length)
   ""
+  (with-slots (owner-id (doc-id :id) (local-revision :revision)) document
+    (let ((remote-revision 0))
+      (rudel-send this 
+		  "obby_document" 
+		  (format "%x %x" owner-id doc-id)
+		  "record"
+		  (format "%x" local-revision)
+		  (format "%x" remote-revision)
+		  "del"
+		  (format "%x" (- from 1))
+		  (format "%x" length)))
+    (incf local-revision))
   )
 
 (defmethod rudel-receive ((this rudel-obby-connection) data)
@@ -284,20 +327,18 @@
 						document data user-id)
   ""
   (with-slots (session) this
-    (let ((user (rudel-find-user 
-		 session (string-to-number user-id 16)
-		 'eq (lambda (user) (oref user :user-id)))))
-      (if user
-	  (rudel-remote-insert document user -1 data)
-	(warn "User not found %s" user-id))
-      ))
+    (let* ((user-id-numeric (string-to-number user-id 16))
+	   (user            (unless (zerop user-id-numeric)
+			      (rudel-find-user 
+			       session user-id-numeric
+			       'eq (lambda (user) (oref user :user-id))))))
+      (rudel-remote-insert document user -1 data)))
   )
 
 (defmethod rudel-obby/obby_document/record ((this rudel-obby-connection)
 					    document
 					    user-id revision unk3 action position data)
   ""
-  (message "record %s %s" (object-name-string document) action)
   (with-slots (session) this
     (let ((user (rudel-find-user 
 		 session (string-to-number user-id 16)

@@ -1,6 +1,6 @@
 ;;; rudel.el --- A collaborative editing framework for Emacs
 ;;
-;; Copyright (C) 2008 Jan Moringen
+;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;; Keywords: rudel, collaboration
@@ -32,6 +32,7 @@
 ;; 0.1 - Initial revision.
 
 ;;; Code:
+;;
 
 (eval-when-compile
   (require 'cl))
@@ -137,8 +138,8 @@ will be associated."
 	      :documentation
 	      "This list of documents available in this session."))
   "This class serves as a base class for rudel-client-session and
-possibly rudel-server-session. Consequently, it consists of slots
-common to client and server sessions."
+rudel-server-session. Consequently, it consists of slots common
+to client and server sessions."
   :abstract 't)
 
 (defmethod rudel-end ((this rudel-session))
@@ -213,6 +214,15 @@ client perspective.")
   ;; 
   (call-next-method)
   )
+
+
+;;; Class rudel-server-session
+;;
+
+(defclass rudel-server-session (rudel-session)
+  ()
+  "Class rudel-server-session "
+  :abstract 't)
 
 
 ;;; Class rudel-connection
@@ -421,7 +431,8 @@ Backends are loaded, if necessary."
 	(prog1
 	  (cdar backends)
 	  (when (interactive-p)
-	    (message "Using backend `%s'" (object-name-string backend))
+	    (message "Using backend `%s'" (object-name-string 
+					   (cdar backends)))
 	    (sit-for 0 500)))
 
       ;; When we have more than one backend, we have to ask the user,
@@ -468,9 +479,21 @@ All data required to join a session will be prompted for interactively."
 All data required to host a session will be prompted for
 interactively."
   (interactive)
-  (let ((backend (rudel-choose-backend
-		  (lambda (backend) (rudel-capable-of-p backend 'host)))))
-    ))
+  ;; If necessary, ask the user for the backend we should use.
+  (let* ((backend (rudel-choose-backend
+		   (lambda (backend) (rudel-capable-of-p backend 'host))))
+	 (info    (rudel-ask-host-info backend))
+	 (server))
+
+    ;; Try to create the server
+    (condition-case error-data
+	(setq server (rudel-host backend info))
+      ('error 
+       (error "Could not host session using backend `%s' with %s: %s"
+	      (object-name-string backend)
+	      info
+	      (car error-data))))
+    server))
 
 ;;;###autoload
 (defun rudel-end-session ()
@@ -536,7 +559,7 @@ When called interactively, DOCUMENT is prompted for interactively."
       (rudel-subscribe-to connection document))
 
     ;; Show the new buffer.
-    (show-buffer nil buffer))
+    (set-window-buffer nil buffer))
   )
 
 ;;;###autoload

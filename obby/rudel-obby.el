@@ -1,6 +1,6 @@
 ;;; rudel-obby.el --- An obby backend for Rudel
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;; Keywords: Rudel, obby, backend, implementation
@@ -96,6 +96,39 @@
     (with-slots (socket) connection
       (rudel-set-process-object socket connection))
     connection)
+  )
+
+(defmethod rudel-ask-host-info ((this rudel-obby-backend))
+  ""
+  (let ((port (read-number "Port: " 6522)))
+    (list :port port)))
+
+(defmethod rudel-host ((this rudel-obby-backend) info)
+  ""
+  ;; Before we start, we load the server functionality.
+  (require 'rudel-obby-server)
+  ;; Create the network process.
+  (let* ((port   (plist-get info :port))
+	 ;; Make a server socket
+	 (socket (make-network-process ; TODO do this in the constructor?
+		  :name     "obby-server" ; TODO unique
+		  :host     "0.0.0.0" ;; TODO
+		  :service  port
+		  :server   't
+		  :filter   'rudel-filter-dispatch
+		  :sentinel 'rudel-sentinel-dispatch
+		  ;;
+		  :log
+		  (lambda (server-process client-process message)
+		    (let ((server (rudel-process-object server-process)))
+		      (rudel-add-client server client-process)))))
+	 ;; Construct server object.
+	 (server (rudel-obby-server "obby-server"
+				    :backend this
+				    :socket  socket)))
+
+    ;; Return the constructed server.
+    server)
   )
 
 (defmethod rudel-make-document ((this rudel-obby-backend)
