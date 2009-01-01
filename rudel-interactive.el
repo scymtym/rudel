@@ -23,6 +23,7 @@
 
 ;;; Commentary:
 ;;
+;; Functions for user interactions commonly used in Rudel components.
 
 
 ;;; History:
