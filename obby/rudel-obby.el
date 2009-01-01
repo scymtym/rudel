@@ -1,6 +1,6 @@
 ;;; rudel-obby.el --- An obby backend for Rudel
 ;;
-;; Copyright (C) 2008 Jan Moringen
+;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;; Keywords: Rudel, obby, backend, implementation
@@ -28,7 +28,7 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial version
+;; 0.1 - Initial revision.
 
 ;;; Code:
 ;;
@@ -39,6 +39,16 @@
 (require 'eieio)
 
 (require 'rudel-util)
+
+
+;;; Constants
+;;
+
+(defconst rudel-obby-version 0.1
+  "Version of the obby backend for Rudel.")
+
+(defconst rudel-obby-protocol-version 8
+  "Version of the obby protocol this library understands.")
 
 
 ;;; Class rudel-obby-backend
@@ -57,7 +67,7 @@
 	(port     (read-number "Port: " 6522))
 	;; Read desired username and color
 	(username (read-string "Username: " user-login-name))
-	(color    (read-color  "Color: " 't))) ; TODO default/customize color
+	(color    (read-color  "Color: " 't)))
     (list :host host :port port :username username :color color))
   )
 
@@ -180,6 +190,11 @@ owned by the owner.")
 	     ""))
   "Objects of the class rudel-obby-document represent shared
 documents in obby sessions.")
+
+(defmethod rudel-both-ids ((this rudel-obby-document))
+  "Return a list consisting of document and owner id of THIS document."
+  (with-slots ((doc-id :id) owner-id) this
+    (list owner-id doc-id)))
 
 (defmethod eieio-speedbar-description ((this rudel-obby-document))
   "Construct a description for from the name of document object THIS."
