@@ -1,6 +1,6 @@
 ;;; rudel-interactive.el --- User interaction functions for Rudel.
 ;;
-;; Copyright (C) 2008 Jan Moringen
+;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;; X-RCS: $Id:$
@@ -53,6 +53,15 @@ return the name as string."
       (cdr (assoc backend-name backends)))
      (t backend-name)))
   )
+
+(defun rudel-read-user-name ()
+  "Read a username.
+The default is taken from `rudel-default-username'."
+  (read-string "Username: " rudel-default-username))
+
+(defun rudel-read-user-color ()
+  "Read a color."
+  (read-color  "Color: " 't))
 
 (defun rudel-read-user (&optional users prompt return)
   "Read a user name from USERS and return that name or the actual user depending on RETURN.
