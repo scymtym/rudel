@@ -186,6 +186,18 @@ to client and server sessions."
     (find which documents :key key :test test))
   )
 
+(defmethod rudel-unsubscribed-documents ((this rudel-session))
+  ""
+  (unless (slot-boundp this :self)
+    (error "Cannot find unsubscribed documents unless slot self is bound"))
+  (with-slots (documents self) this
+    (remove-if
+     (lambda (document)
+       (with-slots (subscribed) document
+	 (memq self subscribed)))
+       documents))
+  )
+
 
 ;;; Class rudel-client-session
 ;;
@@ -539,7 +551,8 @@ When called interactively, DOCUMENT is prompted for interactively."
 	   (unless rudel-current-session
 	     (error "No active Rudel session"))
 	   ;; Select unsubscribed documents.
-	   (let ((documents (oref rudel-current-session :documents)))
+	   (let ((documents (rudel-unsubscribed-documents
+			     rudel-current-session)))
 	     ;; Already subscribed to all documents. This is an error.
 	     (when (null documents)
 	       (error "No unsubscribed documents"))
