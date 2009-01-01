@@ -1,8 +1,9 @@
 ;;; rudel-mode.el --- Global and buffer-local Rudel minor modes
 ;;
-;; Copyright (C) 2008 Jan Moringen
+;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;; Keywords: rudel, mode
 ;; X-RCS: $Id:$
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -26,12 +27,12 @@
 ;; minor modes:
 ;; - global-rudel-minor-mode: Installs a keymap and a `Rudel' menu
 
-
 ;;; History:
 ;;
 ;; 0.1 - Initial revision.
 
 ;;; Code:
+;;
 
 (require 'easymenu)
 
