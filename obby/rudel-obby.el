@@ -1,6 +1,6 @@
 ;;; rudel-obby.el --- An obby backend for Rudel
 ;;
-;; Copyright (C) 2008 Jan Moringen
+;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;; Keywords: Rudel, obby, backend, implementation
@@ -110,9 +110,9 @@
   ;; Create the network process.
   (let* ((port   (plist-get info :port))
 	 ;; Make a server socket
-	 (socket (make-network-process ; TODO do this in the constructor?
-		  :name     "obby-server" ; TODO unique
-		  :host     "0.0.0.0" ;; TODO
+	 (socket (make-network-process
+		  :name     "obby-server"
+		  :host     "0.0.0.0"
 		  :service  port
 		  :server   't
 		  :filter   'rudel-filter-dispatch

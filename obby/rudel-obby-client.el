@@ -100,7 +100,7 @@
   )
 
 (defmethod rudel-local-insert ((this rudel-obby-connection) 
-			       document from to what)
+			       document position data)
   ""
   (with-slots (owner-id (doc-id :id) (local-revision :revision)) document
     (let ((remote-revision 0))
@@ -111,13 +111,13 @@
 		  (format "%x" local-revision)
 		  (format "%x" remote-revision)
 		  "ins"
-		  (format "%x" (- from 1))
-		  what))
+		  (format "%x" position)
+		  data))
     (incf local-revision))
   )
 
 (defmethod rudel-local-delete ((this rudel-obby-connection)
-			       document from to length)
+			       document position length)
   ""
   (with-slots (owner-id (doc-id :id) (local-revision :revision)) document
     (let ((remote-revision 0))
@@ -128,7 +128,7 @@
 		  (format "%x" local-revision)
 		  (format "%x" remote-revision)
 		  "del"
-		  (format "%x" (- from 1))
+		  (format "%x" position)
 		  (format "%x" length)))
     (incf local-revision))
   )
@@ -170,7 +170,7 @@
 
 (defmethod rudel-obby/net6_login_failed ((this rudel-obby-connection) reason)
   ""
-  ) ; TODO
+  )
 
 (defmethod rudel-obby/net6_client_join 
   ((this rudel-obby-connection) 
@@ -203,7 +203,7 @@
   (let ((version-number (string-to-number version)))
     (message "Received Obby welcome message (version %d)" version-number))) ; TODO check version number
 
-(defmethod rudel-obby/obby_sync_init ((this rudel-obby-connection) count) ; in hex
+(defmethod rudel-obby/obby_sync_init ((this rudel-obby-connection) count)
   ""
   )
 
@@ -336,26 +336,47 @@
   )
 
 (defmethod rudel-obby/obby_document/record ((this rudel-obby-connection)
-					    document
-					    user-id revision unk3 action position data)
+					    document user-id 
+					    local-revision remote-revision
+					    action &rest arguments)
   ""
   (with-slots (session) this
-    (let ((user (rudel-find-user 
-		 session (string-to-number user-id 16)
-		 'eq (lambda (user) (oref user :user-id))))
-	  (position-numeric (string-to-number position 16)))
+    (let ((user                    (rudel-find-user 
+				    session (string-to-number user-id 16)
+				    'eq (lambda (user)
+					  (oref user :user-id))))
+	  (method                  (intern-soft
+				    (concat 
+				     "rudel-obby/obby_document/record/" 
+				     action)))
+	  (local-revision-numeric  (string-to-number local-revision 16))
+	  (remote-revision-numeric (string-to-number remote-revision 16)))
       (if user
-	  (cond
-	   ((string= action "ins") 
-	    (rudel-remote-insert document user (+ position-numeric 1) data))
-	   ((string= action "del")
-	    (rudel-remote-delete document user (+ position-numeric 1) (+ position-numeric 2) 1))
-	   ((string= action "split")
-	    (error "not implemented"))
-	   ((string= action "noop"))
-	   )
-	(warn "User not found %s" user-id))
-      ))
+	  (apply method
+		 this document user 
+		 local-revision-numeric remote-revision-numeric
+		 arguments)
+	(warn "User not found %s" user-id))))
+  )
+
+(defmethod rudel-obby/obby_document/record/ins ((this rudel-obby-connection)
+						document user
+						local-revision remote-revision
+						position data)
+  ""
+  (let ((position-numeric (string-to-number position 16)))
+    (rudel-remote-insert document user position-numeric data))
+  )
+
+(defmethod rudel-obby/obby_document/record/del ((this rudel-obby-connection)
+						document user
+						local-revision remote-revision
+						position length)
+  ""
+  (let ((position-numeric (string-to-number position 16))
+	(length-numeric   (string-to-number length   16)))
+    (rudel-remote-delete document user 
+			 position-numeric length-numeric))
   )
 
 (provide 'rudel-obby-client)

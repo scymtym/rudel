@@ -39,6 +39,8 @@
 
 (require 'eieio)
 
+(require 'rudel-overlay)
+
 
 ;;; Global variables
 ;;
@@ -341,44 +343,69 @@ collaborative editing session can subscribe to."
   (with-slots (buffer) this
     (with-current-buffer buffer
       (setq rudel-buffer-document nil)
+      
       (remove-hook 'after-change-functions
 		   'rudel-handle-buffer-change
-		   't)
-      (setq buffer nil)))
+		   't))
+    
+    (setq buffer nil))
   )
 
-(defmethod rudel-local-insert ((this rudel-document) from to what)
+(defmethod rudel-local-insert ((this rudel-document) position data)
   ""
-  (let ((connection (oref (oref this :session) :connection)))
-    (rudel-local-insert connection this from to what)))
+  (with-slots (session buffer) this
+    (with-slots (connection (user :self)) session
+      ;; Update overlays
+      (rudel-update-author-overlay-after-insert 
+       buffer (+ position 1) (length data) user)
 
-(defmethod rudel-local-delete ((this rudel-document) from to length)
+      ;; Notify connection
+      (rudel-local-insert connection this position data)))
+  )
+
+(defmethod rudel-local-delete ((this rudel-document) position length)
   ""
-  (let ((connection (oref (oref this :session) :connection)))
-    (rudel-local-delete connection this from to length)))
+  (with-slots (session buffer) this
+    (with-slots (connection (user :self)) session
+      ;; Update overlays
+      (rudel-update-author-overlay-after-delete
+       buffer (+ position 1) length user)
 
-(defmethod rudel-remote-insert ((this rudel-document) user from what)
+      ;; Notify connection
+      (rudel-local-delete connection this position length)))
+  )
+
+(defmethod rudel-remote-insert ((this rudel-document) 
+				user position data)
   ""
   (with-slots (buffer) this
     ;; Perform insert operation
     (save-excursion
       (with-current-buffer buffer
-	(when (< from 0)
-	  (setq from (point-max)))
-	(let ((inhibit-modification-hooks 't)
-	      (to                         (+ from (length what))))
-	  (goto-char from)
-	  (insert what)))))
+	(when (< position 0)
+	  (setq position (- (point-max) 1)))
+	(let ((inhibit-modification-hooks 't))
+	  (goto-char (+ position 1))
+	  (insert data))))
+
+    ;; Update overlays
+    (rudel-update-author-overlay-after-insert 
+     buffer (+ position 1) (length data) user))
   )
 
-(defmethod rudel-remote-delete ((this rudel-document) user from to length)
+(defmethod rudel-remote-delete ((this rudel-document) 
+				user position length)
   ""
   (with-slots (buffer) this
     ;; Perform delete operation
     (save-excursion
       (with-current-buffer buffer
 	(let ((inhibit-modification-hooks 't))
-	  (delete-region from to)))))
+	  (delete-region (+ position 1) (+ position length 1)))))
+
+    ;; Update overlays
+    (rudel-update-author-overlay-after-delete
+     buffer (+ position 1) length user))
   )
 
 
@@ -396,9 +423,9 @@ See after-change-functions for more information."
 	  (with-slots (buffer) document
 	    (with-current-buffer buffer
 	      (setq text (buffer-substring-no-properties from to)))
-	    (rudel-local-insert document from to text))
+	    (rudel-local-insert document (- from 1) text))
 	;; The change was a delete
-	(rudel-local-delete document from to length))))
+	(rudel-local-delete document (- from 1) length))))
   )
 
 
