@@ -285,13 +285,19 @@ of his color to COLOR."
 		    (format "%x %x" owner-id doc-id)
 		    "sync_init"
 		    (format "%x" (- (point-max) 1)))
-	;; Send buffer content
-	(rudel-send this
-		    "obby_document"
-		    (format "%x %x" owner-id doc-id)
-		    "sync_chunk"
-		    (buffer-string)
-		    "0"))
+	;; Send buffer chunks with author ids
+	(dolist (chunk (rudel-chunks document))
+	  (multiple-value-bind (from to author) chunk
+	    (let ((string (buffer-substring (+ from 1) (+ to 1))))
+	      (rudel-send this
+			  "obby_document"
+			  (format "%x %x" owner-id doc-id)
+			  "sync_chunk"
+			  string
+			  (format "%x" 
+				  (if author
+				      (oref author :user-id)
+				    0)))))))
     
       ;; Notify clients of the new subscription (including our own
       ;; client, who requested the subscription).

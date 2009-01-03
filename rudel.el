@@ -408,6 +408,53 @@ collaborative editing session can subscribe to."
      buffer (+ position 1) length user))
   )
 
+(defmethod rudel-chunks ((this rudel-document))
+  "Return a list of text chunks of the associated buffer.
+Each element in the chunk is a list structured like this (START
+END AUTHOR). START and END are numbers, AUTHOR is of type (or
+null rudel-user-child)."
+  (with-slots (buffer) this
+    ;; Extract buffer string and a list of chunks partitioning the
+    ;; string according to the respective author (or nil).
+    (with-current-buffer buffer
+      (let ((string         (buffer-string)) ;; TODO no-properties?
+	    (overlay-chunks (mapcar 
+			     (lambda (overlay)
+			       (list (- (overlay-start overlay) 1)
+				     (- (overlay-end   overlay) 1)
+				     (rudel-overlay-user overlay)))
+			     (sort* (rudel-author-overlays) 
+				    '< :key 'overlay-start)))
+	    (last)
+	    (augmented-chunks))
+	;; Iterate through the list of chunks to find gaps between
+	;; chunks (also before the first) and insert entries with
+	;; author nil accordingly.
+	(dolist (chunk overlay-chunks)
+	  (when (or (and (not last)
+			 (> (nth 0 chunk) 0))
+		    (and last
+			 (/= (nth 1 last)
+			     (nth 0 chunk))))
+	    (push (list (if last (nth 1 last) 0)
+			(nth 0 chunk)
+			nil)
+		  chunks-))
+	  (push chunk augmented-chunks)
+	  (setq last chunk))
+	;; If there is text after the last chunk, created another one
+	;; with author nil. If there were no chunks at all, this chunk qcan
+	;; also cover the whole buffer string.
+	(when (or (not last)
+		  (/= (nth 1 last) (length string)))
+	  (push (list (if last (nth 1 last) 0)
+		      (length string)
+		      nil)
+		chunks-))
+	;; Sort chunks according to the start position.
+	(sort* augmented-chunks '< :key 'car))))
+  )
+
 
 ;;; 
 ;;
