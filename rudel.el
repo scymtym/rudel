@@ -439,7 +439,7 @@ null rudel-user-child)."
 	    (push (list (if last (nth 1 last) 0)
 			(nth 0 chunk)
 			nil)
-		  chunks-))
+		  augmented-chunks))
 	  (push chunk augmented-chunks)
 	  (setq last chunk))
 	;; If there is text after the last chunk, created another one
@@ -450,7 +450,7 @@ null rudel-user-child)."
 	  (push (list (if last (nth 1 last) 0)
 		      (length string)
 		      nil)
-		chunks-))
+		augmented-chunks))
 	;; Sort chunks according to the start position.
 	(sort* augmented-chunks '< :key 'car))))
   )
