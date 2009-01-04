@@ -170,6 +170,7 @@
 	       "")
    (connected  :initarg  :connected
 	       :type     boolean
+	       :accessor rudel-connected
 	       :documentation
 	       "")
    (encryption :initarg  :encryption
