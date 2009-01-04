@@ -37,13 +37,14 @@
 
 (require 'eieio)
 
-(require 'rudel-obby)
+(require 'rudel-obby-util)
 
 
 ;;; Class rudel-obby-connection
 ;;
 
-(defclass rudel-obby-connection (rudel-connection)
+(defclass rudel-obby-connection (rudel-obby-socket-owner
+				 rudel-connection)
   ((socket :initarg :socket
 	   :documentation
 	   "")
@@ -55,11 +56,12 @@
 
 (defmethod rudel-disconnect ((this rudel-obby-connection))
   ""
-  (with-slots (socket) this
-    (delete-process socket)))
+  (call-next-method))
 
-(defmethod rudel-state-change ((this rudel-obby-connection) state message)
-  )
+(defmethod rudel-close ((this rudel-obby-connection))
+  ""
+  (with-slots (session) this
+    (rudel-end session)))
 
 (defmethod rudel-publish ((this rudel-obby-connection) document)
   ""
@@ -133,26 +135,24 @@
     (incf local-revision))
   )
 
-(defmethod rudel-receive ((this rudel-obby-connection) data)
-  ""
-  (let* ((lines    (split-string data "\n" 't))
-	 (messages (mapcar 'rudel-obby-parse-message lines))) ; TODO does not work when partial message arrives
-    ;; Dispatch messages to respective handlers
-    (dolist (message messages)
-      (let* ((name      (car message))
-	     (arguments (cdr message))
-	     (method    (intern-soft (concat "rudel-obby/" name))))
-	(if method
-	    (apply method (cons this arguments))
-	  (warn "Message not understood: `%s' with data %s" name arguments)))))
-  )
-
-(defmethod rudel-send ((this rudel-obby-connection) name &rest arguments)
-  ""
-  (let ((socket  (oref this :socket))
-	(message (apply 'rudel-obby-assemble-message
-			(cons name arguments))))
-    (process-send-string socket message))
+(defmethod rudel-message ((this rudel-obby-connection) message)
+  "Dispatch MESSAGE to appropriate handler method of THIS object.
+If there is no suitable method, generate a warning, but do
+nothing else."
+  ;; Dispatch message to handler
+  (let* ((name      (car message))
+	 (arguments (cdr message))
+	 (method    (intern-soft (concat "rudel-obby/" name))))
+    ;; If we found a suitable method, run it; Otherwise warn and do
+    ;; nothing.
+    (unless (and method
+		 (condition-case error
+		     (progn
+		       (apply method this arguments)
+		       't)
+		   (no-method-definition nil)))
+      (warn "%s: message not understood: `%s' with data %s" 
+	    (object-name-string this) name arguments)))
   )
 
 (defmethod rudel-obby/net6_ping ((this rudel-obby-connection))

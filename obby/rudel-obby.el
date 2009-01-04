@@ -50,6 +50,12 @@
 (defconst rudel-obby-protocol-version 8
   "Version of the obby protocol this library understands.")
 
+(defvar rudel-obby-long-message-threshold 32768
+  "")
+
+(defvar rudel-obby-long-message-chunk-size 16384
+  "")
+
 
 ;;; Class rudel-obby-backend
 ;;
@@ -159,10 +165,13 @@
 
 (defclass rudel-obby-user (rudel-user)
   ((client-id  :initarg  :client-id
-	       :type     integer
+	       :type     (or null integer) ;; TODO maybe we should use unbound for this
 	       :accessor rudel-client-id
+	       :initform nil
 	       :documentation
-	       "")
+	       "Id of the client connection, which the user used to log in.
+The value is an integer, if the user is connected, and nil
+otherwise.")
    (user-id    :initarg  :user-id
 	       :type     integer
 	       :accessor rudel-id
@@ -173,7 +182,7 @@
 	       :accessor rudel-connected
 	       :documentation
 	       "")
-   (encryption :initarg  :encryption
+   (encryption :initarg  :encryption ;; TODO maybe we should use unbound when the user is not connected
 	       :type     boolean
 	       :documentation
 	       ""))
@@ -309,6 +318,26 @@ whose cdr is the replacement for the pattern."
 The terminating `\n' should be removed from MESSAGE before
 calling this function."
   (mapcar 'rudel-obby-unescape-string (split-string message ":")))
+
+(defun rudel-obby-send (socket name arguments)
+  "Send an obby message NAME with arguments ARGUMENTS through SOCKET."
+  ;; First, assemble the message string.
+  (let ((message (apply 'rudel-obby-assemble-message
+			name arguments)))
+    (if (>= (length message) rudel-obby-long-message-threshold)
+	;; For huge messages, chunk the message data and transmit the
+	;; chunks
+	(let ((total   (/ (length message) 
+			  rudel-obby-long-message-chunk-size ))
+	      (current 0))
+	  (working-status-forms "Sending data" "done"
+	    (rudel-loop-chunks message chunk rudel-obby-long-message-chunk-size
+	      (working-status (* 100.0 (/ (float current) total)))
+	      (process-send-string socket chunk)
+	      (incf current))))
+      ;; Send small messages in one chunk
+      (process-send-string socket message)))
+  )
 
 
 ;;; Autoloading

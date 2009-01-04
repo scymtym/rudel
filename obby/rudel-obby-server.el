@@ -36,13 +36,13 @@
 
 (require 'eieio)
 
-(require 'rudel-util)
+(require 'rudel-obby-util)
 
 
 ;;; Class rudel-obby-client
 ;;
 
-(defclass rudel-obby-client (rudel-socket-owner)
+(defclass rudel-obby-client (rudel-obby-socket-owner)
   ((server     :initarg  :server
 	       :type     rudel-obby-server
 	       :documentation
@@ -86,26 +86,24 @@ timeout timer."
   (with-slots (server) this
     (rudel-remove-client server this)))
 
-(defmethod rudel-receive ((this rudel-obby-client) data)
-  ""
-  (let* ((lines    (split-string data "\n" 't))
-	 (messages (mapcar 'rudel-obby-parse-message lines)))
-    ;; Dispatch messages to respective handlers
-    (dolist (message messages)
-      (let* ((name      (car message))
-	     (arguments (cdr message))
-	     (method    (intern-soft (concat "rudel-obby/" name))))
-	(if method
-	    (apply method (cons this arguments))
-	  (warn "Message not understood: `%s' with data %s" name arguments)))))
-  )
-
-(defmethod rudel-send ((this rudel-obby-client) name &rest arguments)
-  ""
-  (let ((socket  (oref this :socket))
-	(message (apply 'rudel-obby-assemble-message
-			(cons name arguments))))
-    (process-send-string socket message))
+(defmethod rudel-message ((this rudel-obby-client) message)
+  "Dispatch MESSAGE to appropriate handler method of THIS object.
+If there is no suitable method, generate a warning, but do
+nothing else."
+  ;; Dispatch message to handler
+  (let* ((name      (car message))
+	 (arguments (cdr message))
+	 (method    (intern-soft (concat "rudel-obby/" name))))
+    ;; If we found a suitable method, run it; Otherwise warn and do
+    ;; nothing.
+    (unless (and method
+		 (condition-case error
+		     (progn
+		       (apply method this arguments)
+		       't)
+		   (no-method-definition nil)))
+      (warn "%s: message not understood: `%s' with data %s" 
+	    (object-name-string this) name arguments)))
   )
 
 (defmethod rudel-broadcast ((this rudel-obby-client)
@@ -210,7 +208,7 @@ failed encryption negotiation.")
 					color-)
   "Handle 'obby_user_colour' message.
 This method is called when the connected user requests a change
-of his color to COLOR."
+of her color to COLOR."
   (with-slots (color (user-id :user-id)) (oref this :user)
     (setq color (rudel-obby-parse-color color-))
     (rudel-broadcast this (list 'exclude this)
