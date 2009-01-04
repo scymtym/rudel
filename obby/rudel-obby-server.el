@@ -154,11 +154,12 @@ failed encryption negotiation.")
   ;;   - connected users
   ;;   - disconnected users
   ;; - transmit document list
-  (rudel-send this 
-	      "obby_sync_init"
-	      (format "%x" 0))
-
   (with-slots (users clients documents) (oref this :server)
+    ;; Send number of synchronization items.
+    (let ((number-of-items (+ (length users) (length documents))))
+      (rudel-send this 
+		  "obby_sync_init"
+		  (format "%x" number-of-items)))
 
     ;; Transmit list of connected users.
     (dolist (client clients)
@@ -171,6 +172,17 @@ failed encryption negotiation.")
 			name
 			"0"
 			(format "%x" user-id)
+			(rudel-obby-format-color color))))))
+    
+    ;; Transmit list of disconnected users.
+    (let ((offline-users (remove-if 'rudel-connected users)))
+      (dolist (user offline-users)
+	(let ((name (object-name-string user)))
+	  (with-slots (user-id color) user
+	    (rudel-send this
+			"obby_sync_usertable_user"
+			(format "%x" user-id)
+			name
 			(rudel-obby-format-color color))))))
 
     ;; Transmit document list
@@ -189,9 +201,9 @@ failed encryption negotiation.")
 		  (mapcar 
 		   (lambda (user) 
 		     (format "%x" (rudel-id user)))
-		   subscribed)))))))
-    
-  (rudel-send this "obby_sync_final")
+		   subscribed))))))
+  
+    (rudel-send this "obby_sync_final"))
   )
 
 (defmethod rudel-obby/obby_user_colour ((this rudel-obby-client)
