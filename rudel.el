@@ -339,16 +339,21 @@ collaborative editing session can subscribe to."
   )
 
 (defmethod rudel-detach-from-buffer ((this rudel-document))
-  ""
+  "Detach document THIS from its buffer.
+Do nothing, if THIS is not attached to any buffer."
   (with-slots (buffer) this
-    (with-current-buffer buffer
-      (setq rudel-buffer-document nil)
+    ;; Only try to detach from BUFFER, if it is non-nil. BUFFER can be
+    ;; nil, if the user did not subscribe to the document, or
+    ;; unsubscribed after subscribing.
+    (when buffer
+      (with-current-buffer buffer
+	(setq rudel-buffer-document nil)
+	
+	(remove-hook 'after-change-functions
+		     'rudel-handle-buffer-change
+		     't))
       
-      (remove-hook 'after-change-functions
-		   'rudel-handle-buffer-change
-		   't))
-    
-    (setq buffer nil))
+      (setq buffer nil)))
   )
 
 (defmethod rudel-local-insert ((this rudel-document) position data)
