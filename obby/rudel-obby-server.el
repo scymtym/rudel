@@ -417,12 +417,12 @@ of his color to COLOR."
 		   "")
    (next-client-id :initarg  :next-client-id
 		   :type     integer
-		   :initform 0
+		   :initform 1
 		   :documentation
 		   "")
    (next-user-id   :initarg  :next-user-id
 		   :type     integer
-		   :initform 0
+		   :initform 1
 		   :documentation
 		   ""))
   "Class rudel-obby-server ")
