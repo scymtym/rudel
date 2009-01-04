@@ -359,24 +359,28 @@ of his color to COLOR."
 						local-revision remote-revision
 						position data)
   ""
-  (with-slots ((client-id :id) user) this
+  (with-slots (user) this
     (let ((position-numeric (string-to-number position 16)))
    
       ;; Incorporate change into DOCUMENT.
       (rudel-remote-insert document user position-numeric data)
 
       ;; Relay change notification to other clients.
-      (with-slots (owner-id (doc-id :id)) document
-	(rudel-broadcast this (list 'exclude this)
-			 "obby_document"
-			 (format "%x %x" owner-id doc-id)
-			 "record"
-			 (format "%x" client-id)
-			 (format "%x" local-revision)
-			 (format "%x" remote-revision)
-			 "ins"
-			 (format "%x" position-numeric)
-			 data))))
+      (let ((receivers (rudel-subscribed-clients-not-self this document)))
+	(when receivers
+	  (with-slots (user-id) user
+	    (with-slots (owner-id (doc-id :id)) document
+	      (rudel-broadcast this
+			       receivers
+			       "obby_document"
+			       (format "%x %x" owner-id doc-id)
+			       "record"
+			       (format "%x" user-id)
+			       (format "%x" local-revision)
+			       (format "%x" remote-revision)
+			       "ins"
+			       (format "%x" position-numeric)
+			       data)))))))
   )
 
 (defmethod rudel-obby/obby_document/record/del ((this rudel-obby-client)
@@ -384,7 +388,7 @@ of his color to COLOR."
 						local-revision remote-revision
 						position length)
   ""
-  (with-slots ((client-id :id) user) this
+  (with-slots (user) this
     (let ((position-numeric (string-to-number position 16))
 	  (length-numeric   (string-to-number length   16)))
 
@@ -392,17 +396,34 @@ of his color to COLOR."
       (rudel-remote-delete document user position-numeric length-numeric)
 
       ;; Relay change notification to other clients.
-      (with-slots (owner-id (doc-id :id)) document
-	(rudel-broadcast this (list 'exclude this)
-			 "obby_document"
-			 (format "%x %x" owner-id doc-id)
-			 "record"
-			 (format "%x" client-id)
-			 (format "%x" local-revision)
-			 (format "%x" remote-revision)
-			 "del"
-			 (format "%x" position-numeric)
-			 (format "%x" length-numeric)))))
+      (let ((receivers (rudel-subscribed-clients-not-self this document)))
+	(when receivers
+	  (with-slots (user-id) user
+	    (with-slots (owner-id (doc-id :id)) document
+	      (rudel-broadcast this 
+			       receivers
+			       "obby_document"
+			       (format "%x %x" owner-id doc-id)
+			       "record"
+			       (format "%x" user-id)
+			       (format "%x" local-revision)
+			       (format "%x" remote-revision)
+			       "del"
+			       (format "%x" position-numeric)
+			       (format "%x" length-numeric))))))))
+  )
+
+(defmethod rudel-subscribed-clients-not-self ((this rudel-obby-client) 
+					      document)
+  "Return a list of clients subscribed to DOCUMENT excluding THIS."
+  (with-slots (clients) (oref this :server)
+    (with-slots (subscribed) document
+      (remove-if 
+       (lambda (client)
+	 (with-slots (user) client
+	   (or (eq client this)
+	       (not (memq user subscribed)))))
+       clients)))
   )
 
 
