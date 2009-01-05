@@ -1,5 +1,41 @@
-INTRODUCTION
+* INTRODUCTION
 
-GETTING STARTED
+  Rudel is collaborative editing environment for GNU Emacs. It
+  supports multiple backends to enable communication with other
+  collaborative editors using different protocols.
 
-M-x global-rudel-minor-mode
+  Since Rudel is not an application, but an extension to Emacs, it is
+  not started and used like most applications (not even Emacs
+  applications like Gnus). Rudel mostly works in the background to
+  change the behavior of the set of Emacs buffers for which it has
+  been activated.
+
+  The user interface consists of a set of key bindings, a menu entry
+  and some visual status indicators, which are added to the text and
+  mode line of buffers for which Rudel has been activated.
+
+* GETTING STARTED
+
+  Assuming Rudel has already been installed and auto loading has been
+  set up, a global Rudel mode can be enabled as follows:
+
+  : M-x global-rudel-minor-mode
+
+  This will enabled Rudel's key bindings and menu entry.
+
+** JOINING A SESSION
+
+   : M-x rudel-join-session [ C-c c j ]
+
+   Depending on the installed Rudel backends, system environment and
+   configuration, a number of questions will be asked, followed by an
+   attempt to join session described by your answers.
+
+** HOSTING A SESSION
+
+   : M-x rudel-host-session [ C-c c h ]
+
+   Note that the session starts out without any participating users
+   (This is sometimes referred to as being a dedicated server). If you
+   want to participate in the session you host, you have to join it as
+   described above.
