@@ -165,10 +165,10 @@
 
 (defclass rudel-obby-user (rudel-user)
   ((client-id  :initarg  :client-id
-	       :type     (or null integer) ;; TODO maybe we should use unbound for this
-	       :accessor rudel-client-id
-	       :initform nil
-	       :documentation
+	       :type     (or null integer) ;; We allow nil instead of make
+	       :accessor rudel-client-id   ;; the slot unbound, to be able to
+	       :initform nil               ;; search with test 'rudel-client-id
+	       :documentation              ;; without headaches
 	       "Id of the client connection, which the user used to log in.
 The value is an integer, if the user is connected, and nil
 otherwise.")

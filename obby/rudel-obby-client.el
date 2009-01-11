@@ -179,14 +179,13 @@ nothing else."
   ""
   )
 
-(defmethod rudel-obby/net6_client_join 
-  ((this rudel-obby-connection) 
-   client-id name encryption user-id color)
-  ""
+(defmethod rudel-obby/net6_client_join ((this rudel-obby-connection) 
+					client-id name encryption user-id color)
+  "Handle 'net6_client_join message."
   (with-slots (session) this ; TODO the user can be in our list as offline user
     (let ((user (rudel-obby-user name
  	         :client-id  (string-to-number client-id 16)
-		 :user-id    (string-to-number user-id 16)
+		 :user-id    (string-to-number user-id   16)
 		 :connected  't
 		 :encryption (when (string= encryption "1") 't)
 		 :color      (rudel-obby-parse-color color))))
@@ -197,12 +196,16 @@ nothing else."
   )
 
 (defmethod rudel-obby/net6_client_part ((this rudel-obby-connection) client-id)
-  ""
+  "Handle 'net6_client_part' message."
+  ;; Find the user object, associated to the client id. Remove the
+  ;; client id and make the user to disconnected.
   (with-slots (session) this
-    (let ((user (rudel-find-user 
-		 session (string-to-number client-id 16)
-		 'eq (lambda (user) (oref user :client-id)))))
-      (oset user :connected nil)))
+    (let* ((client-id-numric (string-to-number client-id 16))
+	   (user             (rudel-find-user session client-id-numric
+					      'eq 'rudel-client-id)))
+      (with-slots (client-id connected) user
+	(setq client-id nil
+	      connected nil))))
   )
 
 (defmethod rudel-obby/obby_welcome ((this rudel-obby-connection) version)
@@ -218,23 +221,28 @@ nothing else."
   ""
   )
 
-(defmethod rudel-obby/obby_sync_usertable_user ((this rudel-obby-connection) user-id name color)
+(defmethod rudel-obby/obby_sync_usertable_user ((this rudel-obby-connection)
+						user-id name color)
   ""
   (with-slots (session) this
-    (rudel-add-user session (rudel-obby-user name
-			     :user-id    (string-to-number user-id 16)
-			     :connected  nil
-			     :color      (rudel-obby-parse-color color))))
+    (let ((user-id-numric (string-to-number user-id 16))
+	  (color-parsed   (rudel-obby-parse-color color)))
+      (rudel-add-user session (rudel-obby-user name
+			      :user-id    user-id-numric
+			      :connected  nil
+			      :color      color-parsed))))
   )
 
-(defmethod rudel-obby/obby_user_colour ((this rudel-obby-connection) user-id color)
-    ""
-    (with-slots (session) this
-      (let ((user (rudel-find-user 
-		   session (string-to-number user-id 16)
-		   'eq (lambda (user) (oref user :user-id))))) ; TODO do we handle cases like user not found?
-	(oset user :color (rudel-obby-parse-color color))))
-    )
+(defmethod rudel-obby/obby_user_colour ((this rudel-obby-connection) 
+					user-id color)
+  ""
+  (with-slots (session) this
+    (let* ((user-id-numeric (string-to-number user-id 16))
+	   (color-parsed    (rudel-obby-parse-color color))
+	   (user            (rudel-find-user session user-id-numeric
+					     'eq 'rudel-id)))
+      (oset user :color color-parsed)))
+  )
 
 (defmethod rudel-obby/obby_sync_doclist_document
   ((this rudel-obby-connection)
