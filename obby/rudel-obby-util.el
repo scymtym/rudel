@@ -60,7 +60,7 @@ messages to the base class rudel-socket-owner.")
     (rudel-obby-send socket name arguments)))
 
 (defmethod rudel-receive ((this rudel-obby-socket-owner) data)
-  "Reassemble lines in DATA received on the socket associated to THIS and call message handler."
+  "Reassemble lines in DATA received on the socket associated with THIS and call message handler."
   ;; Assemble fragmented lines.
   (with-slots (buffer) this
     (rudel-assemble-line-fragments data buffer))
