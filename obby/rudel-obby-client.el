@@ -63,6 +63,13 @@
   (with-slots (session) this
     (rudel-end session)))
 
+(defmethod rudel-change-color- ((this rudel-obby-connection) color)
+  ""
+  (with-slots (socket) this
+    (rudel-send this "obby_user_colour" 
+		(rudel-obby-format-color color)))
+  )
+
 (defmethod rudel-publish ((this rudel-obby-connection) document)
   ""
   (let ((name (object-name-string document)))
