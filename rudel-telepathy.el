@@ -1,5 +1,5 @@
 ;;; Copyright (C) 2008
-;;   by Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;;   by Jan Moringen <scymtym@users.sourceforge.net>
 ;;
 ;; This file is part of Rudel.
 ;;

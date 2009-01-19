@@ -2,7 +2,7 @@
 ;;
 ;; Copyright (C) 2008 Jan Moringen
 ;;
-;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, miscellaneous, util
 ;; X-RCS: $Id:$
 ;;

@@ -2,7 +2,7 @@
 ;;
 ;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
-;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, collaboration
 ;; X-RCS: $Id:$
 ;;

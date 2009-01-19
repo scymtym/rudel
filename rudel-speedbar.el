@@ -2,7 +2,7 @@
 ;;
 ;; Copyright (C) 2008 Jan Moringen
 ;;
-;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, collaboration, speedbar
 ;; X-RCS: $Id: rudel-speedbar.el,v 1.32 2008/10/10 21:47:28 zappo Exp $
 ;;
