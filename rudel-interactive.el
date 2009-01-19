@@ -3,6 +3,7 @@
 ;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;; Keywords: Rudel, user, interface, interaction
 ;; X-RCS: $Id:$
 ;;
 ;; This program is free software; you can redistribute it and/or
