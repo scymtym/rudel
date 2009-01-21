@@ -69,12 +69,16 @@ The default is taken from `rudel-default-username'."
 If USERS is nil, use the user list of `rudel-current-session'.
 If RETURN. is 'object, return the user object; Otherwise return
 the name as string."
+  ;; If no user list is provided, the user list of the current session
+  ;; is used.
   (unless users
     (if rudel-current-session
 	(setq users (oref rudel-current-session :users))
       (error "No user list and no active Rudel session")))
   (unless prompt
     (setq prompt "User: "))
+  ;; Construct a list of user name, read a name with completion and
+  ;; return a user name of object.
   (let* ((user-names (mapcar 'object-name-string users))
 	 (user-name  (completing-read prompt user-names nil 't)))
     (cond 
@@ -110,7 +114,7 @@ return the name as string."
 ;;
 
 (defun rudel-allocate-buffer-clear-existing (name)
-  ""
+  "When the requested buffer NAME exists, clear its contents and use it."
   (let ((buffer (get-buffer name)))
     (if buffer
 	(progn
@@ -125,7 +129,7 @@ return the name as string."
   )
 
 (defun rudel-allocate-buffer-make-unique (name)
-  ""
+  "When the requested buffer NAME exists, create another buffer."
   (get-buffer-create (generate-new-buffer-name name)))
 
 (provide 'rudel-interactive)
