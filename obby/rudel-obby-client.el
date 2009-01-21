@@ -45,13 +45,10 @@
 
 (defclass rudel-obby-connection (rudel-obby-socket-owner
 				 rudel-connection)
-  ((socket :initarg :socket
-	   :documentation
-	   "")
-   (info   :initarg :info
-	   :type    list
-	   :documentation
-	   "Stores connection information for later use."))
+  ((info :initarg :info
+	 :type    list
+	 :documentation
+	 "Stores connection information for later use."))
   "Class rudel-obby-connection ")
 
 (defmethod rudel-disconnect ((this rudel-obby-connection))
