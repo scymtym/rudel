@@ -225,11 +225,6 @@ owned by the owner.")
    (owner-id :initarg  :owner-id
 	     :type     integer
 	     :documentation
-	     "")
-   (revision :initarg  :revision
-	     :type     integer
-	     :initform 0
-	     :documentation
 	     ""))
   "Objects of the class rudel-obby-document represent shared
 documents in obby sessions.")

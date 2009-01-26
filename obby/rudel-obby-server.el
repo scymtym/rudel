@@ -36,6 +36,8 @@
 
 (require 'eieio)
 
+(require 'jupiter)
+
 (require 'rudel-obby-util)
 
 
@@ -248,7 +250,10 @@ of her color to COLOR."
 			 (format "%x" doc-id-numeric)
 			 name
 			 ""
-			 encoding))))
+			 encoding)
+
+	;; Add a jupiter context for (THIS DOCUMENT).
+	(rudel-add-context server this document))))
   )
 
 (defmethod rudel-obby/obby_document ((this rudel-obby-client) 
@@ -316,7 +321,11 @@ of her color to COLOR."
 			 "obby_document"
 			 (format "%x %x" owner-id doc-id)
 			 "subscribe"
-			 (format "%x" user-id)))))
+			 (format "%x" user-id)))
+
+      ;; Add a jupiter context for (THIS document).
+      (with-slots (server) this
+	(rudel-add-context server this document))))
   )
 
 (defmethod rudel-obby/obby_document/unsubscribe ((this rudel-obby-client)
@@ -341,7 +350,11 @@ of her color to COLOR."
 			 "obby_document"
 			 (format "%x %x" owner-id doc-id)
 			 "unsubscribe"
-			 (format "%x" user-id)))))
+			 (format "%x" user-id)))
+
+      ;; Remove jupiter context for (THIS DOCUMENT).
+      (with-slots (server) this
+	(rudel-remove-context server this document))))
   )
 
 (defmethod rudel-obby/obby_document/record ((this rudel-obby-client)
@@ -369,28 +382,53 @@ of her color to COLOR."
 						local-revision remote-revision
 						position data)
   ""
-  (with-slots (user) this
-    (let ((position-numeric (string-to-number position 16)))
-   
-      ;; Incorporate change into DOCUMENT.
-      (rudel-remote-insert document user position-numeric data)
+  (let ((position-numeric (string-to-number position 16)))
+    (with-slots (server user) this
+      ;; Transform the operation.
+      (let* ((context     (rudel-find-context server this document))
+	     (transformed (jupiter-remote-operation 
+			   context 
+			   remote-revision local-revision 
+			   (jupiter-insert
+			    (format "insert-%d-%d" 
+				    remote-revision local-revision)
+			    :from position-numeric :data data))))
 
-      ;; Relay change notification to other clients.
-      (let ((receivers (rudel-subscribed-clients-not-self this document)))
-	(when receivers
-	  (with-slots (user-id) user
-	    (with-slots (owner-id (doc-id :id)) document
-	      (rudel-broadcast this
-			       receivers
-			       "obby_document"
-			       (format "%x %x" owner-id doc-id)
-			       "record"
-			       (format "%x" user-id)
-			       (format "%x" local-revision)
-			       (format "%x" remote-revision)
-			       "ins"
-			       (format "%x" position-numeric)
-			       data)))))))
+	;; Incorporate change into DOCUMENT.
+	(with-slots ((position :from) data) transformed
+	  (rudel-remote-insert document user position data)
+
+	  ;; Relay change notification to other clients.
+	  (let ((receivers (rudel-subscribed-clients-not-self
+			    this document)))
+	    ;; Construct and send messages to all receivers
+	    ;; individually since the contents of the messages depends
+	    ;; on the state of the respective jupiter context.
+	    (dolist (receiver receivers)
+	      ;; Find the context for the current receiver and
+	      ;; transform the operation appropriately.
+	      (let* ((context (rudel-find-context server receiver document)))
+
+		(with-slots (user-id) user
+		  (with-slots (owner-id (doc-id :id)) document
+		    (with-slots (local-revision remote-revision) context
+		      (rudel-send receiver
+				  "obby_document"
+				  (format "%x %x" owner-id doc-id)
+				  "record"
+				  (format "%x" user-id)
+				  (format "%x" local-revision)
+				  (format "%x" remote-revision)
+				  "ins"
+				  (format "%x" position)
+				  data))))
+
+		(jupiter-local-operation
+		 context
+		 (jupiter-insert
+		  (format "insert-%d-%d"
+			  local-revision remote-revision)
+		  :from position :data data)))))))))
   )
 
 (defmethod rudel-obby/obby_document/record/del ((this rudel-obby-client)
@@ -398,29 +436,57 @@ of her color to COLOR."
 						local-revision remote-revision
 						position length)
   ""
-  (with-slots (user) this
-    (let ((position-numeric (string-to-number position 16))
-	  (length-numeric   (string-to-number length   16)))
+  (let ((position-numeric (string-to-number position 16))
+	(length-numeric   (string-to-number length   16)))
+    (with-slots (server user) this
 
-      ;; Incorporate change into DOCUMENT.
-      (rudel-remote-delete document user position-numeric length-numeric)
+      ;; Transform the operation.
+      (let* ((context     (rudel-find-context server this document))
+	     (transformed (jupiter-remote-operation 
+			   context
+			   remote-revision local-revision 
+			   (jupiter-delete
+			    (format "delete-%d-%d" 
+				    remote-revision local-revision)
+			    :from position-numeric 
+			    :to   (+ position-numeric length-numeric)))))
 
-      ;; Relay change notification to other clients.
-      (let ((receivers (rudel-subscribed-clients-not-self this document)))
-	(when receivers
-	  (with-slots (user-id) user
-	    (with-slots (owner-id (doc-id :id)) document
-	      (rudel-broadcast this 
-			       receivers
-			       "obby_document"
-			       (format "%x %x" owner-id doc-id)
-			       "record"
-			       (format "%x" user-id)
-			       (format "%x" local-revision)
-			       (format "%x" remote-revision)
-			       "del"
-			       (format "%x" position-numeric)
-			       (format "%x" length-numeric))))))))
+	;; Incorporate change into DOCUMENT.
+	(with-slots ((position :from) length) transformed
+	  (rudel-remote-delete document user position length)
+
+	  ;; Relay change notification to other clients.
+	  (let ((receivers (rudel-subscribed-clients-not-self
+			    this document)))
+	    ;; Construct and send messages to all receivers
+	    ;; individually since the contents of the messages depends
+	    ;; on the state of the respective jupiter context.
+	    (dolist (receiver receivers)
+	      ;; Find the context for the current receiver and
+	      ;; transform the operation appropriately.
+	      (let* ((context (rudel-find-context server receiver document)))
+
+		(with-slots (user-id) user
+		  (with-slots (owner-id (doc-id :id)) document
+		    (with-slots (local-revision remote-revision) context
+		      (rudel-send receiver
+				  "obby_document"
+				  (format "%x %x" owner-id doc-id)
+				  "record"
+				  (format "%x" user-id)
+				  (format "%x" local-revision)
+				  (format "%x" remote-revision)
+				  "del"
+				  (format "%x" position)
+				  (format "%x" length)))))
+
+		(jupiter-local-operation
+		 context
+		 (jupiter-delete
+		  (format "delete-%d-%d"
+			  remote-revision local-revision)
+		  :from position
+		  :to   (+ position length))))))))))
   )
 
 (defmethod rudel-subscribed-clients-not-self ((this rudel-obby-client) 
@@ -455,8 +521,17 @@ of her color to COLOR."
 		   :type     integer
 		   :initform 1
 		   :documentation
+		   "")
+   (contexts       :initarg  :contexts
+		   :type     hash-table
+		   :documentation
 		   ""))
   "Class rudel-obby-server ")
+
+(defmethod initialize-instance :after ((this rudel-obby-server) &rest slots)
+  ""
+  (with-slots (contexts) this
+    (setq contexts (make-hash-table :test 'equal))))
 
 (defmethod rudel-end ((this rudel-obby-server))
   ""
@@ -541,6 +616,35 @@ such objects derived from rudel-obby-client."
 
   (object-remove-from-list this :clients client)
   )
+
+(defmethod rudel-find-context ((this rudel-obby-server) client document)
+  "Return the jupiter context associated to (CLIENT DOCUMENT) in THIS."
+  (with-slots (contexts) this
+    (gethash (rudel-obby-context-key client document) contexts)))
+
+(defmethod rudel-add-context ((this rudel-obby-server) client document)
+  "Add a jupiter context for (CLIENT DOCUMENT) to THIS."
+  (with-slots (contexts) this
+    (with-slots ((client-id :id)) client
+      (let ((doc-name (object-name-string document)))
+	(puthash
+	 (rudel-obby-context-key client document)
+	 (jupiter-context (format "%d-%s" client-id doc-name))
+	 contexts))))
+  )
+
+(defmethod rudel-remove-context ((this rudel-obby-server) client document)
+  "Remove the jupiter context associated to (CLIENT DOCUMENT) from THIS."
+  (with-slots (contexts) this
+    (remhash
+     (rudel-obby-context-key client document) 
+     contexts)))
+
+(defun rudel-obby-context-key (client document)
+  "Generate hash key based on CLIENT and DOCUMENT."
+  (with-slots ((client-id :id)) client
+    (with-slots ((doc-id :id)) document
+      (list client-id doc-id))))
 
 (provide 'rudel-obby-server)
 ;;; rudel-obby-server.el ends here
