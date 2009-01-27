@@ -77,5 +77,38 @@ messages to the base class rudel-socket-owner.")
   "Called when a message arrives.
 Should be implemented in derived classes.")
 
+
+;;; Miscellaneous functions
+;;
+
+(defun rudel-obby-dispatch (object name arguments &optional prefix)
+  "Call method starting with PREFIX and ending in NAME of OBJECT with ARGUMENTS.
+When PREFIX is not specified, \"rudel-obby/\" is used."
+  ;; Fallback prefix.
+  (unless prefix
+    (setq prefix "rudel-obby/"))
+
+  ;; Construct a matching symbol.
+  (let ((method (intern-soft (concat prefix name))))
+    ;; If we found a suitable method, run it; Otherwise warn and do
+    ;; nothing.
+    (unless (and method
+		 (condition-case error
+		     ;; Try to call METHOD. If successful, always
+		     ;; return t.
+		     (progn
+		       (apply method object arguments)
+		       't)
+		   ;; Warn only when the condition is
+		   ;; 'no-method-definition' and refers to METHOD,
+		   ;; otherwise continue unwinding.
+		   (no-method-definition
+		    (if (eq method (cadr error))
+			nil
+		      (signal (car error) (cdr error))))))
+      (warn "%s: in context `%s': no method: `%s'; arguments:  %s" 
+	    (object-name-string object) prefix name arguments)))
+  )
+
 (provide 'rudel-obby-util)
 ;;; rudel-obby-util.el ends here

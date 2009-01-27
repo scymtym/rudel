@@ -93,6 +93,15 @@ documents."))
   (with-slots (contexts) this
     (remhash (oref document :id) contexts)))
 
+(defmethod rudel-message ((this rudel-obby-connection) message)
+  "Dispatch MESSAGE to appropriate handler method of THIS object.
+If there is no suitable method, generate a warning, but do
+nothing else."
+  ;; Dispatch message to handler
+  (let ((name      (car message))
+	(arguments (cdr message)))
+    (rudel-obby-dispatch this name arguments)))
+
 (defmethod rudel-change-color- ((this rudel-obby-connection) color)
   ""
   (with-slots (socket) this
@@ -194,26 +203,6 @@ documents."))
        context
        (jupiter-delete "delete" 
 	:from position :to (+ position length)))))
-  )
-
-(defmethod rudel-message ((this rudel-obby-connection) message)
-  "Dispatch MESSAGE to appropriate handler method of THIS object.
-If there is no suitable method, generate a warning, but do
-nothing else."
-  ;; Dispatch message to handler
-  (let* ((name      (car message))
-	 (arguments (cdr message))
-	 (method    (intern-soft (concat "rudel-obby/" name))))
-    ;; If we found a suitable method, run it; Otherwise warn and do
-    ;; nothing.
-    (unless (and method
-		 (condition-case error
-		     (progn
-		       (apply method this arguments)
-		       't)
-		   (no-method-definition nil)))
-      (warn "%s: message not understood: `%s' with data %s" 
-	    (object-name-string this) name arguments)))
   )
 
 (defmethod rudel-obby/net6_ping ((this rudel-obby-connection))
@@ -342,28 +331,27 @@ nothing else."
   ""
   (message "Document removed %d" (string-to-number doc-id)))
 
-(defmethod rudel-obby/obby_document ((this rudel-obby-connection) 
+(defmethod rudel-obby/obby_document ((this rudel-obby-connection)
 				     owner-and-doc-id action &rest arguments)
   ""
   (with-slots (session) this
-    (let* ((ids-numeric (mapcar 
-			 (lambda (string) 
+    ;; First parse the owner and document id ...
+    (let* ((ids-numeric (mapcar
+			 (lambda (string)
 			   (string-to-number string 16))
 			 (split-string owner-and-doc-id " " 't)))
-	   (method      (intern-soft (concat "rudel-obby/obby_document/" action)))
-	   ;; Locate the document
-	   (document    (rudel-find-document 
-			 session ids-numeric
-			 (lambda (owner-and-doc-id document)
-			   (equal owner-and-doc-id 
-				  (list (oref document :owner-id)
-					(oref document :id))))
-			 'identity)))
-      (if (and method document)
-	  (apply method (cons this (cons document arguments)))
-	(if (not method)
-	    (warn "Document message not understood: `%s' with data %s" action arguments)
-	  (warn "Document not found %s" owner-and-doc-id)))))
+	   ;; ... then locate the document based on owner id and
+	   ;; document id
+	   (document    (rudel-find-document session ids-numeric
+					     'equal 'rudel-both-ids)))
+      (if document
+	  ;; Dispatch message to handler
+	  (rudel-obby-dispatch
+	   this action
+	   (append (list document) arguments)
+	   "rudel-obby/obby_document/")
+	;; If we did not find the document, warn
+	(warn "Document not found: %s" owner-and-doc-id))))
   )
 
 (defmethod rudel-obby/obby_document/subscribe ((this rudel-obby-connection)
@@ -410,22 +398,23 @@ nothing else."
 					    action &rest arguments)
   ""
   (with-slots (session) this
-    (let ((user                    (rudel-find-user 
-				    session (string-to-number user-id 16)
-				    'eq (lambda (user)
-					  (oref user :user-id))))
-	  (method                  (intern-soft
-				    (concat 
-				     "rudel-obby/obby_document/record/" 
-				     action)))
-	  (local-revision-numeric  (string-to-number local-revision 16))
-	  (remote-revision-numeric (string-to-number remote-revision 16)))
+    ;; Find the user
+    (let* ((user-id-numeric         (string-to-number user-id 16))
+	   (user                    (rudel-find-user session user-id-numeric
+						     '= 'rudel-id))
+	   (local-revision-numeric  (string-to-number local-revision 16))
+	   (remote-revision-numeric (string-to-number remote-revision 16)))
       (if user
-	  (apply method
-		 this document user 
-		 local-revision-numeric remote-revision-numeric
-		 arguments)
-	(warn "User not found %s" user-id))))
+	  ;; Dispatch message to handler
+	  (rudel-obby-dispatch
+	   this action
+	   (append 
+	    (list document user
+		  local-revision-numeric remote-revision-numeric)
+	    arguments)
+	   "rudel-obby/obby_document/record/")
+	;; If we did not find the user, warn
+	(warn "User not found: %s" user-id))))
   )
 
 (defmethod rudel-obby/obby_document/record/ins ((this rudel-obby-connection)

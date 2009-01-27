@@ -93,20 +93,9 @@ timeout timer."
 If there is no suitable method, generate a warning, but do
 nothing else."
   ;; Dispatch message to handler
-  (let* ((name      (car message))
-	 (arguments (cdr message))
-	 (method    (intern-soft (concat "rudel-obby/" name))))
-    ;; If we found a suitable method, run it; Otherwise warn and do
-    ;; nothing.
-    (unless (and method
-		 (condition-case error
-		     (progn
-		       (apply method this arguments)
-		       't)
-		   (no-method-definition nil)))
-      (warn "%s: message not understood: `%s' with data %s" 
-	    (object-name-string this) name arguments)))
-  )
+  (let ((name      (car message))
+	(arguments (cdr message)))
+    (rudel-obby-dispatch this name arguments)))
 
 (defmethod rudel-broadcast ((this rudel-obby-client)
 			    receivers name &rest arguments)
@@ -266,15 +255,10 @@ of her color to COLOR."
 	 ;; Locate the document based on owner id and document id
 	 (document    (with-slots (server) this
 			(rudel-find-document server ids-numeric
-					     'equal 'rudel-both-ids)))
-	 ;; Find the method symbol based on the action
-	 (method      (intern-soft 
-		       (concat "rudel-obby/obby_document/" action))))
-    ;; Apply the method to the document and the remaining arguments
-    (if method
-	(apply method this document arguments)
-      (warn "%s: `document' message not understood: `%s' with data %s" 
-	    (object-name-string this) action arguments)))
+					     'equal 'rudel-both-ids))))
+    (rudel-obby-dispatch this action
+			 (append (list document) arguments)
+			 "rudel-obby/obby_document/"))
   )
 
 (defmethod rudel-obby/obby_document/subscribe ((this rudel-obby-client)
@@ -362,19 +346,14 @@ of her color to COLOR."
 					    local-revision remote-revision
 					    action &rest arguments)
   "Handle 'record' submessages of 'obby_document' message."
-  (let ((method                  (intern-soft
-				  (concat 
-				   "rudel-obby/obby_document/record/" 
-				   action)))
-	(local-revision-numeric  (string-to-number local-revision 16))
+  (let ((local-revision-numeric  (string-to-number local-revision  16))
 	(remote-revision-numeric (string-to-number remote-revision 16)))
-    (if method
-	(apply method this 
-	       document
-	       local-revision-numeric remote-revision-numeric
-	       arguments)
-      (warn "%s: `document/record' message not understood: `%s' with data %s" 
-	    (object-name-string this) action arguments)))
+    (rudel-obby-dispatch
+     this action
+     (append (list document 
+		   local-revision-numeric remote-revision-numeric)
+	     arguments)
+     "rudel-obby/obby_document/record/"))
   )
 
 (defmethod rudel-obby/obby_document/record/ins ((this rudel-obby-client)
