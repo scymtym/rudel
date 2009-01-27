@@ -73,9 +73,9 @@ messages to the base class rudel-socket-owner.")
       (rudel-message this message)))
   )
 
-(defmethod rudel-message ((this rudel-obby-socket-owner) message)
-  "This method has to be implemented in derived classes."
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-message ((this rudel-obby-socket-owner) message)
+  "Called when a message arrives.
+Should be implemented in derived classes.")
 
 (provide 'rudel-obby-util)
 ;;; rudel-obby-util.el ends here
