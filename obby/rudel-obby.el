@@ -51,10 +51,11 @@
   "Version of the obby protocol this library understands.")
 
 (defvar rudel-obby-long-message-threshold 32768
-  "")
+  "Threshold for message size, above which messages are sent in
+multiple chunks.")
 
 (defvar rudel-obby-long-message-chunk-size 16384
-  "")
+  "Chunk size used, when chunking long messages.")
 
 
 ;;; Class rudel-obby-backend
@@ -99,8 +100,6 @@
 	 (connection (rudel-obby-connection host
                       :socket socket
 		      :info   info)))
-    (with-slots (socket) connection
-      (rudel-set-process-object socket connection))
     connection)
   )
 
@@ -288,13 +287,8 @@ whose cdr is the replacement for the pattern."
   
 (defun rudel-obby-format-color (color)
   "Format the Emacs color COLOR as obby color string."
-  (let ((color-numeric-r (string-to-number (substring color 1 5) 16))
-	(color-numeric-g (string-to-number (substring color 5 9) 16))
-	(color-numeric-b (string-to-number (substring color 9 13) 16)))
-    (format "%02x%02x%02x" (lsh color-numeric-r -8)
-	    (lsh color-numeric-g -8)
-	    (lsh color-numeric-b -8)))
-  )
+  (multiple-value-bind (red green blue) (color-values color)
+    (format "%02x%02x%02x" (lsh red -8) (lsh green -8) (lsh blue -8))))
 
 (defun rudel-obby-assemble-message (name &rest arguments)
   ""
