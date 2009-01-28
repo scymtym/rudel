@@ -89,7 +89,7 @@ documents."))
   )
 
 (defmethod rudel-remove-context ((this rudel-obby-connection) document)
-  "Remove the jupiter context associated to DOCUMENT from this connection."
+  "Remove the jupiter context associated to DOCUMENT from THIS connection."
   (with-slots (contexts) this
     (remhash (oref document :id) contexts)))
 
@@ -114,6 +114,7 @@ nothing else."
   ;; Create a new jupiter context for DOCUMENT.
   (rudel-add-context this document)
 
+  ;; Announce the new document to the server.
   (let ((name (object-name-string document)))
     (with-slots (id buffer) document
       (rudel-send this "obby_document_create"
@@ -129,13 +130,18 @@ nothing else."
   ;; Create a new jupiter context for DOCUMENT.
   (rudel-add-context this document)
 
-  (let* ((session (oref this :session))
-	 (user-id (oref (oref session :self) :user-id)))
-    (with-slots (id owner-id subscribed) document
-      (rudel-send this "obby_document" 
-		  (format "%x %x" owner-id id) 
-		  "subscribe"
-		  (format "%x" user-id))))
+  ;; Announce the subscription to the server.
+  (with-slots (session) this
+    (with-slots ((user-id :user-id)) (oref session :self)
+      (with-slots (id owner-id subscribed) document
+	(rudel-send this "obby_document"
+		    (format "%x %x" owner-id id)
+		    "subscribe"
+		    (format "%x" user-id)))))
+  
+  ;; We receive a notification of our own subscription from the
+  ;; server. Consequently we do not add SELF to the list of subscribed
+  ;; users of DOCUMENT.
   )
 
 (defmethod rudel-unsubscribe-from ((this rudel-obby-connection) document)
@@ -143,6 +149,7 @@ nothing else."
   ;; Delete the jupiter context for DOCUMENT.
   (rudel-remove-context this document)
 
+  ;; Announce the end of our subscription to the server.
   (with-slots (session) this
     (with-slots (user-id) (oref session :self)
       (with-slots (id owner-id subscribed) document
@@ -206,11 +213,11 @@ nothing else."
   )
 
 (defmethod rudel-obby/net6_ping ((this rudel-obby-connection))
-  ""
+  "Handle net6 'ping' message."
   (rudel-send this "net6_pong"))
 
 (defmethod rudel-obby/net6_encryption ((this rudel-obby-connection) value)
-  ""
+  "Handle net6 'encryption' message."
   (let*  ((info     (oref this :info))
 	  (username (plist-get info :username))
 	  (color    (plist-get info :color)))
@@ -219,7 +226,7 @@ nothing else."
 		username (rudel-obby-format-color color))))
 
 (defmethod rudel-obby/net6_login_failed ((this rudel-obby-connection) reason)
-  ""
+  "Handle net6 'encryption_failed' message."
   )
 
 (defmethod rudel-obby/net6_client_join ((this rudel-obby-connection) 
@@ -239,13 +246,13 @@ nothing else."
   )
 
 (defmethod rudel-obby/net6_client_part ((this rudel-obby-connection) client-id)
-  "Handle 'net6_client_part' message."
+  "Handle net6 'client_part' message."
   ;; Find the user object, associated to the client id. Remove the
-  ;; client id and make the user to disconnected.
+  ;; client id and change the user's state to disconnected.
   (with-slots (session) this
     (let* ((client-id-numric (string-to-number client-id 16))
 	   (user             (rudel-find-user session client-id-numric
-					      'eq 'rudel-client-id)))
+					      '= 'rudel-client-id)))
       (with-slots (client-id connected) user
 	(setq client-id nil
 	      connected nil))))
@@ -283,7 +290,7 @@ nothing else."
     (let* ((user-id-numeric (string-to-number user-id 16))
 	   (color-parsed    (rudel-obby-parse-color color))
 	   (user            (rudel-find-user session user-id-numeric
-					     'eq 'rudel-id)))
+					     '= 'rudel-id)))
       (oset user :color color-parsed)))
   )
 
@@ -386,9 +393,8 @@ nothing else."
   (with-slots (session) this
     (let* ((user-id-numeric (string-to-number user-id 16))
 	   (user            (unless (zerop user-id-numeric)
-			      (rudel-find-user 
-			       session user-id-numeric
-			       'eq (lambda (user) (oref user :user-id))))))
+			      (rudel-find-user session user-id-numeric
+					       '= 'rudel-id))))
       (rudel-remote-insert document user -1 data)))
   )
 
