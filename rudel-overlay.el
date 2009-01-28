@@ -1,6 +1,6 @@
 ;;; rudel-overlay.el --- Overlay functions for Rudel
 ;;
-;; Copyright (C) 2008 Jan Moringen
+;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, overlay
@@ -28,13 +28,13 @@
 
 ;;; History:
 ;;
-;; 1.0 - Initial revision.
+;; 0.1 - Initial revision.
 
 
 ;;; Code:
 ;;
 
-(require 'custom) ;; TODO is this really required?
+(require 'custom)
 
 (eval-when-compile
   (require 'cl))
@@ -101,11 +101,11 @@ Otherwise all Rudel-related overlays are returned."
 ;;
 
 (defun rudel-author-overlay-p (overlay)
-  ""
+  "Predicate for author overlays."
   (eq (overlay-get overlay :rudel) 'author))
 
 (defun rudel-author-overlays ()
-  ""
+  "Return the list of author overlays in the current buffer."
   (rudel-overlays 'rudel-author-overlay-p))
 
 (defun rudel-author-overlay-at (position &optional author)
