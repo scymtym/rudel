@@ -76,7 +76,7 @@
 	                           rudel-current-session ]
       "---"
       [ "Host a Session"           rudel-host-session
-	                           't ]
+	                           t ]
       "---"
       [ "Change Color"             rudel-change-color
 	                           (and rudel-current-session
@@ -92,7 +92,8 @@
       [ "Subscribe to Document"    rudel-subscribe
 	                           rudel-current-session ]
       "---"
-      [ "Rudel Overview"           rudel-speedbar t ]
+      [ "Rudel Overview"           rudel-speedbar 
+	                           t ]
       "---"
       ( "Options")
       ))
