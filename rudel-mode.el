@@ -72,10 +72,11 @@
     '("Rudel"
       [ "Join Session"             rudel-join-session
 	                           (not rudel-current-session) ]
-      [ "Host a Session"           rudel-host-session
-	                           (not rudel-current-session) ]
-      [ "End Session"              rudel-end-session
+      [ "Leave Session"            rudel-end-session
 	                           rudel-current-session ]
+      "---"
+      [ "Host a Session"           rudel-host-session
+	                           't ]
       "---"
       [ "Change Color"             rudel-change-color
 	                           (and rudel-current-session
