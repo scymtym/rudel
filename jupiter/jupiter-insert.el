@@ -116,8 +116,8 @@
 	 ;; <other> and   <other> and        <other>
 	 ;; <this>      <this>        <this>
 	 ((>= other-from this-from)
-	  (incf other-to this-length)
-	  (incf other-to this-length))
+	  (incf other-from this-length)
+	  (incf other-to   this-length))
 
 	 ;;
 	 ;; <  other  >
@@ -130,7 +130,7 @@
 		(jupiter-compound "compound"
 	         :children (list (jupiter-delete "delete-left"
 				  :from other-from
-				  :to   this-to)
+				  :to   this-from)
 				 (jupiter-delete "delete-right"
 				  :from this-to
 				  :to   (+ other-to this-length))))))

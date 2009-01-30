@@ -83,7 +83,7 @@ OTHER is destructively modified or replaced."
 
 	 ;;        <other>
 	 ;; <this>
-	 ((> other-from this-from)
+	 ((> other-from this-to)
 	  (decf other-from this-length))
 
 	 ;;   <other>
