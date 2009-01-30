@@ -97,28 +97,23 @@ nil if there is no active session.")
   (with-slots (capabilities) this
     (member capability capabilities)))
 
-(defmethod rudel-ask-connect-info ((this rudel-backend))
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-ask-connect-info ((this rudel-backend))
+  "")
 
-(defmethod rudel-connect ((this rudel-backend) info)
+(defgeneric rudel-connect ((this rudel-backend) info)
   "Create a new connection according to the data in the property list INFO.
 Implementations can rely on the fact that the property :session
 contains the rudel-session object to which the new connection
-will be associated."
-  (error "Needs to be implemented in derived classes"))
+will be associated.")
 
-(defmethod rudel-ask-host-info ((this rudel-backend))
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-ask-host-info ((this rudel-backend))
+  "")
 
-(defmethod rudel-host ((this rudel-backend) info)
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-host ((this rudel-backend) info)
+  "")
 
-(defmethod rudel-make-document ((this rudel-backend) name session)
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-make-document ((this rudel-backend) name session)
+  "")
 
 
 ;;; Class rudel-session
@@ -251,40 +246,32 @@ client perspective.")
 client protocols have to obey."
   :abstract 't)
 
-(defmethod rudel-disconnect ((this rudel-connection))
-  "Close the connection."
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-disconnect ((this rudel-connection))
+  "Close the connection.")
 
-(defmethod rudel-change-color- ((this rudel-connection) color)
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-change-color- ((this rudel-connection) color) ;; TODO name
+  "")
 
-(defmethod rudel-publish ((this rudel-connection) document)
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-publish ((this rudel-connection) document)
+  "")
 
-(defmethod rudel-subscribe-to ((this rudel-connection) document) ; TODO name should be rudel-subscribe
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-subscribe-to ((this rudel-connection) document)
+  "")
 
-(defmethod rudel-unsubscribe-from ((this rudel-connection) document) ; TODO name should be rudel-unsubscribe
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-unsubscribe-from ((this rudel-connection) document) ; TODO name should be rudel-unsubscribe
+  "")
 
-(defmethod rudel-local-insert ((this rudel-connection))
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-local-insert ((this rudel-connection))
+  "")
   
-(defmethod rudel-local-delete ((this rudel-connection))
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-local-delete ((this rudel-connection))
+  "")
 
-(defmethod rudel-remote-insert ((this rudel-connection))
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-remote-insert ((this rudel-connection))
+  "")
   
-(defmethod rudel-remote-delete ((this rudel-connection))
-  ""
-  (error "Needs to be implemented in derived classes"))
+(defgeneric rudel-remote-delete ((this rudel-connection))
+  "")
 
 
 ;;; Class rudel-user
