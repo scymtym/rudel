@@ -44,7 +44,7 @@
 If RETURN. is 'object, return the backend object; Otherwise
 return the name as string."
   (unless backends
-    (setq backends rudel-backens))
+    (setq backends rudel-backends))
   (unless prompt
     (setq prompt "Backend: "))
   (let* ((backend-names (mapcar 'car backends))
