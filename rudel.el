@@ -79,6 +79,11 @@ nil if there is no active session.")
 		    (function :tag "Other function"))
   :require 'rudel-interactive)
 
+(defcustom rudel-default-username (user-login-name)
+  "*"
+  :group 'rudel
+  :type  '(string))
+
 
 ;;; Class rudel-backend
 ;;
