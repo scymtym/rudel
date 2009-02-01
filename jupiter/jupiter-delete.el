@@ -114,7 +114,8 @@ OTHER is destructively modified or replaced."
 	 ;;         <this>
 	 ;; OTHER deleted a region before the region affected by
 	 ;; THIS. That is not affected by THIS operation.
-	 
+	 ((<= other-to this-from))
+
 	 ;; <  other  >
 	 ;;   <this>
 	 ((and (>= other-from this-from) (>= other-to this-to))
@@ -157,6 +158,11 @@ OTHER is destructively modified or replaced."
 	(setf child (jupiter-transform this child)))))
 
    ;;
+   ;; Transform a nop operation
+   ;;
+   ((jupiter-nop-p other))
+
+   ;; TODO this is for debugging
    (t (error "Cannot transform operation of type `%s'"
 	     (object-class other))))
   other)
