@@ -145,6 +145,11 @@
 	(setf child (jupiter-transform this child)))))
 
    ;;
+   ;; Transform a nop operation
+   ;;
+   ((jupiter-nop-p other))
+
+   ;;
    (t (error "Cannot transform operation of type `%s'"
 	     (object-class other))))
   other)
