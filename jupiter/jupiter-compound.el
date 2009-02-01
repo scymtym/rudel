@@ -44,7 +44,7 @@
 ;;; Class jupiter-compound
 ;;
 
-(defclass jupiter-compound ()
+(defclass jupiter-compound (jupiter-operation)
   ((children :initarg  :children
 	     :type     list
 	     :initform nil
