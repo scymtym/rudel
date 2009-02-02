@@ -305,11 +305,11 @@ of her color to COLOR."
 			 "obby_document"
 			 (format "%x %x" owner-id doc-id)
 			 "subscribe"
-			 (format "%x" user-id)))
+			 (format "%x" user-id))))
 
-      ;; Add a jupiter context for (THIS document).
-      (with-slots (server) this
-	(rudel-add-context server this document))))
+    ;; Add a jupiter context for (THIS document).
+    (with-slots (server) this
+      (rudel-add-context server this document)))
   )
 
 (defmethod rudel-obby/obby_document/unsubscribe ((this rudel-obby-client)
@@ -334,11 +334,11 @@ of her color to COLOR."
 			 "obby_document"
 			 (format "%x %x" owner-id doc-id)
 			 "unsubscribe"
-			 (format "%x" user-id)))
+			 (format "%x" user-id))))
 
-      ;; Remove jupiter context for (THIS DOCUMENT).
-      (with-slots (server) this
-	(rudel-remove-context server this document))))
+    ;; Remove jupiter context for (THIS DOCUMENT).
+    (with-slots (server) this
+      (rudel-remove-context server this document)))
   )
 
 (defmethod rudel-obby/obby_document/record ((this rudel-obby-client)
