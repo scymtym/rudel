@@ -360,7 +360,7 @@ of her color to COLOR."
 						document
 						local-revision remote-revision
 						position data)
-  ""
+  "Handle 'ins' submessage of 'record' submessages of 'obby_document' message."
   (let ((position-numeric (string-to-number position 16)))
     (with-slots (server user) this
       ;; Transform the operation.
@@ -415,7 +415,7 @@ of her color to COLOR."
 						document
 						local-revision remote-revision
 						position length)
-  ""
+  "Handle 'del' submessage of 'record' submessages of 'obby_document' message."
   (let ((position-numeric (string-to-number position 16))
 	(length-numeric   (string-to-number length   16)))
     (with-slots (server user) this
@@ -487,7 +487,8 @@ of her color to COLOR."
 ;;; Class rudel-obby-server
 ;;
 
-(defclass rudel-obby-server (rudel-server-session rudel-socket-owner)
+(defclass rudel-obby-server (rudel-server-session 
+			     rudel-socket-owner)
   ((clients        :initarg  :clients
 		   :type     list
 		   :initform nil
