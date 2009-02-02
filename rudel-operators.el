@@ -119,9 +119,12 @@ buffer.")
   (with-slots (document user) this
     (with-slots (buffer) document
 
+      ;; Since we inserted something, (point-max) is at least the
+      ;; length of the insertion + 1. So we can safely subtract the
+      ;; length of the insertion and 1.
       (unless position
 	(with-current-buffer buffer
-	  (setq position (- (point-max) 1))))
+	  (setq position (- (point-max) (length data) 1))))
 	
 
       (rudel-update-author-overlay-after-insert
