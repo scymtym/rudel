@@ -320,7 +320,7 @@ collaborative editing session can subscribe to."
 
 (defmethod rudel-attach-to-buffer ((this rudel-document) buffer)
   "Attach THIS document to BUFFER"
-  (with-slots (doc-buffer) this
+  (with-slots ((doc-buffer :buffer)) this
     (setq doc-buffer buffer)
     (with-current-buffer doc-buffer
       (setq rudel-buffer-document this)
