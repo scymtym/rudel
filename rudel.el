@@ -461,7 +461,8 @@ null rudel-user-child)."
 	;; can also cover the whole buffer string.
 	(when (or (and (not last)
 		       (/= (length string) 0))
-		  (/= (nth 1 last) (length string)))
+		  (and last
+		       (/= (nth 1 last) (length string))))
 	  (push (list (if last (nth 1 last) 0)
 		      (length string)
 		      nil)
