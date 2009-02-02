@@ -318,11 +318,11 @@ does not have to be connected to the session at any given time.")
 collaborative editing session can subscribe to."
   :abstract 't)
 
-(defmethod rudel-attach-to-buffer ((this rudel-document) the-buffer)
-  ""
-  (with-slots (buffer) this
-    (setq buffer the-buffer)
-    (with-current-buffer buffer
+(defmethod rudel-attach-to-buffer ((this rudel-document) buffer)
+  "Attach THIS document to BUFFER"
+  (with-slots (doc-buffer) this
+    (setq doc-buffer buffer)
+    (with-current-buffer doc-buffer
       (setq rudel-buffer-document this)
 
       ;; Add the handler function for buffer changes to the buffer's
@@ -352,6 +352,8 @@ Do nothing, if THIS is not attached to any buffer."
 
 (defmethod rudel-insert ((this rudel-document) position data)
   "Insert DATA at POSITION into the buffer attached to THIS.
+When POSITION is nil `point-max' is used to determine the
+insertion position.
 Modification hooks are disabled during the insertion."
   (with-slots (buffer) this
     (save-excursion
@@ -371,6 +373,7 @@ Modification hooks are disabled during the insertion."
   (with-slots (buffer) this
     (save-excursion
       (set-buffer buffer)
+
       (let ((inhibit-modification-hooks 't))
 	(delete-region (+ position 1) (+ position length 1)))))
   )
@@ -399,14 +402,13 @@ Modification hooks are disabled during the insertion."
 
 (defmethod rudel-remote-operation ((this rudel-document) user operation)
   "Apply the remote operation OPERATION performed by USER to THIS."
-
-  (dolist (operations (append 
+  (dolist (operations (append
 
 		       ;; Update buffer contents
 		       (list (rudel-document-operators
 			      "document-operators"
 			      :document this))
-		       
+
 		       ;; Update overlays
 		       (when user
 			 (list (rudel-overlay-operators
@@ -437,6 +439,7 @@ null rudel-user-child)."
 				    '< :key 'overlay-start)))
 	    (last)
 	    (augmented-chunks))
+
 	;; Iterate through the list of chunks to find gaps between
 	;; chunks (also before the first) and insert entries with
 	;; author nil accordingly.
@@ -452,15 +455,18 @@ null rudel-user-child)."
 		  augmented-chunks))
 	  (push chunk augmented-chunks)
 	  (setq last chunk))
-	;; If there is text after the last chunk, created another one
-	;; with author nil. If there were no chunks at all, this chunk qcan
-	;; also cover the whole buffer string.
-	(when (or (not last)
+
+	;; If there is text after the last chunk, create another one
+	;; with author nil. If there were no chunks at all, this chunk
+	;; can also cover the whole buffer string.
+	(when (or (and (not last)
+		       (/= (length string) 0))
 		  (/= (nth 1 last) (length string)))
 	  (push (list (if last (nth 1 last) 0)
 		      (length string)
 		      nil)
 		augmented-chunks))
+
 	;; Sort chunks according to the start position.
 	(sort* augmented-chunks '< :key 'car))))
   )
@@ -529,7 +535,7 @@ Backends are loaded, if necessary."
     (unless backends
       (error "No backends available"))
 
-    (if (eq (length backends) 1)
+    (if (= (length backends) 1)
 	;; If there is only one backend, we can choose that one right
 	;; away.
 	(prog1
