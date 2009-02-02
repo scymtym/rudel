@@ -96,7 +96,7 @@
 	 ;;
 	 ;; <other>
 	 ;;         <this>
-	 ;; no op
+	 ;; just keep OTHER
 
 	 ;;
 	 ;; <other> and   <other> and        <other>
@@ -135,7 +135,7 @@
    ;;
    ((jupiter-nop-p other))
 
-   ;;
+   ;; TODO this is for debugging
    (t (error "Cannot transform operation of type `%s'"
 	     (object-class other))))
   other)
