@@ -84,18 +84,18 @@ jupiter algorithm.")
 				     local-revision remote-revision 
 				     operation)
   "Transform OPERATION with revisions LOCAL-REVISION and REMOTE-REVISION using the local operations stored in THIS.
-LOCAL-REVISION is the local revision, the remote site is referring to."
+LOCAL-REVISION is the local revision of THIS context, the remote
+site is referring to."
   (let ((transformed-operation operation))
     (with-slots ((this-remote-revision :remote-revision)
 		 local-log) this
 
       ;; Discard stored local operations which are older than the
       ;; local revision to which the remote site refers.
-      (setq local-log
-	    (delete-if
-	     (lambda (revision) (< revision local-revision))
-	     local-log
-	     :key 'car))
+      (setq local-log (delete-if
+		       (lambda (revision) (< revision local-revision))
+		       local-log
+		       :key 'car))
 
       ;; Transform the operation
       (mapc
