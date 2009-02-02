@@ -39,6 +39,8 @@
 
 (require 'jupiter)
 
+(require 'rudel-operations)
+
 (require 'rudel-obby-util)
 
 
@@ -394,8 +396,11 @@ nothing else."
     (let* ((user-id-numeric (string-to-number user-id 16))
 	   (user            (unless (zerop user-id-numeric)
 			      (rudel-find-user session user-id-numeric
-					       '= 'rudel-id))))
-      (rudel-remote-insert document user -1 data)))
+					       '= 'rudel-id)))
+	   (operation       (rudel-insert-op "bulk-insert"
+					     :from nil
+					     :data data)))
+      (rudel-remote-operation document user operation)))
   )
 
 (defmethod rudel-obby/obby_document/record ((this rudel-obby-connection)
@@ -439,8 +444,7 @@ nothing else."
 			    context 
 			    remote-revision local-revision
 			    operation)))
-    (with-slots (from data) transformed
-      (rudel-remote-insert document user from data)))
+    (rudel-remote-operation document user transformed))
   )
 
 (defmethod rudel-obby/obby_document/record/del ((this rudel-obby-connection)
@@ -460,8 +464,7 @@ nothing else."
 			    context 
 			    remote-revision local-revision
 			    operation)))
-    (with-slots (from length) transformed
-      (rudel-remote-delete document user from length)))
+    (rudel-remote-operation document user transformed))
   )
 
 (provide 'rudel-obby-client)

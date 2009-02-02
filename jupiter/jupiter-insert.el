@@ -38,31 +38,17 @@
 
 (require 'eieio)
 
+(require 'rudel-operations)
 (require 'jupiter-operation)
 
 
 ;;; Class jupiter-insert
 ;;
 
-(defclass jupiter-insert (jupiter-operation)
-  ((from :initarg :from
-	 :type    (integer 0)
-	 :documentation
-	 "Start of the region affected by this operation.")
-   (data :initarg :data
-	 :type    string
-	 :documentation
-	 "The inserted string."))
+(defclass jupiter-insert (jupiter-operation
+			  rudel-insert-op)
+  ()
   "Objects of this class represent insertions into buffers.")
-
-(defmethod jupiter-apply ((this jupiter-insert) buffer)
-  "Apply THIS to BUFFER by inserting the associated data."
-  (with-slots (from data) this
-    (save-excursion
-      (with-current-buffer buffer
-	(goto-char from)
-	(insert data))))
-  )
 
 (defmethod jupiter-transform ((this jupiter-insert) other)
   "Transform OTHER using THIS."
@@ -153,26 +139,6 @@
    (t (error "Cannot transform operation of type `%s'"
 	     (object-class other))))
   other)
-
-(defmethod slot-missing ((this jupiter-insert)
-			 slot-name operation &optional new-value)
-  "Simulate slots :length and :to"
-  (cond
-   ;; Slot :length
-   ((and (or (eq slot-name :length)
-	     (eq slot-name 'length))
-	 (eq operation 'oref))
-    (with-slots (data) this
-      (length data)))
-   ;; Slot :to
-   ((and (or (eq slot-name :to)
-	     (eq slot-name 'to))
-	 (eq operation 'oref))
-    (with-slots (from length) this
-      (+ from length)))
-   ;; Call next method
-   (t (call-next-method)))
-  )
 
 (provide 'jupiter-insert)
 ;;; jupiter-insert.el ends here

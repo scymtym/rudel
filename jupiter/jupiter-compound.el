@@ -54,14 +54,14 @@
 number of child operation.")
 
 ;; TODO this has side effects. It can only be called once
-(defmethod jupiter-apply ((this jupiter-compound) buffer)
+(defmethod rudel-apply ((this jupiter-compound) object)
   "Apply THIS to BUFFER by applying the child operation."
   (with-slots (children) this
     (let ((child (first children))
 	  (rest  (rest  children)))
       ;; Apply all child operations
       (while child
-	(rudel-apply child buffer)
+	(rudel-apply child object)
 	;; For each applied child operation, transform remaining
 	;; operation with the applied operation.
 	(dolist (next rest)

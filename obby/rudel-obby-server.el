@@ -374,8 +374,9 @@ of her color to COLOR."
 			    :from position-numeric :data data))))
 
 	;; Incorporate change into DOCUMENT.
+	(rudel-remote-operation document user transformed)
+
 	(with-slots ((position :from) data) transformed
-	  (rudel-remote-insert document user position data)
 
 	  ;; Relay change notification to other clients.
 	  (let ((receivers (rudel-subscribed-clients-not-self
@@ -431,8 +432,9 @@ of her color to COLOR."
 			    :to   (+ position-numeric length-numeric)))))
 
 	;; Incorporate change into DOCUMENT.
+	(rudel-remote-operation document user transformed)
+
 	(with-slots ((position :from) length) transformed
-	  (rudel-remote-delete document user position length)
 
 	  ;; Relay change notification to other clients.
 	  (let ((receivers (rudel-subscribed-clients-not-self

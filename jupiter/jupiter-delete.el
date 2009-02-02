@@ -38,30 +38,17 @@
 
 (require 'eieio)
 
+(require 'rudel-operations)
 (require 'jupiter-operation)
 
 
 ;;; Class jupiter-delete
 ;;
 
-(defclass jupiter-delete (jupiter-operation)
-  ((from :initarg :from
-	 :type    (integer 0)
-	 :documentation
-	 "Start of the region affected by this operation.")
-   (to   :initarg :to
-	 :type    (integer 0)
-	 :documentation
-	 "End of the region affected by this operation."))
+(defclass jupiter-delete (jupiter-operation
+			  rudel-delete-op)
+  ()
   "Objects of this class represent deletions in buffers.")
-
-(defmethod jupiter-apply ((this jupiter-delete) buffer)
-  "Apply THIS to BUFFER by deleting the associated region."
-  (with-slots (from to) this
-    (save-excursion
-      (with-current-buffer buffer
-	(delete-region from to))))
-  )
 
 (defmethod jupiter-transform ((this jupiter-delete) other)
   "Transform other using THIS.
@@ -166,20 +153,6 @@ OTHER is destructively modified or replaced."
    (t (error "Cannot transform operation of type `%s'"
 	     (object-class other))))
   other)
-
-(defmethod slot-missing ((this jupiter-delete)
-			 slot-name operation &optional new-value)
-  "Simulate slot :length"
-  (cond
-   ;; Slot :length
-   ((and (or (eq slot-name :length)
-	     (eq slot-name 'length))
-	 (eq operation 'oref))
-    (with-slots (from to) this
-      (- to from)))
-   ;; Call next method
-   (t (call-next-method)))
-  )
 
 (provide 'jupiter-delete)
 ;;; jupiter-delete.el ends here

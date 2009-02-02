@@ -48,8 +48,8 @@
   ()
   "Operation, which does not change anything.")
 
-(defmethod jupiter-apply ((this jupiter-nop) buffer)
-  "Applying THIS does not change BUFFER.")
+(defmethod rudel-apply ((this jupiter-nop) object)
+  "Applying THIS does not change OBJECT.")
 
 (defmethod jupiter-transform ((this jupiter-nop) other)
   "Transforming OTHER with THIS simply returns OTHER."

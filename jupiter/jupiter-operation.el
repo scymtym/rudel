@@ -38,20 +38,19 @@
 
 (require 'eieio)
 
+(require 'rudel-operations)
+
 
 ;;; Class jupiter-operation
 ;;
 
-(defclass jupiter-operation ()
+(defclass jupiter-operation (rudel-operation)
   ()
   "Objects of derived classes represent operations, which change documents.
 Objects can transform each other to produce sequences of
 operations, which produce identical changes than permutations of
 the same operations."
   :abstract 't)
-
-(defgeneric jupiter-apply ((this jupiter-operation) buffer)
-  "Apply the change represented by THIS to BUFFER.")
 
 ;; This one really could use multiple dispatch
 (defgeneric jupiter-transform ((this jupiter-operation) other)

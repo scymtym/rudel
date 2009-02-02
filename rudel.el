@@ -39,6 +39,8 @@
 
 (require 'eieio)
 
+(require 'rudel-operations)
+(require 'rudel-operators)
 (require 'rudel-overlay)
 
 
@@ -348,61 +350,72 @@ Do nothing, if THIS is not attached to any buffer."
       (setq buffer nil)))
   )
 
-(defmethod rudel-local-insert ((this rudel-document) position data)
-  ""
+(defmethod rudel-insert ((this rudel-document) position data)
+  "Insert DATA at POSITION into the buffer attached to THIS.
+Modification hooks are disabled during the insertion."
+  (with-slots (buffer) this
+    (save-excursion
+      (set-buffer buffer)
+
+      (unless position
+	(setq position (- (point-max) 1)))
+
+      (let ((inhibit-modification-hooks 't))
+	(goto-char (+ position 1))
+	(insert data))))
+  )
+
+(defmethod rudel-delete ((this rudel-document) position length)
+  "Delete a region of LENGTH character at POSITION from the buffer attached to THIS.
+Modification hooks are disabled during the insertion."
+  (with-slots (buffer) this
+    (save-excursion
+      (set-buffer buffer)
+      (let ((inhibit-modification-hooks 't))
+	(delete-region (+ position 1) (+ position length 1)))))
+  )
+
+(defmethod rudel-local-operation ((this rudel-document) operation)
+  "Apply the local operation OPERATION to THIS."
   (with-slots (session buffer) this
     (with-slots (connection (user :self)) session
-      ;; Update overlays
-      (rudel-update-author-overlay-after-insert 
-       buffer (+ position 1) (length data) user)
+      (dolist (operations (list
 
-      ;; Notify connection
-      (rudel-local-insert connection this position data)))
+			   ;; Update overlays
+			   (rudel-overlay-operators
+			    "overlay-operators"
+			    :document this
+			    :user     user)
+
+			   ;; Notify connection
+			   (rudel-connection-operators
+			    "connection-operators"
+			    :connection connection
+			    :document   this)))
+
+	;; Apply the operation using each set of operators
+	(rudel-apply operation operations))))
   )
 
-(defmethod rudel-local-delete ((this rudel-document) position length)
-  ""
-  (with-slots (session buffer) this
-    (with-slots (connection (user :self)) session
-      ;; Update overlays
-      (rudel-update-author-overlay-after-delete
-       buffer (+ position 1) length user)
+(defmethod rudel-remote-operation ((this rudel-document) user operation)
+  "Apply the remote operation OPERATION performed by USER to THIS."
 
-      ;; Notify connection
-      (rudel-local-delete connection this position length)))
-  )
+  (dolist (operations (append 
 
-(defmethod rudel-remote-insert ((this rudel-document) 
-				user position data)
-  ""
-  (with-slots (buffer) this
-    ;; Perform insert operation
-    (save-excursion
-      (with-current-buffer buffer
-	(when (< position 0)
-	  (setq position (- (point-max) 1)))
-	(let ((inhibit-modification-hooks 't))
-	  (goto-char (+ position 1))
-	  (insert data))))
+		       ;; Update buffer contents
+		       (list (rudel-document-operators
+			      "document-operators"
+			      :document this))
+		       
+		       ;; Update overlays
+		       (when user
+			 (list (rudel-overlay-operators
+				"overlay-operators"
+				:document this
+				:user     user)))))
 
-    ;; Update overlays
-    (rudel-update-author-overlay-after-insert 
-     buffer (+ position 1) (length data) user))
-  )
-
-(defmethod rudel-remote-delete ((this rudel-document) 
-				user position length)
-  ""
-  (with-slots (buffer) this
-    ;; Perform delete operation
-    (save-excursion
-      (with-current-buffer buffer
-	(let ((inhibit-modification-hooks 't))
-	  (delete-region (+ position 1) (+ position length 1)))))
-
-    ;; Update overlays
-    (rudel-update-author-overlay-after-delete
-     buffer (+ position 1) length user))
+    ;; Apply the operation using each set of operators
+    (rudel-apply operation operations))
   )
 
 (defmethod rudel-chunks ((this rudel-document))
@@ -467,9 +480,17 @@ See after-change-functions for more information."
 	  (with-slots (buffer) document
 	    (with-current-buffer buffer
 	      (setq text (buffer-substring-no-properties from to)))
-	    (rudel-local-insert document (- from 1) text))
+	    (rudel-local-operation document 
+				   (rudel-insert-op
+				    "insert"
+				    :from (- from 1)
+				    :data text)))
 	;; The change was a delete
-	(rudel-local-delete document (- from 1) length))))
+	(rudel-local-operation document
+			       (rudel-delete-op 
+				"delete"
+				:from   (- from 1)
+				:length length)))))
   )
 
 
@@ -573,9 +594,9 @@ interactively."
 	(setq server (rudel-host backend info))
       ('error 
        (error "Could not host session using backend `%s' with %s: %s"
-	      (object-name-string backend)
-	      info
-	      (car error-data))))
+       	      (object-name-string backend)
+       	      info
+       	      (car error-data))))
     server))
 
 ;;;###autoload
