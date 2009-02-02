@@ -74,7 +74,7 @@ multiple chunks.")
 	(port     (read-number "Port: " 6522))
 	;; Read desired username and color
 	(username (read-string "Username: " user-login-name))
-	(color    (read-color  "Color: " 't)))
+	(color    (read-color  "Color: " t)))
     (list :host host :port port :username username :color color))
   )
 
@@ -119,7 +119,7 @@ multiple chunks.")
 		  :name     "obby-server"
 		  :host     "0.0.0.0"
 		  :service  port
-		  :server   't
+		  :server   t
 		  :filter   'rudel-filter-dispatch
 		  :sentinel 'rudel-sentinel-dispatch
 		  ;;
@@ -257,7 +257,7 @@ whose cdr is the replacement for the pattern."
       (let ((from (car replacement))
 	    (to   (cdr replacement)))
 	(setq result (replace-regexp-in-string
-		      from to result nil 't))))
+		      from to result nil t))))
     result)
   )
 

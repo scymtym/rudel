@@ -98,7 +98,7 @@ When PREFIX is not specified, \"rudel-obby/\" is used."
 		     ;; return t.
 		     (progn
 		       (apply method object arguments)
-		       't)
+		       t)
 		   ;; Warn only when the condition is
 		   ;; 'no-method-definition' and refers to METHOD,
 		   ;; otherwise continue unwinding.

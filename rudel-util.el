@@ -1,6 +1,6 @@
 ;;; rudel-util.el --- Miscellaneous functions for Rudel
 ;;
-;; Copyright (C) 2008 Jan Moringen
+;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, miscellaneous, util
@@ -117,7 +117,7 @@ data from last and concatenate with DATA before processing."
 	 (setq ,data    (concat ,storage ,data))
 	 (setq ,storage nil))
        ;; Try to find a line break in the augmented data.
-       (let ((,index (position ?\n ,data :from-end 't)))
+       (let ((,index (position ?\n ,data :from-end t)))
 	 (unless (and ,index (eq ,index (- (length ,data) 1)))
 	   (setq ,storage (if ,index 
 			      (substring ,data (+ ,index 1))
@@ -132,7 +132,7 @@ data from last and concatenate with DATA before processing."
   (declare (indent 2))
   (let ((lines (make-symbol "lines")))
     `(when ,data
-       (let ((,lines (split-string ,data "\n" 't)))
+       (let ((,lines (split-string ,data "\n" t)))
 	 (dolist (,var ,lines)
 	   (progn ,@forms)))))
   )

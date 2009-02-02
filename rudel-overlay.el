@@ -134,7 +134,7 @@ Otherwise all Rudel-related overlays are returned."
 AUTHOR has to be an object of type rudel-user-child."
   (with-slots (color) author
     (let ((name    (object-name-string author))
-	  (overlay (make-overlay from to buffer 't)))
+	  (overlay (make-overlay from to buffer t)))
       (overlay-put overlay :rudel     'author)
       (overlay-put overlay :user      author)
       (overlay-put overlay 'face      (rudel-overlay-make-face

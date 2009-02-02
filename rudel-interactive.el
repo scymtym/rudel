@@ -48,7 +48,7 @@ return the name as string."
   (unless prompt
     (setq prompt "Backend: "))
   (let* ((backend-names (mapcar 'car backends))
-	 (backend-name  (completing-read prompt backend-names nil 't)))
+	 (backend-name  (completing-read prompt backend-names nil t)))
     (cond
      ((eq return 'object)
       (cdr (assoc backend-name backends)))
@@ -62,7 +62,7 @@ The default is taken from `rudel-default-username'."
 
 (defun rudel-read-user-color ()
   "Read a color."
-  (read-color  "Color: " 't))
+  (read-color "Color: " t))
 
 (defun rudel-read-user (&optional users prompt return)
   "Read a user name from USERS and return that name or the actual user depending on RETURN.
@@ -80,7 +80,7 @@ the name as string."
   ;; Construct a list of user name, read a name with completion and
   ;; return a user name of object.
   (let* ((user-names (mapcar 'object-name-string users))
-	 (user-name  (completing-read prompt user-names nil 't)))
+	 (user-name  (completing-read prompt user-names nil t)))
     (cond 
      ((eq return 'object)
       (find user-name users
@@ -101,7 +101,7 @@ return the name as string."
   (unless prompt
     (setq prompt "Document: "))
   (let* ((document-names (mapcar 'object-name-string documents))
-	 (document-name  (completing-read prompt document-names nil 't)))
+	 (document-name  (completing-read prompt document-names nil t)))
     (cond 
      ((eq return 'object) 
       (find document-name documents 

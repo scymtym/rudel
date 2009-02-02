@@ -238,8 +238,8 @@ nothing else."
     (let ((user (rudel-obby-user name
  	         :client-id  (string-to-number client-id 16)
 		 :user-id    (string-to-number user-id   16)
-		 :connected  't
-		 :encryption (when (string= encryption "1") 't)
+		 :connected  t
+		 :encryption (when (string= encryption "1") t)
 		 :color      (rudel-obby-parse-color color))))
       (rudel-add-user session user)
       (unless (slot-boundp session :self)
@@ -348,7 +348,7 @@ nothing else."
     (let* ((ids-numeric (mapcar
 			 (lambda (string)
 			   (string-to-number string 16))
-			 (split-string owner-and-doc-id " " 't)))
+			 (split-string owner-and-doc-id " " t)))
 	   ;; ... then locate the document based on owner id and
 	   ;; document id
 	   (document    (rudel-find-document session ids-numeric

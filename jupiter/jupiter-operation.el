@@ -50,7 +50,7 @@
 Objects can transform each other to produce sequences of
 operations, which produce identical changes than permutations of
 the same operations."
-  :abstract 't)
+  :abstract t)
 
 ;; This one really could use multiple dispatch
 (defgeneric jupiter-transform ((this jupiter-operation) other)

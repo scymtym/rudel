@@ -251,7 +251,7 @@ of her color to COLOR."
   (let* ((ids-numeric (mapcar
 		       (lambda (string)
 			 (string-to-number string 16))
-		       (split-string owner-and-doc-id " " 't)))
+		       (split-string owner-and-doc-id " " t)))
 	 ;; Locate the document based on owner id and document id
 	 (document    (with-slots (server) this
 			(rudel-find-document server ids-numeric
@@ -549,7 +549,7 @@ such objects derived from rudel-obby-client."
 	  ((rudel-obby-client-child-p receivers)
 	   (list receivers))
 	  ;;
-	  ('t (error "Wrong argument type")))))
+	  (t (error "Wrong argument type")))))
 
     ;; Send message to receivers.
     (dolist (receiver receiver-list)
@@ -564,7 +564,7 @@ such objects derived from rudel-obby-client."
                  :color      color
 		 :client-id  client-id
 		 :user-id    next-user-id
-		 :connected  't
+		 :connected  t
 		 :encryption encryption)))
       (incf next-user-id)
       user))

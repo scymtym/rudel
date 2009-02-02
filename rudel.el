@@ -97,7 +97,7 @@ nil if there is no active session.")
 		 :documentation
 		 ""))
   "Class rudel-backend "
-  :abstract 't)
+  :abstract t)
 
 (defmethod rudel-capable-of-p ((this rudel-backend) capability)
   ""
@@ -144,7 +144,7 @@ will be associated.")
   "This class serves as a base class for rudel-client-session and
 rudel-server-session. Consequently, it consists of slots common
 to client and server sessions."
-  :abstract 't)
+  :abstract t)
 
 (defmethod rudel-end ((this rudel-session))
   "Terminate THIS session performing all necessary cleanup.")
@@ -238,7 +238,7 @@ client perspective.")
 (defclass rudel-server-session (rudel-session)
   ()
   "Class rudel-server-session "
-  :abstract 't)
+  :abstract t)
 
 
 ;;; Class rudel-connection
@@ -251,7 +251,7 @@ client perspective.")
 	    ""))
   "This abstract class defines the interface implementations of
 client protocols have to obey."
-  :abstract 't)
+  :abstract t)
 
 (defgeneric rudel-disconnect ((this rudel-connection))
   "Close the connection.")
@@ -316,7 +316,7 @@ does not have to be connected to the session at any given time.")
 	       ""))
   "This class represents a document, which participants of a
 collaborative editing session can subscribe to."
-  :abstract 't)
+  :abstract t)
 
 (defmethod rudel-attach-to-buffer ((this rudel-document) buffer)
   "Attach THIS document to BUFFER"
@@ -329,7 +329,7 @@ collaborative editing session can subscribe to."
       ;; change hook.
       (add-hook 'after-change-functions
 		'rudel-handle-buffer-change
-		nil 't)))
+		nil t)))
   )
 
 (defmethod rudel-detach-from-buffer ((this rudel-document))
@@ -345,7 +345,7 @@ Do nothing, if THIS is not attached to any buffer."
 	
 	(remove-hook 'after-change-functions
 		     'rudel-handle-buffer-change
-		     't))
+		     t))
       
       (setq buffer nil)))
   )
@@ -362,7 +362,7 @@ Modification hooks are disabled during the insertion."
       (unless position
 	(setq position (- (point-max) 1)))
 
-      (let ((inhibit-modification-hooks 't))
+      (let ((inhibit-modification-hooks t))
 	(goto-char (+ position 1))
 	(insert data))))
   )
@@ -374,7 +374,7 @@ Modification hooks are disabled during the insertion."
     (save-excursion
       (set-buffer buffer)
 
-      (let ((inhibit-modification-hooks 't))
+      (let ((inhibit-modification-hooks t))
 	(delete-region (+ position 1) (+ position length 1)))))
   )
 
@@ -635,7 +635,7 @@ Not all backends support this operation."
     ;; Ask the user for a new color, tell the connection to announce
     ;; the change and change it in our user object.
     (with-slots (color) self
-      (setq color (read-color "New Color: " 't))
+      (setq color (read-color "New Color: " t))
       (rudel-change-color- connection color)))
   )
 
