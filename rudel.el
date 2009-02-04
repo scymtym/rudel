@@ -39,6 +39,8 @@
 
 (require 'eieio)
 
+(require 'eieio-speedbar) ;; TODO required for now
+
 (require 'rudel-operations)
 (require 'rudel-operators)
 (require 'rudel-overlay)
