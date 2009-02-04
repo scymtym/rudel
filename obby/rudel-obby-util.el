@@ -37,6 +37,7 @@
 
 (require 'eieio)
 
+(require 'rudel)
 (require 'rudel-util)
 
 

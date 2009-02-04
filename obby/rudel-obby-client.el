@@ -41,6 +41,7 @@
 
 (require 'rudel-operations)
 
+(require 'rudel-obby)
 (require 'rudel-obby-util)
 
 
