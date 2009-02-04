@@ -10,6 +10,9 @@
    object-oriented implementation. Cedet can be obtained from
    http://cedet.sourceforge.net/
 
+   IMPORTANT: It is necessary to use the latest CVS version of CEDET
+   since it fixes a serious problem in the object system Eieio.
+
 ** Emacs Lisp Regression Testing (ERT) (optional)
    ERT is only used for regression tests and therefore an optional
    dependency. It can be obtained here:
@@ -28,6 +31,8 @@
   (assuming the code resides in a directory called `rudel'):
 
   : (add-to-list 'load-path "SOMEDIR/rudel/")
+  : (add-to-list 'load-path "SOMEDIR/rudel/jupiter/")
+  : (add-to-list 'load-path "SOMEDIR/rudel/obby/")
 
   This will allow Emacs to load Rudel code, but will not actually load
   Rudel. To avoid loading all the Rudel code in every Emacs startup, I
@@ -39,7 +44,7 @@
   in the `rudel' directory (or equivalent) mentioned above. Once the
   file has been generated, auto loading can activating by executing
   
-  : (load "SOMEDIR/rudel/loaddefs.el")
+  : (load "SOMEDIR/rudel/rudel-loaddefs.el")
 
   in your .emacs file.
 
