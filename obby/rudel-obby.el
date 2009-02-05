@@ -40,6 +40,7 @@
 
 (require 'rudel)
 (require 'rudel-util)
+(require 'rudel-compat) ;; for `read-color' replacement
 
 
 ;;; Constants

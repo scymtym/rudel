@@ -44,6 +44,7 @@
 (require 'rudel-operations)
 (require 'rudel-operators)
 (require 'rudel-overlay)
+(require 'rudel-compat) ;; for `read-color' replacement
 
 
 ;;; Global variables

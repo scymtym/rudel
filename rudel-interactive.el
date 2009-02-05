@@ -35,6 +35,8 @@
 ;;; Code:
 ;;
 
+(require 'rudel-compat) ;; for `read-color' replacement
+
 
 ;;; Function for reading Rudel objects from the user.
 ;;
