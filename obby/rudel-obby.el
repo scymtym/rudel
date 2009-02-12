@@ -75,9 +75,12 @@ multiple chunks.")
   (let ((host     (read-string "Server: "))
 	(port     (read-number "Port: " 6522))
 	;; Read desired username and color
-	(username (read-string "Username: " user-login-name))
-	(color    (read-color  "Color: " t)))
-    (list :host host :port port :username username :color color))
+	(username   (read-string "Username: " user-login-name))
+	(color      (read-color  "Color: " t))
+	(encryption (y-or-n-p "Use encryption? ")))
+    (list :host       host     :port port
+	  :username   username :color color
+	  :encryption encryption))
   )
 
 (defmethod rudel-connect ((this rudel-obby-backend) info)
@@ -88,17 +91,23 @@ multiple chunks.")
   (let* ((session    (plist-get info :session))
 	 (host       (plist-get info :host))
 	 (port       (plist-get info :port))
+	 (encryption (plist-get info :encryption))
 	 ;; Create the network process
-	 (socket     (make-network-process
+	 (socket     (funcall 
+		      (if encryption
+			  (progn
+			    (require 'rudel-tls)
+			    #'rudel-tls-make-process)
+			#'make-network-process)
 		      :name     host
 		      :host     host
 		      :service  port
 		      ;; Install connection filter to redirect data to
 		      ;; the connection object
-		      :filter   'rudel-filter-dispatch
+		      :filter   #'rudel-filter-dispatch
 		      ;; Install connection sentinel to redirect state
 		      ;; changes to the connection object
-		      :sentinel 'rudel-sentinel-dispatch))
+		      :sentinel #'rudel-sentinel-dispatch))
 	 (connection (rudel-obby-connection host
                       :socket socket
 		      :info   info)))

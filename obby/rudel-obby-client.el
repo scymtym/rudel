@@ -221,12 +221,30 @@ nothing else."
 
 (defmethod rudel-obby/net6_encryption ((this rudel-obby-connection) value)
   "Handle net6 'encryption' message."
-  (let*  ((info     (oref this :info))
-	  (username (plist-get info :username))
+  (rudel-send this "net6_encryption_ok"))
+
+(defmethod rudel-obby/net6_encryption_begin ((this rudel-obby-connection))
+  "Handle net6 'encryption_begin' message."
+  ;; Start TLS encryption for the connection.
+  (require 'rudel-tls)
+  (with-slots (socket) this
+    (rudel-tls-start-tls socket)
+    (sit-for 1)) ;; TODO not too pretty
+
+  ;; Send login request with username and color. This can easily fail
+  ;; (resulting in response 'net6_login_failed') if the username or
+  ;; color is already taken.
+  (with-slots (info) this
+    (let ((username (plist-get info :username))
 	  (color    (plist-get info :color)))
-    (rudel-send this "net6_encryption_failed")
-    (rudel-send this "net6_client_login" 
-		username (rudel-obby-format-color color))))
+      (rudel-send this 
+		  "net6_client_login"
+		  username (rudel-obby-format-color color))))
+  )
+
+(defmethod rudel-obby/net6_encryption_failed ((this rudel-obby-connection))
+  "Handle net6 'encryption_failed' message."
+  (error "Enabling encryption failed"))
 
 (defmethod rudel-obby/net6_login_failed ((this rudel-obby-connection) reason)
   "Handle net6 'encryption_failed' message."
