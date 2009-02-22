@@ -264,7 +264,7 @@ nothing else."
  	         :client-id  (string-to-number client-id 16)
 		 :user-id    (string-to-number user-id   16)
 		 :connected  t
-		 :encryption (when (string= encryption "1") t)
+		 :encryption (string= encryption "1")
 		 :color      (rudel-obby-parse-color color))))
       (rudel-add-user session user)
       (unless (slot-boundp session :self)
