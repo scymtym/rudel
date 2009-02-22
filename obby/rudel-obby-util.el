@@ -111,5 +111,90 @@ When PREFIX is not specified, \"rudel-obby/\" is used."
 	    (object-name-string object) prefix name arguments)))
   )
 
+
+;;; Message serialization
+;;
+
+(defgeneric rudel-operation->message ((this jupiter-operation))
+  "Generate a list obby message components from THIS operation.")
+
+(defmethod rudel-operation->message ((this jupiter-insert))
+  "Serialize THIS insert operation."
+  (with-slots (from data) this
+    (list "ins" (format "%x" from) data)))
+
+(defmethod rudel-operation->message ((this jupiter-delete))
+  "Serialize THIS delete operation."
+  (with-slots (from length) this
+    (list "del" (format "%x" from) (format "%x" length))))
+
+(defmethod rudel-operation->message ((this jupiter-compound))
+  "Serialize THIS compound operation."
+  (with-slots (children) this
+    (apply #'append 
+	   (list "split" )
+	   (mapcar #'rudel-operation->message children))))
+
+(defmethod rudel-operation->message ((this jupiter-nop))
+  "Serialize THIS nop operation."
+  (list "nop"))
+
+(defun rudel-message->operation (message local-revision remote-revision)
+  "Construct an operation object from MESSAGE and LOCAL-REVISION and REMOTE-REVISION.
+LOCAL-REVISION and REMOTE-REVISION are only used in the
+construction of the name of the new operation. "
+  (let ((type (car message)))
+    (cond
+
+     ;; Insert operation
+     ((string= type "ins")
+      (let ((position-numeric (string-to-number (nth 1 message) 16))
+	    (data             (nth 2 message)))
+	(jupiter-insert
+	 (format "insert-%d-%d"
+		 remote-revision local-revision)
+	 :from position-numeric
+	 :data data)))
+
+     ;; Delete operation
+     ((string= type "del")
+      (let ((position-numeric (string-to-number (nth 1 message) 16))
+	    (length-numeric   (string-to-number (nth 2 message) 16)))
+	(jupiter-delete 
+	 (format "delete-%d-%d" 
+		 remote-revision local-revision)
+	 :from position-numeric 
+	 :to   (+ position-numeric length-numeric))))
+
+     ;; Compound operation
+     ((string= type "split")
+      (let* ((rest   (cdr message))
+	     (offset (position-if 
+		       (lambda (item) 
+			 (member* item '("ins" "del" "nop")
+				  :test #'string=))
+		       rest
+		       :start 1))
+	     (first  (subseq rest 0 offset))
+	     (second (subseq rest offset)))
+	(jupiter-compound
+	 (format "compound-%d-%d" 
+		 remote-revision local-revision)
+	 :children
+	 (list (rudel-message->operation
+		first local-revision remote-revision)
+	       (rudel-message->operation
+		second local-revision remote-revision)))))
+
+     ;; No operation
+     ((string= type "nop")
+      (jupiter-nop 
+       (format "nop-%d-%d" 
+	       remote-revision local-revision)))
+
+     ;; Unknown operation type
+     (t (error "Unknown document record type: `%s'" type))))
+  )
+
 (provide 'rudel-obby-util)
 ;;; rudel-obby-util.el ends here

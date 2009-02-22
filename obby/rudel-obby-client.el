@@ -169,50 +169,56 @@ nothing else."
 (defmethod rudel-local-insert ((this rudel-obby-connection)
 			       document position data)
   ""
-  (with-slots (owner-id (doc-id :id)) document
-    (let ((context (rudel-find-context this document)))
-
-      ;; Notify the server of the insertion.
-      (with-slots (local-revision remote-revision) context
-	(rudel-send this
-		    "obby_document"
-		    (format "%x %x" owner-id doc-id)
-		    "record"
-		    (format "%x" local-revision)
-		    (format "%x" remote-revision)
-		    "ins"
-		    (format "%x" position)
-		    data))
-
-      ;; Submit the insert operation to the jupiter context.
-      (jupiter-local-operation
-       context
-       (jupiter-insert "insert" :from position :data data))))
-  )
+  (rudel-local-operation 
+   this 
+   document 
+   (jupiter-insert "insert" :from position :data data)))
 
 (defmethod rudel-local-delete ((this rudel-obby-connection)
 			       document position length)
   ""
-  (with-slots (owner-id (doc-id :id)) document
-    (let ((context (rudel-find-context this document)))
+  (rudel-local-operation 
+   this 
+   document 
+   (jupiter-delete "delete" :from position :to (+ position length))))
 
-      ;; Notify the server of the deletion
+(defmethod rudel-local-operation ((this rudel-obby-connection) 
+				  document operation)
+  "Handle OPERATION performed on DOCUMENT by sending a message through THIS connection."
+  ;; Find jupiter context for DOCUMENT.
+  (let ((context (rudel-find-context this document)))
+
+    ;; Notify the server of the deletion
+    (with-slots (owner-id (doc-id :id)) document
       (with-slots (local-revision remote-revision) context
-	(rudel-send this
-		    "obby_document"
-		    (format "%x %x" owner-id doc-id)
-		    "record"
-		    (format "%x" local-revision)
-		    (format "%x" remote-revision)
-		    "del"
-		    (format "%x" position)
-		    (format "%x" length)))
+	(apply 'rudel-send
+	       this
+	       "obby_document"
+	       (format "%x %x" owner-id doc-id)
+	       "record"
+	       (format "%x" local-revision)
+	       (format "%x" remote-revision)
+	       (rudel-operation->message operation))))
 
-      ;; Submit the delete operation to the jupiter context.
-      (jupiter-local-operation
-       context
-       (jupiter-delete "delete" 
-	:from position :to (+ position length)))))
+      ;; Submit the operation to the jupiter context.
+      (jupiter-local-operation context operation))
+  )
+
+(defmethod rudel-remote-operation ((this rudel-obby-connection)
+				   document user
+				   remote-revision local-revision 
+				   operation)
+  "Handle OPERATION received through THIS connection performed by USER on DOCUMENT."
+  (let* (;; Find jupiter context for DOCUMENT.
+	 (context     (rudel-find-context this document))
+	 ;; And transform the operation.
+	 (transformed (jupiter-remote-operation
+		       context 
+		       remote-revision local-revision
+		       operation)))
+
+    ;; Apply the transformed operation to the document.
+    (rudel-remote-operation document user transformed))
   )
 
 (defmethod rudel-obby/net6_ping ((this rudel-obby-connection))
@@ -453,17 +459,15 @@ nothing else."
 						position data)
   ""
   (let* ((position-numeric (string-to-number position 16))
-	 (context          (rudel-find-context this document))
 	 (operation        (jupiter-insert
 			    (format "insert-%d-%d"
-				    local-revision remote-revision)
+				    remote-revision local-revision)
 			    :from position-numeric
-			    :data data))
-	 (transformed      (jupiter-remote-operation
-			    context 
+			    :data data)))
+    (rudel-remote-operation this
+			    document user
 			    remote-revision local-revision
-			    operation)))
-    (rudel-remote-operation document user transformed))
+			    operation))
   )
 
 (defmethod rudel-obby/obby_document/record/del ((this rudel-obby-connection)
@@ -473,17 +477,41 @@ nothing else."
   ""
   (let* ((position-numeric (string-to-number position 16))
 	 (length-numeric   (string-to-number length   16))
-	 (context          (rudel-find-context this document))
 	 (operation	   (jupiter-delete 
 			    (format "delete-%d-%d" 
-				    local-revision remote-revision)
+				    remote-revision local-revision)
 			    :from position-numeric 
-			    :to   (+ position-numeric length-numeric)))
-	 (transformed      (jupiter-remote-operation 
-			    context 
+			    :to   (+ position-numeric length-numeric))))
+    (rudel-remote-operation this
+			    document user
 			    remote-revision local-revision
-			    operation)))
-    (rudel-remote-operation document user transformed))
+			    operation))
+  )
+
+(defmethod rudel-obby/obby_document/record/split ((this rudel-obby-connection)
+						  document user
+						  local-revision remote-revision
+						  &rest operations)
+  ""
+  (rudel-remote-operation this
+			  document user
+			  remote-revision local-revision
+			  (rudel-message->operation
+			   (cons "split" operations)
+			   local-revision remote-revision))
+  )
+
+(defmethod rudel-obby/obby_document/record/noop ((this rudel-obby-connection)
+						 document user
+						 local-revision remote-revision)
+  ""
+  (let ((operation (jupiter-nop 
+		    (format "nop-%d-%d" 
+			    remote-revision local-revision))))
+    (rudel-remote-operation this 
+			    document user
+			    remote-revision local-revision
+			    operation))
   )
 
 (provide 'rudel-obby-client)
