@@ -587,14 +587,16 @@ such objects derived from rudel-obby-client."
 				client)
   ""
   (with-slots ((client-id :id) user) client
-    ;; Broadcast the part event
+    ;; Broadcast the part event to all remaining clients.
     (rudel-broadcast this (list 'exclude client)
 		     "net6_client_part"
 		     (format "%x" client-id))
 
-    ;; Set the user object to offline
-    (with-slots (connected) user
-      (setq connected nil)))
+    ;; If the client has an associated user object, set the status of
+    ;; the user object to offline.
+    (when user
+      (with-slots (connected) user
+	(setq connected nil))))
 
   (object-remove-from-list this :clients client)
   )
