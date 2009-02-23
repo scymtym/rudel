@@ -250,7 +250,22 @@ nothing else."
 
 (defmethod rudel-obby/net6_encryption_failed ((this rudel-obby-connection))
   "Handle net6 'encryption_failed' message."
-  (error "Enabling encryption failed"))
+  ;; We ignore encryption errors unless encryption has been requested
+  ;; explicitly.
+  (with-slots (info) this
+    (if (plist-get info :encryption)
+      (error "Enabling encryption failed")
+
+      ;; If encryption has not been requested in the first place, send
+      ;; login request with username and color. This can easily fail
+      ;; (resulting in response 'net6_login_failed') if the username
+      ;; or color is already taken.
+      (let ((username (plist-get info :username))
+	    (color    (plist-get info :color)))
+	(rudel-send this 
+		    "net6_client_login"
+		    username (rudel-obby-format-color color)))))
+  )
 
 (defmethod rudel-obby/net6_login_failed ((this rudel-obby-connection) reason)
   "Handle net6 'encryption_failed' message."
