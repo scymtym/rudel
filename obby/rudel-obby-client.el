@@ -388,6 +388,13 @@ nothing else."
 	(warn "Document not found: %s" owner-and-doc-id))))
   )
 
+(defmethod rudel-obby/obby_document/rename ((this rudel-obby-connection)
+					    document unk1 name suffix)
+  "Handle obby 'rename' submessage of the 'obby_document' message."
+  ;; TODO implement this by saving the suffix and adjust the document
+  ;; name
+  )
+
 (defmethod rudel-obby/obby_document/subscribe ((this rudel-obby-connection)
 					       document user-id)
   ""
