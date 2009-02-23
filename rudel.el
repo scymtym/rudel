@@ -313,7 +313,7 @@ does not have to be connected to the session at any given time.")
 	       :documentation
 	       "")
    (subscribed :initarg  :subscribed
-	       :type     list ; TODO of rudel-user-child
+	       :type     list
 	       :initform nil
 	       :documentation
 	       ""))
@@ -327,7 +327,7 @@ collaborative editing session can subscribe to."
     ;; Set buffer slot of THIS to BUFFER and associated THIS with
     ;; BUFFER.
     (setq doc-buffer buffer)
-    (rudel-set-buffer-document this doc-buffer)
+    (rudel-set-buffer-document this buffer)
 
     (with-current-buffer doc-buffer
       ;; Add the handler function for buffer changes to the buffer's
@@ -353,7 +353,7 @@ Do nothing, if THIS is not attached to any buffer."
       
       ;; Unset buffer slot of THIS and delete association of THIS with
       ;; BUFFER.
-      (rudel-set-buffer-document buffer nil)
+      (rudel-set-buffer-document nil buffer)
       (setq buffer nil)))
   )
 
@@ -536,6 +536,7 @@ See after-change-functions for more information."
 
 ;;; Backend functions
 ;;
+
 (defun rudel-load-backends ()
   "Resolve and load backends in the `rudel-backends' list."
   (setq rudel-backends
