@@ -324,10 +324,12 @@ collaborative editing session can subscribe to."
 (defmethod rudel-attach-to-buffer ((this rudel-document) buffer)
   "Attach THIS document to BUFFER"
   (with-slots ((doc-buffer :buffer)) this
+    ;; Set buffer slot of THIS to BUFFER and associated THIS with
+    ;; BUFFER.
     (setq doc-buffer buffer)
-    (with-current-buffer doc-buffer
-      (setq rudel-buffer-document this)
+    (rudel-set-buffer-document this doc-buffer)
 
+    (with-current-buffer doc-buffer
       ;; Add the handler function for buffer changes to the buffer's
       ;; change hook.
       (add-hook 'after-change-functions
@@ -343,13 +345,15 @@ Do nothing, if THIS is not attached to any buffer."
     ;; nil, if the user did not subscribe to the document, or
     ;; unsubscribed after subscribing.
     (when buffer
+      
       (with-current-buffer buffer
-	(setq rudel-buffer-document nil)
-	
 	(remove-hook 'after-change-functions
 		     'rudel-handle-buffer-change
 		     t))
       
+      ;; Unset buffer slot of THIS and delete association of THIS with
+      ;; BUFFER.
+      (rudel-set-buffer-document buffer nil)
       (setq buffer nil)))
   )
 
@@ -476,14 +480,40 @@ null rudel-user-child)."
   )
 
 
-;;; 
+;;; Buffer-related functions
 ;;
+
+(defun rudel-buffer-has-document-p (&optional buffer)
+  "Return non-nil if a document object is attached to BUFFER.
+If BUFFER is nil, use the current buffer."
+  (unless buffer
+    (setq buffer (current-buffer)))
+
+  (with-current-buffer buffer
+    rudel-buffer-document))
+
+(defun rudel-buffer-document (&optional buffer)
+  "Return the document object attached to BUFFER.
+If BUFFER is nil, use the current buffer."
+  (unless buffer
+    (setq buffer (current-buffer)))
+
+  (with-current-buffer buffer
+    rudel-buffer-document))
+
+(defun rudel-set-buffer-document (document &optional buffer)
+  ""
+  (unless buffer
+    (setq buffer (current-buffer)))
+
+  (with-current-buffer buffer
+    (setq rudel-buffer-document document)))
 
 (defun rudel-handle-buffer-change (from to length)
   "Handle buffer change at range FROM to TO with length LENGTH by relaying them to the document object of the buffer.
 See after-change-functions for more information."
-  (when rudel-buffer-document
-    (let ((document rudel-buffer-document)
+  (when (rudel-buffer-has-document-p)
+    (let ((document (rudel-buffer-document))
 	  (text)) ; TODO with-rudel-buffer-document?
       (if (zerop length)
 	  ;; The change was an insert
@@ -691,7 +721,7 @@ If BUFFER is nil, the current buffer is used."
     (setq buffer (current-buffer)))
 
   (with-current-buffer buffer
-    (when rudel-buffer-document
+    (when (rudel-buffer-has-document-p)
       (error "Buffer already published or subscribed"))) ; TODO keep this?
 
   ;;
@@ -721,13 +751,12 @@ If BUFFER is nil, the current is used."
     (setq buffer (current-buffer)))
 
   (with-current-buffer buffer
-    (unless rudel-buffer-document
+    (unless (rudel-buffer-has-document-p)
       (error "Buffer is not published")))
 
   ;;
   (with-slots (connection) rudel-current-session
-    (let ((document (with-current-buffer buffer
-		      rudel-buffer-document)))
+    (let ((document (rudel-buffer-document buffer)))
       (rudel-detach-from-buffer document)
 
       (rudel-unsubscribe-from connection document)))

@@ -86,9 +86,9 @@
       "---"
       [ "Publish current Buffer"   rudel-publish-buffer 
 	                           (and rudel-current-session 
-					(not rudel-buffer-document)) ]
+					(not (rudel-buffer-has-document-p))) ]
       [ "Unpublish current Buffer" rudel-unpublish-buffer
-	                           rudel-buffer-document ]
+	                           (rudel-buffer-has-document-p) ]
       [ "Subscribe to Document"    rudel-subscribe
 	                           rudel-current-session ]
       "---"
