@@ -333,7 +333,13 @@ collaborative editing session can subscribe to."
       ;; Add the handler function for buffer changes to the buffer's
       ;; change hook.
       (add-hook 'after-change-functions
-		'rudel-handle-buffer-change
+		#'rudel-handle-buffer-change
+		nil t)
+
+      ;; Add a handler to the kill-buffer hook to unsubscribe from the
+      ;; document when the buffer gets killed.
+      (add-hook 'kill-buffer-hook
+		#'rudel-unpublish-buffer
 		nil t)))
   )
 
@@ -347,10 +353,16 @@ Do nothing, if THIS is not attached to any buffer."
     (when buffer
       
       (with-current-buffer buffer
+	;; Remove our handler function from the after-change hook.
 	(remove-hook 'after-change-functions
-		     'rudel-handle-buffer-change
+		     #'rudel-handle-buffer-change
+		     t)
+
+	;;Remove our handler function from the kill-buffer hook.
+	(remove-hook 'kill-buffer-hook
+		     #'rudel-unpublish-buffer
 		     t))
-      
+
       ;; Unset buffer slot of THIS and delete association of THIS with
       ;; BUFFER.
       (rudel-set-buffer-document nil buffer)
