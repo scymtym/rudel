@@ -351,13 +351,15 @@ nothing else."
 	       '= 'rudel-id))
 	    subscribed-user-ids))
 	  (doc-id-numeric   (string-to-number doc-id 16))
-	  (owner-id-numeric (string-to-number owner-id 16)))
+	  (owner-id-numeric (string-to-number owner-id 16))
+	  (suffix-numeric   (string-to-number suffix 16)))
 
       ;; Make a new document with the list of subscribed users.
       (rudel-add-document session (rudel-obby-document name
 				   :subscribed subscribed-users
 				   :id         doc-id-numeric
-				   :owner-id   owner-id-numeric)))
+				   :owner-id   owner-id-numeric
+				   :suffix     suffix-numeric)))
   (message "New document %s" name))
   )
 
@@ -367,12 +369,14 @@ nothing else."
   (with-slots (session) this
     (let* ((owner-id-numeric (string-to-number owner-id 16))
 	   (doc-id-numeric   (string-to-number doc-id 16))
+	   (suffix-numeric   (string-to-number suffix 16))
 	   (owner            (rudel-find-user session owner-id-numeric
 					      '= 'rudel-id)))
       (rudel-add-document session (rudel-obby-document name
 				   :subscribed (list owner)
 				   :id         doc-id-numeric
-				   :owner-id   owner-id-numeric))))
+				   :owner-id   owner-id-numeric
+				   :suffix     suffix-numeric))))
   (message "New document %s" name)
   )
 
@@ -404,10 +408,13 @@ nothing else."
   )
 
 (defmethod rudel-obby/obby_document/rename ((this rudel-obby-connection)
-					    document unk1 name suffix)
+					    document 
+					    user new-name new-suffix)
   "Handle obby 'rename' submessage of the 'obby_document' message."
-  ;; TODO implement this by saving the suffix and adjust the document
-  ;; name
+  (let ((new-suffix-numeric (string-to-number new-suffix 16)))
+    (with-slots (suffix) document
+      (object-set-name-string document new-name)
+      (setq suffix new-suffix-numeric)))
   )
 
 (defmethod rudel-obby/obby_document/subscribe ((this rudel-obby-connection)

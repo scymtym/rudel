@@ -321,6 +321,14 @@ does not have to be connected to the session at any given time.")
 collaborative editing session can subscribe to."
   :abstract t)
 
+(defmethod rudel-unique-name ((this rudel-document))
+  "Returns a suggested name for the buffer attached to THIS document."
+  (object-name-string this))
+
+(defmethod rudel-suggested-buffer-name ((this rudel-document))
+  "Returns a suggested name for the buffer attached to THIS document."
+  (rudel-unique-name this))
+
 (defmethod rudel-attach-to-buffer ((this rudel-document) buffer)
   "Attach THIS document to BUFFER"
   (with-slots ((doc-buffer :buffer)) this
@@ -532,7 +540,7 @@ See after-change-functions for more information."
 	  (with-slots (buffer) document
 	    (with-current-buffer buffer
 	      (setq text (buffer-substring-no-properties from to)))
-	    (rudel-local-operation document 
+	    (rudel-local-operation document
 				   (rudel-insert-op
 				    "insert"
 				    :from (- from 1)
@@ -709,7 +717,7 @@ When called interactively, DOCUMENT is prompted for interactively."
     (error "No active Rudel session"))
 
   ;; Create a new buffer and attach the document to it.
-  (let* ((name   (object-name-string document))
+  (let* ((name   (rudel-suggested-buffer-name document))
 	 (buffer (funcall rudel-allocate-buffer-function name)))
     (rudel-attach-to-buffer document buffer)
 

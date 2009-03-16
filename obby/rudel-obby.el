@@ -156,7 +156,8 @@ multiple chunks.")
       (rudel-obby-document name 
 			   :session  session
 			   :id       id
-			   :owner-id user-id)))
+			   :owner-id user-id
+			   :suffix   1)))
   )
 
 (defmethod rudel-available-document-id ((this rudel-obby-backend)
@@ -235,7 +236,12 @@ owned by the owner.")
    (owner-id :initarg  :owner-id
 	     :type     integer
 	     :documentation
-	     ""))
+	     "")
+   (suffix   :initarg  :suffix
+	     :type     integer
+	     :documentation
+	     "A counter used to distinguish identically named
+documents."))
   "Objects of the class rudel-obby-document represent shared
 documents in obby sessions.")
 
@@ -243,6 +249,14 @@ documents in obby sessions.")
   "Return a list consisting of document and owner id of THIS document."
   (with-slots ((doc-id :id) owner-id) this
     (list owner-id doc-id)))
+
+(defmethod rudel-unique-name ((this rudel-obby-document))
+  "Generate a unique name for THIS based on the name and the suffix."
+  (with-slots (suffix) this
+    (concat (call-next-method)
+	    (when (> suffix 1)
+	      (format "<%d>" suffix))))
+  )
 
 (defmethod eieio-speedbar-description ((this rudel-obby-document))
   "Construct a description for from the name of document object THIS."

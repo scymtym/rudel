@@ -102,12 +102,12 @@ return the name as string."
     (error "No documents")) ; TODO error is a bit harsh
   (unless prompt
     (setq prompt "Document: "))
-  (let* ((document-names (mapcar 'object-name-string documents))
+  (let* ((document-names (mapcar #'rudel-unique-name documents))
 	 (document-name  (completing-read prompt document-names nil t)))
     (cond 
      ((eq return 'object) 
       (find document-name documents 
-	    :test 'string= :key 'object-name-string))
+	    :test #'string= :key #'rudel-unique-name))
      (t document-name)))
   )
 
