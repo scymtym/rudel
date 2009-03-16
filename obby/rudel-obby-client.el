@@ -294,10 +294,12 @@ nothing else."
   (with-slots (session) this
     (let* ((client-id-numric (string-to-number client-id 16))
 	   (user             (rudel-find-user session client-id-numric
-					      '= 'rudel-client-id)))
-      (with-slots (client-id connected) user
-	(setq client-id nil
-	      connected nil))))
+					      #'= #'rudel-client-id)))
+      (if user
+	  (with-slots (client-id connected) user
+	    (setq client-id nil
+		  connected nil))
+	(warn "Unknown user: %d" client-id-numeric))))
   )
 
 (defmethod rudel-obby/obby_welcome ((this rudel-obby-connection) version)
