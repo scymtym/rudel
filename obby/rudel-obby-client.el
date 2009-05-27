@@ -29,7 +29,7 @@
 
 ;;; History:
 ;;
-;; 1.0 - Initial revision.
+;; 0.1 - Initial revision.
 
 
 ;;; Code:
@@ -524,12 +524,13 @@ nothing else."
 						  local-revision remote-revision
 						  &rest operations)
   ""
-  (rudel-remote-operation this
-			  document user
-			  remote-revision local-revision
-			  (rudel-message->operation
-			   (cons "split" operations)
-			   local-revision remote-revision))
+  (let ((operation (rudel-message->operation
+		    (cons "split" operations)
+		    local-revision remote-revision)))
+    (rudel-remote-operation this
+			    document user
+			    remote-revision local-revision
+			    operation))
   )
 
 (defmethod rudel-obby/obby_document/record/noop ((this rudel-obby-connection)
