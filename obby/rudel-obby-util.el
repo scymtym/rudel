@@ -29,7 +29,7 @@
 
 ;;; History:
 ;;
-;; 1.0 - Initial revision.
+;; 0.1 - Initial revision.
 
 
 ;;; Code:
