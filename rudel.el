@@ -535,22 +535,46 @@ See after-change-functions for more information."
   (when (rudel-buffer-has-document-p)
     (let ((document (rudel-buffer-document))
 	  (text)) ; TODO with-rudel-buffer-document?
-      (if (zerop length)
-	  ;; The change was an insert
-	  (with-slots (buffer) document
-	    (with-current-buffer buffer
-	      (setq text (buffer-substring-no-properties from to)))
-	    (rudel-local-operation document
-				   (rudel-insert-op
-				    "insert"
-				    :from (- from 1)
-				    :data text)))
-	;; The change was a delete
+      (cond 
+       ;; The change was an insert
+       ((and (/= from to)
+	     (zerop length))
+	(with-slots (buffer) document
+	  (with-current-buffer buffer
+	    (setq text (buffer-substring-no-properties from to)))
+	  (rudel-local-operation document
+				 (rudel-insert-op
+				  "insert"
+				  :from (- from 1)
+				  :data text))))
+
+       ;; The change was a delete
+       ((and (= from to)
+	     (not (zerop length)))
 	(rudel-local-operation document
 			       (rudel-delete-op 
 				"delete"
 				:from   (- from 1)
-				:length length)))))
+				:length length)))
+
+       ;; The operation was neither an insert nor a delete. This seems
+       ;; to mean that the region has changed arbitrarily. The only
+       ;; option we have is sending a delete and corresponding insert
+       ;; message that emulate the change.
+       (t
+	(with-slots (buffer) document
+	  (with-current-buffer buffer
+	    (setq text (buffer-substring-no-properties from to)))
+	  (rudel-local-operation document
+				 (rudel-delete-op 
+				  "delete"
+				  :from   (- from 1)
+				  :length length))
+	  (rudel-local-operation document
+				 (rudel-insert-op
+				  "insert"
+				  :from (- from 1)
+				  :data text)))))))
   )
 
 
