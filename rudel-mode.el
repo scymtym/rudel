@@ -51,6 +51,7 @@
 (defvar rudel-minor-keymap
   (let ((map  (make-sparse-keymap))
 	(pmap (make-sparse-keymap)))
+    ;; Define sub keymap
     (define-key pmap "j" 'rudel-join-session)
     (define-key pmap "h" 'rudel-host-session)
     (define-key pmap "e" 'rudel-end-session)
@@ -61,7 +62,7 @@
     (define-key pmap "u" 'rudel-unpublish-buffer)
     (define-key pmap "s" 'rudel-subscribe)
 
-    ;; bind our submap into map
+    ;; Bind the sub keymap into map
     (define-key map "\C-cc" pmap)
     map)
   "Keymap used in Rudel minor mode.")
@@ -105,14 +106,18 @@
 ;;;###autoload
 (defun global-rudel-minor-mode (&optional arg)
   "Global Rudel minor mode.
-TODO
+Install Rudel menu and keymap.
 
-With argument ARG positive, turn on the mode.  Negative, turn off the
-mode.  nil means to toggle the mode."
+With argument ARG positive, turn on the mode. Negative, turn off
+the mode. nil means to toggle the mode."
   (interactive "P")
+  ;; Update mode variable.
   (setq global-rudel-minor-mode
-	(not (or (and (null arg) global-rudel-minor-mode)
-		 (<= (prefix-numeric-value arg) 0))))
+	(cond 
+	 ((null arg)
+	  (not global-rudel-minor-mode))
+	 (t
+	  (> (prefix-numeric-value arg) 0))))
   )
 
 (provide 'rudel-mode)
