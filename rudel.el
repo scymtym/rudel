@@ -44,6 +44,8 @@
 (require 'rudel-operations)
 (require 'rudel-operators)
 (require 'rudel-overlay)
+(require 'rudel-interactive) ;; for `rudel-read-backend',
+			     ;; `rudel-read-document'
 (require 'rudel-compat) ;; for `read-color' replacement
 
 
