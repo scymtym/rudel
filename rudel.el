@@ -64,6 +64,7 @@ nil if there is no active session.")
 (defvar rudel-buffer-document nil
   "Buffer-local variable which holds the rudel document associated with the buffer.")
 (make-variable-buffer-local 'rudel-buffer-document)
+(put 'rudel-buffer-document 'permanent-local t)
 
 
 ;;; Customization
@@ -348,6 +349,11 @@ collaborative editing session can subscribe to."
       ;; document when the buffer gets killed.
       (add-hook 'kill-buffer-hook
 		#'rudel-unpublish-buffer
+		nil t)
+
+      ;; 
+      (add-hook 'change-major-mode-hook 
+		#'rudel-handle-major-mode-change
 		nil t)))
   )
 
@@ -369,6 +375,10 @@ Do nothing, if THIS is not attached to any buffer."
 	;;Remove our handler function from the kill-buffer hook.
 	(remove-hook 'kill-buffer-hook
 		     #'rudel-unpublish-buffer
+		     t)
+
+	(remove-hook 'change-major-mode-hook 
+		     #'rudel-handle-major-mode-change
 		     t))
 
       ;; Unset buffer slot of THIS and delete association of THIS with
@@ -575,6 +585,46 @@ See after-change-functions for more information."
 				  "insert"
 				  :from (- from 1)
 				  :data text)))))))
+  )
+
+
+;;; Protection against major mode changes
+;;
+
+(defvar rudel-mode-changed-buffers nil
+  "List of buffers that may need to be repaired after a major
+  mode change.")
+
+(defun rudel-handle-major-mode-change ()
+  "Store the current buffer to repair damage done by major mode change.
+
+Note: The way this works is inspired by mode-local.el by David
+Ponce and Eric M. Ludlam."
+  ;; Store the buffer for later repair.
+  (add-to-list 'rudel-mode-changed-buffers (current-buffer))
+
+  ;; Schedule `rudel-after-major-mode-change' to run after the
+  ;; command, that caused the major mode change.
+  (add-hook 'post-command-hook 
+	    #'rudel-after-major-mode-change)
+  )
+
+(defun rudel-after-major-mode-change ()
+  "Repair damage done by major mode changes.
+As a function in `post-command-hook', this is run after there was
+a `major-mode' change.
+
+Note: The way this works is inspired by mode-local.el by David
+Ponce and Eric M. Ludlam."
+  ;; Remove this function from `post-command-hook'.
+  (remove-hook 'post-command-hook 
+	       #'rudel-after-major-mode-change)
+
+  ;; Repair all buffers affected by the major mode change.
+  (dolist (buffer rudel-mode-changed-buffers)
+    (let ((document (buffer-local-value 'rudel-buffer-document 
+					buffer)))
+      (rudel-attach-to-buffer document buffer)))
   )
 
 
