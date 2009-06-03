@@ -509,8 +509,7 @@ If BUFFER is nil, use the current buffer."
   (unless buffer
     (setq buffer (current-buffer)))
 
-  (with-current-buffer buffer
-    rudel-buffer-document))
+  (buffer-local-value 'rudel-buffer-document buffer))
 
 (defun rudel-buffer-document (&optional buffer)
   "Return the document object attached to BUFFER.
@@ -518,11 +517,12 @@ If BUFFER is nil, use the current buffer."
   (unless buffer
     (setq buffer (current-buffer)))
 
-  (with-current-buffer buffer
-    rudel-buffer-document))
+  (buffer-local-value 'rudel-buffer-document buffer))
 
 (defun rudel-set-buffer-document (document &optional buffer)
-  ""
+  "Associate BUFFER to DOCUMENT.
+If DOCUMENT is nil, make it not associated to any buffer.
+If BUFFER is nil, use the current buffer."
   (unless buffer
     (setq buffer (current-buffer)))
 
