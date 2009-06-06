@@ -79,39 +79,6 @@ messages to the base class rudel-socket-owner.")
 Should be implemented in derived classes.")
 
 
-;;; Miscellaneous functions
-;;
-
-(defun rudel-obby-dispatch (object name arguments &optional prefix)
-  "Call method starting with PREFIX and ending in NAME of OBJECT with ARGUMENTS.
-When PREFIX is not specified, \"rudel-obby/\" is used."
-  ;; Fallback prefix.
-  (unless prefix
-    (setq prefix "rudel-obby/"))
-
-  ;; Construct a matching symbol.
-  (let ((method (intern-soft (concat prefix name))))
-    ;; If we found a suitable method, run it; Otherwise warn and do
-    ;; nothing.
-    (unless (and method
-		 (condition-case error
-		     ;; Try to call METHOD. If successful, always
-		     ;; return t.
-		     (progn
-		       (apply method object arguments)
-		       t)
-		   ;; Warn only when the condition is
-		   ;; 'no-method-definition' and refers to METHOD,
-		   ;; otherwise continue unwinding.
-		   (no-method-definition
-		    (if (eq method (cadr error))
-			nil
-		      (signal (car error) (cdr error))))))
-      (warn "%s: in context `%s': no method: `%s'; arguments:  %s" 
-	    (object-name-string object) prefix name arguments)))
-  )
-
-
 ;;; Message serialization
 ;;
 
@@ -194,6 +161,73 @@ construction of the name of the new operation. "
 
      ;; Unknown operation type
      (t (error "Unknown document record type: `%s'" type))))
+  )
+
+
+;;; Miscellaneous functions
+;;
+
+(defun rudel-obby-dispatch (object name arguments &optional prefix)
+  "Call method starting with PREFIX and ending in NAME of OBJECT with ARGUMENTS.
+When PREFIX is not specified, \"rudel-obby/\" is used."
+  ;; Default prefix.
+  (unless prefix
+    (setq prefix "rudel-obby/"))
+
+  ;; Construct a matching symbol.
+  (let ((method (intern-soft (concat prefix name))))
+    ;; If we found a suitable method, run it; Otherwise warn and do
+    ;; nothing.
+    (unless (and method
+		 (condition-case error
+		     ;; Try to call METHOD. If successful, always
+		     ;; return t.
+		     (progn
+		       (apply method object arguments)
+		       t)
+		   ;; Warn only when the condition is
+		   ;; 'no-method-definition' and refers to METHOD,
+		   ;; otherwise continue unwinding.
+		   (no-method-definition
+		    (if (eq method (cadr error))
+			nil
+		      (signal (car error) (cdr error))))))
+      (warn "%s: in context `%s': no method: `%s'; arguments:  %s" 
+	    (object-name-string object) prefix name arguments)))
+  )
+
+(defmacro with-parsed-arguments (specs &rest forms)
+  "Execute FORMS with variable bindings according to SPECS.
+SPECS is structured as follows:
+SPECS   ::= (BINDING*)
+BINDING ::= (VAR TYPE)
+VAR is a symbol and TYPE is one of number, color, document-id and
+coding-system."
+  (declare (indent 1))
+  (let ((bindings
+	 (mapcar
+	  (lambda (spec)
+	    (destructuring-bind (var type) spec
+	      (list var
+		    (case type
+		      ;; Number
+		      (number
+		       `(string-to-number ,var 16))
+		      ;; Color
+		      (color
+		       `(rudel-obby-parse-color ,var))
+		      ;; Document Id
+		      (document-id
+		       `(mapcar
+			 (lambda (string)
+			   (string-to-number string 16))
+			 (split-string ,var " " t)))
+		      ;; Coding System
+		      (coding-system 
+		       `(coding-system-from-name (downcase ,var)))))))
+	  specs)))
+    `(let (,@bindings)
+       ,@forms))
   )
 
 (provide 'rudel-obby-util)
