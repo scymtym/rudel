@@ -294,7 +294,7 @@ nothing else."
   (with-slots (session) this
     (let* ((client-id-numeric (string-to-number client-id 16))
 	   (user             (rudel-find-user session client-id-numeric
-					      #'= #'rudel-client-id)))
+					      #'eql #'rudel-client-id)))
       (if user
 	  (with-slots (client-id connected) user
 	    (setq client-id nil
