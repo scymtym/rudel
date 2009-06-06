@@ -40,6 +40,8 @@
 (require 'rudel)
 (require 'rudel-util)
 
+(require 'jupiter)
+
 
 ;;; Class rudel-obby-socket-owner
 ;;
