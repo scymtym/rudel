@@ -274,38 +274,42 @@ nothing else."
 (defmethod rudel-obby/net6_client_join ((this rudel-obby-connection) 
 					client-id name encryption user-id color)
   "Handle 'net6_client_join message."
-  (with-slots (session) this ; TODO the user can be in our list as offline user
-    (let ((user (rudel-obby-user name
- 	         :client-id  (string-to-number client-id 16)
-		 :user-id    (string-to-number user-id   16)
-		 :connected  t
-		 :encryption (string= encryption "1")
-		 :color      (rudel-obby-parse-color color))))
-      (rudel-add-user session user)
-      (unless (slot-boundp session :self)
-	(oset session :self user))))
-  (message "Client joined: %s %s" name (rudel-obby-parse-color color))
+  (with-parsed-arguments ((client-id number)
+			  (user-id   number)
+			  (color     color))
+    (with-slots (session) this ; TODO the user can be in our list as offline user
+      (let ((user (rudel-obby-user name
+ 	           :client-id  client-id
+		   :user-id    user-id
+		   :connected  t
+		   :encryption (string= encryption "1")
+		   :color      color)))
+	(rudel-add-user session user)
+	(unless (slot-boundp session :self)
+	  (oset session :self user))))
+    (message "Client joined: %s %s" name color))
   )
 
-(defmethod rudel-obby/net6_client_part ((this rudel-obby-connection) client-id)
+(defmethod rudel-obby/net6_client_part ((this rudel-obby-connection) 
+					client-id)
   "Handle net6 'client_part' message."
   ;; Find the user object, associated to the client id. Remove the
   ;; client id and change the user's state to disconnected.
-  (with-slots (session) this
-    (let* ((client-id-numeric (string-to-number client-id 16))
-	   (user             (rudel-find-user session client-id-numeric
-					      #'eql #'rudel-client-id)))
-      (if user
-	  (with-slots (client-id connected) user
-	    (setq client-id nil
-		  connected nil))
-	(warn "Unknown user: %d" client-id-numeric))))
+  (with-parsed-arguments ((client-id number))
+    (with-slots (session) this
+      (let ((user (rudel-find-user session client-id
+				   #'eql #'rudel-client-id)))
+	(if user
+	    (with-slots (client-id connected) user
+	      (setq client-id nil
+		    connected nil))
+	  (warn "Unknown user: %d" client-id)))))
   )
 
 (defmethod rudel-obby/obby_welcome ((this rudel-obby-connection) version)
   ""
-  (let ((version-number (string-to-number version)))
-    (message "Received Obby welcome message (version %d)" version-number))) ; TODO check version number
+  (with-parsed-arguments ((version number))
+    (message "Received Obby welcome message (version %d)" version))) ; TODO check version number
 
 (defmethod rudel-obby/obby_sync_init ((this rudel-obby-connection) count)
   ""
@@ -319,125 +323,123 @@ nothing else."
 						user-id name color)
   ""
   (with-slots (session) this
-    (let ((user-id-numric (string-to-number user-id 16))
-	  (color-parsed   (rudel-obby-parse-color color)))
+    (with-parsed-arguments ((user-id number) 
+			    (color   color))
       (rudel-add-user session (rudel-obby-user name
-			      :user-id    user-id-numric
+			      :user-id    user-id
 			      :connected  nil
-			      :color      color-parsed))))
+			      :color      color))))
   )
 
 (defmethod rudel-obby/obby_user_colour ((this rudel-obby-connection) 
 					user-id color)
   ""
-  (with-slots (session) this
-    (let* ((user-id-numeric (string-to-number user-id 16))
-	   (color-parsed    (rudel-obby-parse-color color))
-	   (user            (rudel-find-user session user-id-numeric
-					     '= 'rudel-id)))
-      (oset user :color color-parsed)))
+  (with-parsed-arguments ((user-id number) 
+			  (color   color))
+    (with-slots (session) this
+      (let ((user (rudel-find-user session user-id
+				   #'= #'rudel-id)))
+	(oset user :color color))))
   )
 
 (defmethod rudel-obby/obby_sync_doclist_document
   ((this rudel-obby-connection)
    owner-id doc-id name suffix encoding &rest subscribed-user-ids)
   ""
-  (with-slots (session) this
+  (with-parsed-arguments ((doc-id   number)
+			  (owner-id number) 
+			  (suffix   number)
+			  (encoding coding-system))
+    (with-slots (session) this
 
-    ;; Retrieve the subscribed users
-    (let ((subscribed-users
-	   (mapcar
-	    (lambda (user-id)
-	      (rudel-find-user 
-	       session (string-to-number user-id 16)
-	       '= 'rudel-id))
-	    subscribed-user-ids))
-	  (doc-id-numeric   (string-to-number doc-id 16))
-	  (owner-id-numeric (string-to-number owner-id 16))
-	  (suffix-numeric   (string-to-number suffix 16)))
+      ;; Retrieve the subscribed users
+      (let ((subscribed-users
+	     (mapcar
+	      (lambda (user-id)
+		(with-parsed-arguments ((user-id number))
+		  (rudel-find-user session user-id
+				   #'= #'rudel-id)))
+	      subscribed-user-ids)))
 
-      ;; Make a new document with the list of subscribed users.
-      (rudel-add-document session (rudel-obby-document name
-				   :subscribed subscribed-users
-				   :id         doc-id-numeric
-				   :owner-id   owner-id-numeric
-				   :suffix     suffix-numeric)))
-  (message "New document %s" name))
+	;; Make a new document with the list of subscribed users.
+	(rudel-add-document session (rudel-obby-document name
+				     :subscribed subscribed-users
+				     :id         doc-id
+				     :owner-id   owner-id
+				     :suffix     suffix))))
+    (message "New document %s" name))
   )
 
 (defmethod rudel-obby/obby_document_create ((this rudel-obby-connection)
 					    owner-id doc-id name suffix encoding)
   ""
-  (with-slots (session) this
-    (let* ((owner-id-numeric (string-to-number owner-id 16))
-	   (doc-id-numeric   (string-to-number doc-id 16))
-	   (suffix-numeric   (string-to-number suffix 16))
-	   (owner            (rudel-find-user session owner-id-numeric
-					      '= 'rudel-id)))
-      (rudel-add-document session (rudel-obby-document name
-				   :subscribed (list owner)
-				   :id         doc-id-numeric
-				   :owner-id   owner-id-numeric
-				   :suffix     suffix-numeric))))
-  (message "New document %s" name)
+  (with-parsed-arguments ((owner-id number) 
+			  (doc-id   number) 
+			  (suffix   number) 
+			  (encoding coding-system))
+    (with-slots (session) this
+      (let ((owner (rudel-find-user session owner-id
+				    #'= #'rudel-id)))
+	(rudel-add-document session (rudel-obby-document name
+				     :subscribed (list owner)
+				     :id         doc-id
+				     :owner-id   owner-id
+				     :suffix     suffix))))
+    (message "New document %s" name))
   )
 
-(defmethod rudel-obby/obby_document_remove ((this rudel-obby-connection) doc-id)
+(defmethod rudel-obby/obby_document_remove ((this rudel-obby-connection) 
+					    doc-id)
   ""
-  (message "Document removed %d" (string-to-number doc-id)))
+  (with-parsed-arguments ((doc-id number))
+    (message "Document removed %d" doc-id)))
 
 (defmethod rudel-obby/obby_document ((this rudel-obby-connection)
-				     owner-and-doc-id action &rest arguments)
+				     doc-id action &rest arguments)
   ""
-  (with-slots (session) this
-    ;; First parse the owner and document id ...
-    (let* ((ids-numeric (mapcar
-			 (lambda (string)
-			   (string-to-number string 16))
-			 (split-string owner-and-doc-id " " t)))
-	   ;; ... then locate the document based on owner id and
-	   ;; document id
-	   (document    (rudel-find-document session ids-numeric
-					     'equal 'rudel-both-ids)))
-      (if document
-	  ;; Dispatch message to handler
-	  (rudel-obby-dispatch
-	   this action
-	   (append (list document) arguments)
-	   "rudel-obby/obby_document/")
-	;; If we did not find the document, warn
-	(warn "Document not found: %s" owner-and-doc-id))))
+  (with-parsed-arguments ((doc-id document-id))
+    (with-slots (session) this
+      ;; Locate the document based on owner id and document id
+      (let ((document (rudel-find-document session doc-id
+					   #'equal #'rudel-both-ids)))
+	(if document
+	    ;; Dispatch message to handler
+	    (rudel-obby-dispatch
+	     this action
+	     (append (list document) arguments)
+	     "rudel-obby/obby_document/")
+	  ;; If we did not find the document, warn
+	  (warn "Document not found: %s" doc-id)))))
   )
 
 (defmethod rudel-obby/obby_document/rename ((this rudel-obby-connection)
 					    document 
 					    user new-name new-suffix)
   "Handle obby 'rename' submessage of the 'obby_document' message."
-  (let ((new-suffix-numeric (string-to-number new-suffix 16)))
+  (with-parsed-arguments ((new-suffix number))
     (with-slots (suffix) document
       (object-set-name-string document new-name)
-      (setq suffix new-suffix-numeric)))
+      (setq suffix new-suffix)))
   )
 
 (defmethod rudel-obby/obby_document/subscribe ((this rudel-obby-connection)
 					       document user-id)
   ""
-  (with-slots (session) this
-    (let* ((user-id-numeric (string-to-number user-id 16))
-	   (user            (rudel-find-user
-			     session (string-to-number user-id 16)
-			     '= 'rudel-id)))
-      (object-add-to-list document :subscribed user)))
+  (with-parsed-arguments ((user-id number))
+    (with-slots (session) this
+      (let ((user (rudel-find-user session user-id
+				   #'= #'rudel-id)))
+	(object-add-to-list document :subscribed user))))
   )
 
 (defmethod rudel-obby/obby_document/unsubscribe ((this rudel-obby-connection)
 						 document user-id)
   ""
-  (with-slots (session) this
-    (let* ((user-id-numeric (string-to-number user-id 16))
-	   (user            (rudel-find-user session user-id-numeric
-					     '= 'rudel-id)))
-      (object-remove-from-list document :subscribed user)))
+  (with-parsed-arguments ((user-id number))
+    (with-slots (session) this
+      (let ((user (rudel-find-user session user-id
+				   #'= #'rudel-id)))
+	(object-remove-from-list document :subscribed user))))
   )
 
 (defmethod rudel-obby/obby_document/sync_init ((this rudel-obby-connection)
@@ -448,15 +450,15 @@ nothing else."
 (defmethod rudel-obby/obby_document/sync_chunk ((this rudel-obby-connection)
 						document data user-id)
   ""
-  (with-slots (session) this
-    (let* ((user-id-numeric (string-to-number user-id 16))
-	   (user            (unless (zerop user-id-numeric)
-			      (rudel-find-user session user-id-numeric
-					       '= 'rudel-id)))
-	   (operation       (rudel-insert-op "bulk-insert"
-					     :from nil
-					     :data data)))
-      (rudel-remote-operation document user operation)))
+  (with-parsed-arguments ((user-id number))
+    (with-slots (session) this
+      (let* ((user      (unless (zerop user-id)
+			  (rudel-find-user session user-id
+					   #'= #'rudel-id)))
+	     (operation (rudel-insert-op "bulk-insert"
+					 :from nil
+					 :data data)))
+	(rudel-remote-operation document user operation))))
   )
 
 (defmethod rudel-obby/obby_document/record ((this rudel-obby-connection)
@@ -464,24 +466,23 @@ nothing else."
 					    local-revision remote-revision
 					    action &rest arguments)
   ""
-  (with-slots (session) this
-    ;; Find the user
-    (let* ((user-id-numeric         (string-to-number user-id 16))
-	   (user                    (rudel-find-user session user-id-numeric
-						     '= 'rudel-id))
-	   (local-revision-numeric  (string-to-number local-revision 16))
-	   (remote-revision-numeric (string-to-number remote-revision 16)))
-      (if user
-	  ;; Dispatch message to handler
-	  (rudel-obby-dispatch
-	   this action
-	   (append 
-	    (list document user
-		  local-revision-numeric remote-revision-numeric)
-	    arguments)
-	   "rudel-obby/obby_document/record/")
-	;; If we did not find the user, warn
-	(warn "User not found: %s" user-id))))
+  (with-parsed-arguments ((user-id         number) 
+			  (local-revision  number)
+			  (remote-revision number))
+    (with-slots (session) this
+      ;; Find the user
+      (let ((user (rudel-find-user session user-id
+				   #'= #'rudel-id)))
+	(if user
+	    ;; Dispatch message to handler
+	    (rudel-obby-dispatch
+	     this action
+	     (append
+	      (list document user local-revision remote-revision)
+	      arguments)
+	     "rudel-obby/obby_document/record/")
+	  ;; If we did not find the user, warn
+	  (warn "User not found: %s" user-id)))))
   )
 
 (defmethod rudel-obby/obby_document/record/ins ((this rudel-obby-connection)
@@ -489,16 +490,16 @@ nothing else."
 						local-revision remote-revision
 						position data)
   ""
-  (let* ((position-numeric (string-to-number position 16))
-	 (operation        (jupiter-insert
-			    (format "insert-%d-%d"
-				    remote-revision local-revision)
-			    :from position-numeric
-			    :data data)))
-    (rudel-remote-operation this
-			    document user
-			    remote-revision local-revision
-			    operation))
+  (with-parsed-arguments ((position number))
+    (let ((operation (jupiter-insert
+		      (format "insert-%d-%d"
+			      remote-revision local-revision)
+		      :from position
+		      :data data)))
+      (rudel-remote-operation this
+			      document user
+			      remote-revision local-revision
+			      operation)))
   )
 
 (defmethod rudel-obby/obby_document/record/del ((this rudel-obby-connection)
@@ -506,17 +507,17 @@ nothing else."
 						local-revision remote-revision
 						position length)
   ""
-  (let* ((position-numeric (string-to-number position 16))
-	 (length-numeric   (string-to-number length   16))
-	 (operation	   (jupiter-delete 
-			    (format "delete-%d-%d" 
-				    remote-revision local-revision)
-			    :from position-numeric 
-			    :to   (+ position-numeric length-numeric))))
-    (rudel-remote-operation this
-			    document user
-			    remote-revision local-revision
-			    operation))
+  (with-parsed-arguments ((position number)
+			  (length   number))
+    (let ((operation (jupiter-delete 
+		      (format "delete-%d-%d" 
+			      remote-revision local-revision)
+		      :from position 
+		      :to   (+ position length))))
+      (rudel-remote-operation this
+			      document user
+			      remote-revision local-revision
+			      operation)))
   )
 
 (defmethod rudel-obby/obby_document/record/split ((this rudel-obby-connection)
