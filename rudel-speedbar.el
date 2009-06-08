@@ -1,25 +1,25 @@
 ;;; rudel-speedbar.el --- Speedbar rendering of Rudel objects
 ;;
-;; Copyright (C) 2008 Jan Moringen
+;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, collaboration, speedbar
 ;; X-RCS: $Id: rudel-speedbar.el,v 1.32 2008/10/10 21:47:28 zappo Exp $
 ;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or (at
-;; your option) any later version.
+;; This file is part of Rudel.
 ;;
-;; This program is distributed in the hope that it will be useful, but
+;; Rudel is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; Rudel is distributed in the hope that it will be useful, but
 ;; WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 ;; General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING. If not, write to the
-;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-;; Boston, MA 02110-1301, USA, or see <http://www.gnu.org/licenses>.
+;; along with Rudel. If not, see <http://www.gnu.org/licenses>.
 
 ;;; Commentary:
 ;;

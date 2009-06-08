@@ -1,12 +1,17 @@
-;;; Copyright (C) 2008
-;;   by Jan Moringen <scymtym@users.sourceforge.net>
+;;; rudel-telepathy.el --- A telepathy backend for Rudel
+;;
+;; Copyright (C) 2008, 2009 Jan Moringen
+;;
+;; Author: Jan Moringen <scymtym@users.sourceforge.net>
+;; Keywords: Rudel, telepathy, backend
+;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
 ;;
-;; Rudel is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or (at
-;; your option) any later version.
+;; Rudel is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
 ;;
 ;; Rudel is distributed in the hope that it will be useful, but
 ;; WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,9 +19,7 @@
 ;; General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with Rudel; see the file COPYING. If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-;; Boston, MA 02110-1301, USA, or see <http://www.gnu.org/licenses>.
+;; along with rudel. If not, see <http://www.gnu.org/licenses>.
 
 ;;; Commentary:
 ;;
