@@ -225,6 +225,17 @@ of her color to COLOR."
                               :id         doc-id-numeric
 			      :owner-id   user-id)))
 
+	;; Determine an appropriate suffix to provide an unique name
+	;; for the new document.
+	(let ((suffix 1))
+	  (while (rudel-find-document server 
+				      (if (= suffix 1)
+					  name
+					(format "%s<%d>" name suffix))
+				      #'string= #'rudel-unique-name)
+	    (incf suffix))
+	  (oset document :suffix suffix))
+
 	;; Add the document to the server's document list
 	(rudel-add-document server document)
 
@@ -233,13 +244,14 @@ of her color to COLOR."
 	  (insert content))
 
 	;; Notify other clients of the new document
-	(rudel-broadcast this (list 'exclude this)
-			 "obby_document_create"
-			 (format "%x" user-id)
-			 (format "%x" doc-id-numeric)
-			 name
-			 ""
-			 encoding)
+	(with-slots (suffix) document
+	  (rudel-broadcast this (list 'exclude this)
+			   "obby_document_create"
+			   (format "%x" user-id)
+			   (format "%x" doc-id-numeric)
+			   name
+			   (format "%x" suffix)
+			   encoding))
 
 	;; Add a jupiter context for (THIS DOCUMENT).
 	(rudel-add-context server this document))))
