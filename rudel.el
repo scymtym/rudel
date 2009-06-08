@@ -68,6 +68,12 @@ nil if there is no active session.")
 (make-variable-buffer-local 'rudel-buffer-document)
 (put 'rudel-buffer-document 'permanent-local t)
 
+(defvar rudel-buffer-change-workaround-data nil
+  "Buffer-local variable which holds change data that could not be accessed otherwise.
+It would be nice to find another way to do this.")
+(make-variable-buffer-local 'rudel-buffer-change-workaround-data)
+(put 'rudel-buffer-change-workaround-data 'permanent-local t)
+
 
 ;;; Customization
 ;;
@@ -347,6 +353,13 @@ collaborative editing session can subscribe to."
 		#'rudel-handle-buffer-change
 		nil t)
 
+      ;; Store change data before the change a done. This is necessary
+      ;; because the number of bytes (not characters) cannot otherwise
+      ;; be recovered after a deletion.
+      (add-hook 'before-change-functions
+		#'rudel-buffer-change-workaround
+		nil t)
+
       ;; Add a handler to the kill-buffer hook to unsubscribe from the
       ;; document when the buffer gets killed.
       (add-hook 'kill-buffer-hook
@@ -374,7 +387,12 @@ Do nothing, if THIS is not attached to any buffer."
 		     #'rudel-handle-buffer-change
 		     t)
 
-	;;Remove our handler function from the kill-buffer hook.
+	;; Remove our handler function from the before-change hook.
+	(remove-hook 'before-change-functions
+		     #'rudel-buffer-change-workaround
+		     t)
+
+	;; Remove our handler function from the kill-buffer hook.
 	(remove-hook 'kill-buffer-hook
 		     #'rudel-unpublish-buffer
 		     t)
@@ -588,6 +606,12 @@ See after-change-functions for more information."
 				  :from (- from 1)
 				  :data text)))))))
   )
+
+(defun rudel-buffer-change-workaround (from to)
+  (when (/= from to)
+    (setq rudel-buffer-change-workaround-data
+	  (list from to
+		(buffer-substring-no-properties from to)))))
 
 
 ;;; Protection against major mode changes

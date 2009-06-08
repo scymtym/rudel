@@ -35,6 +35,9 @@
 ;;; Code:
 ;;
 
+(eval-when-compile
+  (require 'cl))
+
 (require 'eieio)
 
 (require 'rudel)
@@ -164,6 +167,77 @@ construction of the name of the new operation. "
      ;; Unknown operation type
      (t (error "Unknown document record type: `%s'" type))))
   )
+
+
+;;; Character <-> byte position conversion
+;;
+
+(defgeneric rudel-obby-char->byte ((this jupiter-operation) buffer)
+  "Convert character positions and lengths in THIS to bytes.")
+
+(defmethod rudel-obby-char->byte ((this jupiter-insert) buffer)
+  "Convert character positions and lengths in THIS insert to bytes."
+  (with-slots (from) this
+    (with-current-buffer buffer
+      (setq from (- (position-bytes (+ from 1)) 1)))))
+
+(defmethod rudel-obby-char->byte ((this jupiter-delete) buffer)
+ "Convert character positions and lengths in THIS delete to bytes."
+  (with-slots (from to length) this
+    (let ((old-from (+ from 1))
+	  (old-to   (+ to   1)))
+      (with-current-buffer buffer
+	(destructuring-bind (change-from change-to string) 
+	    rudel-buffer-change-workaround-data
+	  (setq from   (- (position-bytes old-from) 1)
+		length (string-bytes
+			(substring string
+				   (- old-from change-from)
+				   (- old-to   change-from))))))))
+  )
+
+(defmethod rudel-obby-char->byte ((this jupiter-compound) buffer)
+  "Convert character positions and lengths in THIS compound to bytes.."
+  (with-slots (children) this
+    (mapc 
+     (lambda (child)
+       (rudel-obby-char->byte child buffer))
+     children))
+  )
+
+(defmethod rudel-obby-char->byte ((this jupiter-nop) buffer)
+  "Nothing to convert if THIS is a nop.")
+
+(defgeneric rudel-obby-byte->char ((this jupiter-operation) buffer)
+  "Convert byte positions and lengths in THIS to character positions.")
+
+(defmethod rudel-obby-byte->char ((this jupiter-insert) buffer)
+  "Convert byte positions and lengths in THIS insert to character positions."
+  (with-slots (from) this
+    (with-current-buffer buffer
+      (setq from (- (byte-to-position (+ from 1)) 1)))))
+
+(defmethod rudel-obby-byte->char ((this jupiter-delete) buffer)
+  "Convert byte positions and lengths in THIS delete to character positions."
+  (with-slots (from to length) this
+    (let ((old-from   from)
+	  (old-length length))
+      (with-current-buffer buffer
+	(setq from (- (byte-to-position (+ old-from 1)) 1)
+	      to   (- (byte-to-position (+ old-from old-length 1)) 1)))))
+  )
+
+(defmethod rudel-obby-byte->char ((this jupiter-compound) buffer)
+  "Convert byte positions and lengths in THIS compound to character positions."
+  (with-slots (children) this
+    (mapc 
+     (lambda (child)
+       (rudel-obby-byte->char child buffer))
+     children))
+  )
+
+(defmethod rudel-obby-byte->char ((this jupiter-nop) buffer)
+  "Nothing to convert if THIS is a nop.")
 
 
 ;;; Miscellaneous functions

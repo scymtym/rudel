@@ -185,6 +185,12 @@ nothing else."
 (defmethod rudel-local-operation ((this rudel-obby-connection) 
 				  document operation)
   "Handle OPERATION performed on DOCUMENT by sending a message through THIS connection."
+  ;; Convert character positions in OPERATION to byte positions, since
+  ;; the obby protocol works with byte positions, but Emacs uses
+  ;; character positions.
+  (with-slots (buffer) document
+    (rudel-obby-char->byte operation buffer))
+
   ;; Find jupiter context for DOCUMENT.
   (let ((context (rudel-find-context this document)))
 
@@ -216,6 +222,12 @@ nothing else."
 		       context 
 		       remote-revision local-revision
 		       operation)))
+
+    ;; Convert byte positions in OPERATION to character positions,
+    ;; since the obby protocol works with byte positions, but Emacs
+    ;; uses character positions.
+    (with-slots (buffer) document
+      (rudel-obby-byte->char transformed buffer))
 
     ;; Apply the transformed operation to the document.
     (rudel-remote-operation document user transformed))
