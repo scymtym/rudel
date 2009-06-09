@@ -194,7 +194,7 @@ nothing else."
   ;; Find jupiter context for DOCUMENT.
   (let ((context (rudel-find-context this document)))
 
-    ;; Notify the server of the deletion
+    ;; Notify the server of the operation.
     (with-slots (owner-id (doc-id :id)) document
       (with-slots (local-revision remote-revision) context
 	(apply 'rudel-send
