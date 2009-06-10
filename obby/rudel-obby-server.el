@@ -117,82 +117,82 @@ failed encryption negotiation.")
 (defmethod rudel-obby/net6_client_login ((this rudel-obby-client) 
 					 username color)
   "Handle 'net6_client_login' message."
-  (with-slots (server (client-id :id) user encryption) this
-    ;; Create a user object for this client and add it to the server.
-    (let ((color-parsed (rudel-obby-parse-color color)))
+  (with-parsed-arguments ((color color))
+    (with-slots (server (client-id :id) user encryption) this
+      ;; Create a user object for this client and add it to the server.
       (setq user (rudel-make-user 
 		  server 
-		  username client-id color-parsed encryption)))
+		  username client-id color encryption))
 
-    (rudel-add-user server user)
+      (rudel-add-user server user)
 
-    ;; Broadcast the join event to all clients (including the new
-    ;; one).
-    (let ((name (object-name-string user)))
-      (with-slots (color (user-id :user-id)) user
-	(rudel-broadcast this (list 'exclude this)
-			 "net6_client_join"
-			 (format "%x" client-id)
-			 name
-			 "0"
-			 (format "%x" user-id)
-			 (rudel-obby-format-color color)))))
+      ;; Broadcast the join event to all clients (including the new
+      ;; one).
+      (let ((name (object-name-string user)))
+	(with-slots (color (user-id :user-id)) user
+	  (rudel-broadcast this (list 'exclude this)
+			   "net6_client_join"
+			   (format "%x" client-id)
+			   name
+			   "0"
+			   (format "%x" user-id)
+			   (rudel-obby-format-color color)))))
 
-  ;; Get the new client up to date:
-  ;; - transmit user list
-  ;;   - connected users
-  ;;   - disconnected users
-  ;; - transmit document list
-  (with-slots (users clients documents) (oref this :server)
-    ;; Send number of synchronization items.
-    (let ((number-of-items (+ (length users) (length documents))))
-      (rudel-send this 
-		  "obby_sync_init"
-		  (format "%x" number-of-items)))
+    ;; Get the new client up to date:
+    ;; - transmit user list
+    ;;   - connected users
+    ;;   - disconnected users
+    ;; - transmit document list
+    (with-slots (users clients documents) (oref this :server)
+      ;; Send number of synchronization items.
+      (let ((number-of-items (+ (length users) (length documents))))
+	(rudel-send this 
+		    "obby_sync_init"
+		    (format "%x" number-of-items)))
 
-    ;; Transmit list of connected users.
-    (dolist (client clients)
-      (with-slots ((client-id :id) user) client
-	(let ((name (object-name-string user)))
-	  (with-slots (color (user-id :user-id)) user
-	    (rudel-send this
-			"net6_client_join"
-			(format "%x" client-id)
-			name
-			"0"
-			(format "%x" user-id)
-			(rudel-obby-format-color color))))))
+      ;; Transmit list of connected users.
+      (dolist (client clients)
+	(with-slots ((client-id :id) user) client
+	  (let ((name (object-name-string user)))
+	    (with-slots (color (user-id :user-id)) user
+	      (rudel-send this
+			  "net6_client_join"
+			  (format "%x" client-id)
+			  name
+			  "0"
+			  (format "%x" user-id)
+			  (rudel-obby-format-color color))))))
     
-    ;; Transmit list of disconnected users.
-    (let ((offline-users (remove-if 'rudel-connected users)))
-      (dolist (user offline-users)
-	(let ((name (object-name-string user)))
-	  (with-slots (user-id color) user
-	    (rudel-send this
-			"obby_sync_usertable_user"
-			(format "%x" user-id)
-			name
-			(rudel-obby-format-color color))))))
+      ;; Transmit list of disconnected users.
+      (let ((offline-users (remove-if 'rudel-connected users)))
+	(dolist (user offline-users)
+	  (let ((name (object-name-string user)))
+	    (with-slots (user-id color) user
+	      (rudel-send this
+			  "obby_sync_usertable_user"
+			  (format "%x" user-id)
+			  name
+			  (rudel-obby-format-color color))))))
 
-    ;; Transmit document list
-    (dolist (document documents)
-      (with-slots ((doc-id :id) owner-id subscribed) document
-	(let ((name (object-name-string document)))
-	  (apply 'rudel-send 
-		 (append
-		  (list this
-			"obby_sync_doclist_document"
-			(format "%x" owner-id)
-			(format "%x" doc-id)
-			name
-			""
-			"UTF-8")
-		  (mapcar 
-		   (lambda (user) 
-		     (format "%x" (rudel-id user)))
-		   subscribed))))))
-  
-    (rudel-send this "obby_sync_final"))
+      ;; Transmit document list
+      (dolist (document documents)
+	(with-slots ((doc-id :id) owner-id subscribed) document
+	  (let ((name (object-name-string document)))
+	    (apply 'rudel-send 
+		   (append
+		    (list this
+			  "obby_sync_doclist_document"
+			  (format "%x" owner-id)
+			  (format "%x" doc-id)
+			  name
+			  ""
+			  "UTF-8")
+		    (mapcar 
+		     (lambda (user) 
+		       (format "%x" (rudel-id user)))
+		     subscribed))))))
+      
+      (rudel-send this "obby_sync_final")))
   )
 
 (defmethod rudel-obby/obby_user_colour ((this rudel-obby-client)
@@ -200,157 +200,155 @@ failed encryption negotiation.")
   "Handle 'obby_user_colour' message.
 This method is called when the connected user requests a change
 of her color to COLOR."
-  (with-slots (color (user-id :user-id)) (oref this :user)
-    (setq color (rudel-obby-parse-color color-))
-    (rudel-broadcast this (list 'exclude this)
-		     "obby_user_colour"
-		     (format "%x" user-id)
-		     (rudel-obby-format-color color)))
+  (with-parsed-arguments ((color- color))
+    (with-slots (color (user-id :user-id)) (oref this :user)
+      (setq color color-)
+      (rudel-broadcast this (list 'exclude this)
+		       "obby_user_colour"
+		       (format "%x" user-id)
+		       (rudel-obby-format-color color))))
   )
 
 (defmethod rudel-obby/obby_document_create ((this rudel-obby-client)
 					    doc-id name encoding content)
   "Handle 'obby_document_create' message."
-  (with-slots (user server) this
-    (with-slots ((user-id :user-id)) user
-      (let* ((doc-id-numeric (string-to-number doc-id 16))
-	     ;; Create a buffer for the new document
-	     (buffer         (get-buffer-create 
-			      (concat 
-			       " *" (generate-new-buffer-name name) "*")))
-	     ;; Create the new document object
-	     (document       (rudel-obby-document name
-			      :buffer     buffer
-			      :subscribed (list user)
-                              :id         doc-id-numeric
-			      :owner-id   user-id)))
+  (with-parsed-arguments ((doc-id   number) 
+			  (encoding coding-system))
+    (with-slots (user server) this
+      (with-slots ((user-id :user-id)) user
+  	;; Create a (hidden) buffer for the new document
+        (let* ((buffer   (get-buffer-create 
+  			  (concat 
+  			   " *" (generate-new-buffer-name name) "*")))
+  	       ;; Create the new document object
+  	       (document (rudel-obby-document
+  			  name
+  			  :buffer     buffer
+  			  :subscribed (list user)
+  			  :id         doc-id
+  			  :owner-id   user-id
+  			  :suffix     1)))
+  
+  	  ;; Initialize the buffer's content
+  	  (with-current-buffer buffer
+  	    (insert content))
+    
+  	  (with-slots (suffix) document
+  	    ;; Determine an appropriate suffix to provide an unique
+  	    ;; name for the new document.
+  	    (while (rudel-find-document server 
+  	    				(if (= suffix 1)
+  	    				    name
+  	    				  (format "%s<%d>" name suffix))
+  	    				#'string= #'rudel-unique-name)
+  	      (incf suffix))
 
-	;; Determine an appropriate suffix to provide an unique name
-	;; for the new document.
-	(let ((suffix 1))
-	  (while (rudel-find-document server 
-				      (if (= suffix 1)
-					  name
-					(format "%s<%d>" name suffix))
-				      #'string= #'rudel-unique-name)
-	    (incf suffix))
-	  (oset document :suffix suffix))
+	    ;; Add the document to the server's document list
+	    (rudel-add-document server document)
 
-	;; Add the document to the server's document list
-	(rudel-add-document server document)
-
-	;; Initialize the buffer's content
-	(with-current-buffer buffer
-	  (insert content))
-
-	;; Notify other clients of the new document
-	(with-slots (suffix) document
-	  (rudel-broadcast this (list 'exclude this)
-			   "obby_document_create"
-			   (format "%x" user-id)
-			   (format "%x" doc-id-numeric)
-			   name
-			   (format "%x" suffix)
-			   encoding))
-
-	;; Add a jupiter context for (THIS DOCUMENT).
-	(rudel-add-context server this document))))
+  	    ;; Notify other clients of the new document
+  	    (rudel-broadcast this (list 'exclude this)
+  			     "obby_document_create"
+  			     (format "%x" user-id)
+  			     (format "%x" doc-id)
+  			     name
+  			     (format "%x" suffix)
+  			     (upcase (symbol-name encoding))))
+  	  
+  	  ;; Add a jupiter context for (THIS DOCUMENT).
+  	  (rudel-add-context server this document)))))
   )
 
 (defmethod rudel-obby/obby_document ((this rudel-obby-client) 
-				     owner-and-doc-id action &rest arguments)
+				     doc-id action &rest arguments)
   "Handle 'obby_document' messages."
-  (let* ((ids-numeric (mapcar
-		       (lambda (string)
-			 (string-to-number string 16))
-		       (split-string owner-and-doc-id " " t)))
-	 ;; Locate the document based on owner id and document id
-	 (document    (with-slots (server) this
-			(rudel-find-document server ids-numeric
-					     'equal 'rudel-both-ids))))
-    (rudel-obby-dispatch this action
-			 (append (list document) arguments)
-			 "rudel-obby/obby_document/"))
+  (with-parsed-arguments ((doc-id document-id))
+    ;; Locate the document based on owner id and document id
+    (let* ((document (with-slots (server) this
+		       (rudel-find-document server doc-id
+					    #'equal #'rudel-both-ids))))
+      (rudel-obby-dispatch this action
+			   (append (list document) arguments)
+			   "rudel-obby/obby_document/")))
   )
 
 (defmethod rudel-obby/obby_document/subscribe ((this rudel-obby-client)
 					       document user-id)
   "Handle 'subscribe' submessage of 'obby_document' message."
-  (let* ((user-id-numeric (string-to-number user-id 16))
-	 (user            (with-slots (server) this
-			    (rudel-find-user server user-id-numeric
-					     '= 'rudel-id))))
-    (with-slots (owner-id (doc-id :id) subscribed buffer) document
+  (with-parsed-arguments ((user-id number))
+    (let* ((user (with-slots (server) this
+		   (rudel-find-user server user-id
+				    #'= #'rudel-id))))
+      (with-slots (owner-id (doc-id :id) subscribed buffer) document
 
-      ;; Track subscription, handle duplicate subscription requests
-      (when (memq user subscribed)
-	(error "User `%s' already subscribed to document `%s'"
-	       (object-name user) (object-name document)))
-      (push user subscribed)
+	;; Track subscription, handle duplicate subscription requests
+	(when (memq user subscribed)
+	  (error "User `%s' already subscribed to document `%s'"
+		 (object-name user) (object-name document)))
+	(push user subscribed)
 
-      ;; Synchronize the buffer content to the client.
-      (with-current-buffer buffer
-	;; Send overall buffer size
-	(rudel-send this
-		    "obby_document"
-		    (format "%x %x" owner-id doc-id)
-		    "sync_init"
-		    (format "%x" (- (point-max) 1)))
-	;; Send buffer chunks with author ids
-	(dolist (chunk (rudel-chunks document))
-	  (multiple-value-bind (from to author) chunk
-	    (let ((string (buffer-substring (+ from 1) (+ to 1))))
-	      (rudel-send this
-			  "obby_document"
-			  (format "%x %x" owner-id doc-id)
-			  "sync_chunk"
-			  string
-			  (format "%x" 
-				  (if author
-				      (oref author :user-id)
-				    0)))))))
-    
-      ;; Notify clients of the new subscription (including our own
-      ;; client, who requested the subscription).
-      (with-slots ((user-id :user-id)) user
-	(rudel-broadcast this nil
-			 "obby_document"
-			 (format "%x %x" owner-id doc-id)
-			 "subscribe"
-			 (format "%x" user-id))))
-
-    ;; Add a jupiter context for (THIS document).
-    (with-slots (server) this
-      (rudel-add-context server this document)))
+	;; Synchronize the buffer content to the client.
+	(with-current-buffer buffer
+	  ;; Send overall buffer size
+	  (rudel-send this
+		      "obby_document"
+		      (format "%x %x" owner-id doc-id)
+		      "sync_init"
+		      (format "%x" (- (point-max) 1)))
+	  ;; Send buffer chunks with author ids
+	  (dolist (chunk (rudel-chunks document))
+	    (multiple-value-bind (from to author) chunk
+	      (let ((string (buffer-substring (+ from 1) (+ to 1))))
+		(rudel-send this
+			    "obby_document"
+			    (format "%x %x" owner-id doc-id)
+			    "sync_chunk"
+			    string
+			    (format "%x" 
+				    (if author
+					(oref author :user-id)
+				      0)))))))
+	
+	;; Notify clients of the new subscription (including our own
+	;; client, who requested the subscription).
+	(with-slots ((user-id :user-id)) user
+	  (rudel-broadcast this nil
+			   "obby_document"
+			   (format "%x %x" owner-id doc-id)
+			   "subscribe"
+			   (format "%x" user-id))))
+      
+      ;; Add a jupiter context for (THIS document).
+      (with-slots (server) this
+	(rudel-add-context server this document))))
   )
 
 (defmethod rudel-obby/obby_document/unsubscribe ((this rudel-obby-client)
 						 document user-id)
   "Handle 'unsubscribe' submessage of 'obby_document' message."
-  (let* ((user-id-numeric (string-to-number user-id 16))
-	 (user            (with-slots (server) this
-			    (rudel-find-user server user-id-numeric
-					     '= 'rudel-id))))
-    (with-slots (owner-id (doc-id :id) subscribed) document
+  (with-parsed-arguments ((user-id number))
+    (let ((user (with-slots (server) this
+		  (rudel-find-user server user-id
+				   #'= #'rudel-id))))
+      (with-slots (owner-id (doc-id :id) subscribed) document
+	;; Track subscription, handle invalid unsubscribe requests
+	(unless (memq user subscribed)
+	  (error "User `%s' not subscribed to document `%s'"
+		 (object-name user) (object-name document)))
+	(setq subscribed (delq user subscribed))
 
-      ;;
-      (unless (memq user subscribed)
-	(error "User `%s' not subscribed to document `%s'"
-	       (object-name user) (object-name document)))
-      (setq subscribed (delq user subscribed))
+	;; Notify clients of the canceled subscription (including our
+	;; own client, who requested being unsubscribed).
+	(with-slots ((user-id :user-id)) user
+	  (rudel-broadcast this nil
+			   "obby_document"
+			   (format "%x %x" owner-id doc-id)
+			   "unsubscribe"
+			   (format "%x" user-id))))
 
-      ;; Notify clients of the canceled subscription (including our
-      ;; own client, who requested being unsubscribed).
-      (with-slots ((user-id :user-id)) user
-	(rudel-broadcast this nil
-			 "obby_document"
-			 (format "%x %x" owner-id doc-id)
-			 "unsubscribe"
-			 (format "%x" user-id))))
-
-    ;; Remove jupiter context for (THIS DOCUMENT).
-    (with-slots (server) this
-      (rudel-remove-context server this document)))
+      ;; Remove jupiter context for (THIS DOCUMENT).
+      (with-slots (server) this
+	(rudel-remove-context server this document))))
   )
 
 (defmethod rudel-obby/obby_document/record ((this rudel-obby-client)
@@ -358,12 +356,11 @@ of her color to COLOR."
 					    local-revision remote-revision
 					    action &rest arguments)
   "Handle 'record' submessages of 'obby_document' message."
-  (let ((local-revision-numeric  (string-to-number local-revision  16))
-	(remote-revision-numeric (string-to-number remote-revision 16)))
+  (with-parsed-arguments ((local-revision  number)
+			  (remote-revision number))
     (rudel-obby-dispatch
      this action
-     (append (list document 
-		   local-revision-numeric remote-revision-numeric)
+     (append (list document local-revision remote-revision)
 	     arguments)
      "rudel-obby/obby_document/record/"))
   )
@@ -373,7 +370,7 @@ of her color to COLOR."
 						local-revision remote-revision
 						position data)
   "Handle 'ins' submessage of 'record' submessages of 'obby_document' message."
-  (let ((position-numeric (string-to-number position 16)))
+  (with-parsed-arguments ((position number))
     (with-slots (server user) this
       ;; Transform the operation.
       (let* ((context     (rudel-find-context server this document))
@@ -383,7 +380,7 @@ of her color to COLOR."
 			   (jupiter-insert
 			    (format "insert-%d-%d" 
 				    remote-revision local-revision)
-			    :from position-numeric :data data))))
+			    :from position :data data))))
 
 	;; Incorporate change into DOCUMENT.
 	(rudel-remote-operation document user transformed)
@@ -428,8 +425,8 @@ of her color to COLOR."
 						local-revision remote-revision
 						position length)
   "Handle 'del' submessage of 'record' submessages of 'obby_document' message."
-  (let ((position-numeric (string-to-number position 16))
-	(length-numeric   (string-to-number length   16)))
+  (with-parsed-arguments ((position number)
+			  (length   number))
     (with-slots (server user) this
 
       ;; Transform the operation.
@@ -440,8 +437,8 @@ of her color to COLOR."
 			   (jupiter-delete
 			    (format "delete-%d-%d" 
 				    remote-revision local-revision)
-			    :from position-numeric 
-			    :to   (+ position-numeric length-numeric)))))
+			    :from position 
+			    :to   (+ position length)))))
 
 	;; Incorporate change into DOCUMENT.
 	(rudel-remote-operation document user transformed)
