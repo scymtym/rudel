@@ -28,7 +28,7 @@
 
 ;;; History:
 ;;
-;; 1.0 - initial revision.
+;; 0.1 - initial revision.
 
 
 ;;; Code:
