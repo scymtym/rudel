@@ -7,8 +7,8 @@
    (ede-proj-target-elisp "obby"
     :name "obby"
     :path ""
-    :source '("rudel-obby.el" "rudel-obby-util.el" "rudel-obby-client.el" "rudel-obby-server.el")
+    :source '("rudel-obby.el" "rudel-obby-util.el" "rudel-obby-client.el" "rudel-obby-server.el" "rudel-obby-errors.el")
     :aux-packages '("rudel" "jupiter")
     )
    )
-)
+  )

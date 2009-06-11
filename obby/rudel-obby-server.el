@@ -41,6 +41,7 @@
 
 (require 'jupiter)
 
+(require 'rudel-obby-errors)
 (require 'rudel-obby-util)
 
 
@@ -122,80 +123,91 @@ failed encryption negotiation.")
   "Handle 'net6_client_login' message."
   (with-parsed-arguments ((color color))
     (with-slots (server (client-id :id) user encryption) this
-      ;; Create a user object for this client and add it to the server.
-      (setq user (rudel-make-user 
-		  server 
-		  username client-id color encryption))
+      ;; Make sure USERNAME and COLOR are valid.
+      (let ((error (rudel-check-username-and-color
+		    server username color)))
+	(if error
+	    ;; If USERNAME or COLOR are invalid, send the error code
+	    ;; to the client.
+	    (rudel-send this
+			"net6_login_failed"
+			(format "%x" error))
 
-      (rudel-add-user server user)
+	  ;; Create a user object for this client and add it to the
+	  ;; server.
+	  (setq user (rudel-make-user 
+		      server 
+		      username client-id color encryption))
 
-      ;; Broadcast the join event to all clients (including the new
-      ;; one).
-      (let ((name (object-name-string user)))
-	(with-slots (color (user-id :user-id)) user
-	  (rudel-broadcast this (list 'exclude this)
-			   "net6_client_join"
-			   (format "%x" client-id)
-			   name
-			   "0"
-			   (format "%x" user-id)
-			   (rudel-obby-format-color color)))))
+	  (rudel-add-user server user)
 
-    ;; Get the new client up to date:
-    ;; - transmit user list
-    ;;   - connected users
-    ;;   - disconnected users
-    ;; - transmit document list
-    (with-slots (users clients documents) (oref this :server)
-      ;; Send number of synchronization items.
-      (let ((number-of-items (+ (length users) (length documents))))
-	(rudel-send this 
-		    "obby_sync_init"
-		    (format "%x" number-of-items)))
-
-      ;; Transmit list of connected users.
-      (dolist (client clients)
-	(with-slots ((client-id :id) user) client
+	  ;; Broadcast the join event to all clients (including the
+	  ;; new one).
 	  (let ((name (object-name-string user)))
 	    (with-slots (color (user-id :user-id)) user
-	      (rudel-send this
-			  "net6_client_join"
-			  (format "%x" client-id)
-			  name
-			  "0"
-			  (format "%x" user-id)
-			  (rudel-obby-format-color color))))))
-    
-      ;; Transmit list of disconnected users.
-      (let ((offline-users (remove-if 'rudel-connected users)))
-	(dolist (user offline-users)
-	  (let ((name (object-name-string user)))
-	    (with-slots (user-id color) user
-	      (rudel-send this
-			  "obby_sync_usertable_user"
-			  (format "%x" user-id)
-			  name
-			  (rudel-obby-format-color color))))))
+	      (rudel-broadcast this (list 'exclude this)
+			       "net6_client_join"
+			       (format "%x" client-id)
+			       name
+			       "0"
+			       (format "%x" user-id)
+			       (rudel-obby-format-color color))))
 
-      ;; Transmit document list
-      (dolist (document documents)
-	(with-slots ((doc-id :id) owner-id suffix subscribed) document
-	  (let ((name (object-name-string document)))
-	    (apply 'rudel-send 
-		   (append
-		    (list this
-			  "obby_sync_doclist_document"
-			  (format "%x" owner-id)
-			  (format "%x" doc-id)
-			  name
-			  (format "%x" suffix)
-			  "UTF-8")
-		    (mapcar 
-		     (lambda (user) 
-		       (format "%x" (rudel-id user)))
-		     subscribed))))))
-      
-      (rudel-send this "obby_sync_final")))
+	  ;; Get the new client up to date:
+	  ;; - transmit user list
+	  ;;   - connected users
+	  ;;   - disconnected users
+	  ;; - transmit document list
+	  (with-slots (users clients documents) (oref this :server)
+	    ;; Send number of synchronization items.
+	    (let ((number-of-items (+ (length users) (length documents))))
+	      (rudel-send this 
+			  "obby_sync_init"
+			  (format "%x" number-of-items)))
+
+	    ;; Transmit list of connected users.
+	    (dolist (client clients)
+	      (with-slots ((client-id :id) user) client
+		(let ((name (object-name-string user)))
+		  (with-slots (color (user-id :user-id)) user
+		    (rudel-send this
+				"net6_client_join"
+				(format "%x" client-id)
+				name
+				"0"
+				(format "%x" user-id)
+				(rudel-obby-format-color color))))))
+	    
+	    ;; Transmit list of disconnected users.
+	    (let ((offline-users (remove-if 'rudel-connected users)))
+	      (dolist (user offline-users)
+		(let ((name (object-name-string user)))
+		  (with-slots (user-id color) user
+		    (rudel-send this
+				"obby_sync_usertable_user"
+				(format "%x" user-id)
+				name
+				(rudel-obby-format-color color))))))
+
+	    ;; Transmit document list
+	    (dolist (document documents)
+	      (with-slots ((doc-id :id) owner-id suffix subscribed) document
+		(let ((name (object-name-string document)))
+		  (apply 'rudel-send 
+			 (append
+			  (list this
+				"obby_sync_doclist_document"
+				(format "%x" owner-id)
+				(format "%x" doc-id)
+				name
+				(format "%x" suffix)
+				"UTF-8")
+			  (mapcar 
+			   (lambda (user) 
+			     (format "%x" (rudel-id user)))
+			   subscribed))))))
+	    
+	    (rudel-send this "obby_sync_final"))))))
   )
 
 (defmethod rudel-obby/obby_user_colour ((this rudel-obby-client)
@@ -590,6 +602,27 @@ such objects derived from rudel-obby-client."
 		 :encryption encryption)))
       (incf next-user-id)
       user))
+  )
+
+(defmethod rudel-check-username-and-color ((this rudel-obby-server)
+					   username color)
+  "Check whether USERNAME and COLOR are valid.
+USERNAME must not be empty and must not be used by another
+user. COLOR has to be sufficiently different from used colors."
+  (cond
+   ;; The empty user name is not allowed
+   ((string= username "")
+    rudel-obby-error-username-invalid)
+   ;; Make sure the user name is not already in use.
+   ((rudel-find-user this username
+		     #'string= #'object-name-string)
+    rudel-obby-error-username-in-use)
+   ;; Make sure the color is not already in use.
+   ((rudel-find-user this color
+		     (lambda (left right)
+		       (< (color-distance left right) 20000)) ;; TODO constant
+		     #'rudel-color)
+    rudel-obby-error-color-in-use))
   )
 
 (defmethod rudel-add-client ((this rudel-obby-server) 

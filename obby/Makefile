@@ -9,8 +9,9 @@
 top=../
 ede_FILES=Project.ede Makefile
 
-obby_LISP=rudel-obby.el rudel-obby-util.el rudel-obby-client.el rudel-obby-server.el
+obby_LISP=rudel-obby.el rudel-obby-util.el rudel-obby-client.el rudel-obby-server.el rudel-obby-errors.el
 EMACS=emacs
+EMACSFLAGS=-batch --no-site-file
 LOADPATH= ../jupiter/ ../
 VERSION=0.1
 DISTDIR=$(top)rudel-$(VERSION)/obby
@@ -26,7 +27,7 @@ obby: $(obby_LISP)
 	   echo "(add-to-list 'load-path \"$$loadpath\")" >> $@-compile-script; \
 	done;
 	@echo "(setq debug-on-error t)" >> $@-compile-script
-	"$(EMACS)" -batch --no-site-file -l $@-compile-script -f batch-byte-compile $^
+	"$(EMACS)" $(EMACSFLAGS) -l $@-compile-script -f batch-byte-compile $^
 
 tags: 
 
