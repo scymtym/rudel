@@ -176,7 +176,7 @@ failed encryption negotiation.")
 
       ;; Transmit document list
       (dolist (document documents)
-	(with-slots ((doc-id :id) owner-id subscribed) document
+	(with-slots ((doc-id :id) owner-id suffix subscribed) document
 	  (let ((name (object-name-string document)))
 	    (apply 'rudel-send 
 		   (append
@@ -185,7 +185,7 @@ failed encryption negotiation.")
 			  (format "%x" owner-id)
 			  (format "%x" doc-id)
 			  name
-			  ""
+			  (format "%x" suffix)
 			  "UTF-8")
 		    (mapcar 
 		     (lambda (user) 
