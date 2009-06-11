@@ -246,6 +246,16 @@ of her color to COLOR."
 	    ;; Add the document to the server's document list
 	    (rudel-add-document server document)
 
+	    ;; Maybe notify the creating client of the changed suffix.
+	    (unless (= suffix 1)
+	      (rudel-send this
+			  "obby_document"
+			  (format "%x %x" user-id doc-id)
+			  "rename"
+			  (format "%x" user-id)
+			  name
+			  (format "%x" suffix)))
+
   	    ;; Notify other clients of the new document
   	    (rudel-broadcast this (list 'exclude this)
   			     "obby_document_create"
