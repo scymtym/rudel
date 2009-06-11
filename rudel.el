@@ -297,7 +297,8 @@ client protocols have to obey."
 ;;
 
 (defclass rudel-user (eieio-speedbar-file-button)
-  ((color :initarg :color
+  ((color :initarg  :color 
+	  :accessor rudel-color
 	  :documentation
 	  "Color used to indicate ownership or authorship by the
 user. Examples includes text written by the user or the user name
