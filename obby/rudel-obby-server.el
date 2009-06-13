@@ -77,7 +77,7 @@ handled by the server.")
 timeout timer."
   ;; Send greeting sequence to the client.
   (with-slots (socket) this
-    (rudel-send this 
+    (rudel-send this
 		"obby_welcome"
 		(number-to-string rudel-obby-protocol-version))
     (rudel-send this "net6_encryption" "0"))
@@ -118,7 +118,7 @@ the negotiation."
 No action has to be taken, since the client simply proceeds after
 failed encryption negotiation.")
 
-(defmethod rudel-obby/net6_client_login ((this rudel-obby-client) 
+(defmethod rudel-obby/net6_client_login ((this rudel-obby-client)
 					 username color)
   "Handle 'net6_client_login' message."
   (with-parsed-arguments ((color color))
@@ -135,8 +135,8 @@ failed encryption negotiation.")
 
 	  ;; Create a user object for this client and add it to the
 	  ;; server.
-	  (setq user (rudel-make-user 
-		      server 
+	  (setq user (rudel-make-user
+		      server
 		      username client-id color encryption))
 
 	  (rudel-add-user server user)
@@ -161,7 +161,7 @@ failed encryption negotiation.")
 	  (with-slots (users clients documents) (oref this :server)
 	    ;; Send number of synchronization items.
 	    (let ((number-of-items (+ (length users) (length documents))))
-	      (rudel-send this 
+	      (rudel-send this
 			  "obby_sync_init"
 			  (format "%x" number-of-items)))
 
@@ -177,7 +177,7 @@ failed encryption negotiation.")
 				"0"
 				(format "%x" user-id)
 				(rudel-obby-format-color color))))))
-	    
+
 	    ;; Transmit list of disconnected users.
 	    (let ((offline-users (remove-if 'rudel-connected users)))
 	      (dolist (user offline-users)
@@ -193,7 +193,7 @@ failed encryption negotiation.")
 	    (dolist (document documents)
 	      (with-slots ((doc-id :id) owner-id suffix subscribed) document
 		(let ((name (object-name-string document)))
-		  (apply 'rudel-send 
+		  (apply 'rudel-send
 			 (append
 			  (list this
 				"obby_sync_doclist_document"
@@ -202,11 +202,11 @@ failed encryption negotiation.")
 				name
 				(format "%x" suffix)
 				"UTF-8")
-			  (mapcar 
-			   (lambda (user) 
+			  (mapcar
+			   (lambda (user)
 			     (format "%x" (rudel-id user)))
 			   subscribed))))))
-	    
+
 	    (rudel-send this "obby_sync_final"))))))
   )
 
@@ -227,13 +227,13 @@ of her color to COLOR."
 (defmethod rudel-obby/obby_document_create ((this rudel-obby-client)
 					    doc-id name encoding content)
   "Handle 'obby_document_create' message."
-  (with-parsed-arguments ((doc-id   number) 
+  (with-parsed-arguments ((doc-id   number)
 			  (encoding coding-system))
     (with-slots (user server) this
       (with-slots ((user-id :user-id)) user
   	;; Create a (hidden) buffer for the new document
-        (let* ((buffer   (get-buffer-create 
-  			  (concat 
+        (let* ((buffer   (get-buffer-create
+  			  (concat
   			   " *" (generate-new-buffer-name name) "*")))
   	       ;; Create the new document object
   	       (document (rudel-obby-document
@@ -243,15 +243,15 @@ of her color to COLOR."
   			  :id         doc-id
   			  :owner-id   user-id
   			  :suffix     1)))
-  
+
   	  ;; Initialize the buffer's content
   	  (with-current-buffer buffer
   	    (insert content))
-    
+
   	  (with-slots (suffix) document
   	    ;; Determine an appropriate suffix to provide an unique
   	    ;; name for the new document.
-  	    (while (rudel-find-document server 
+  	    (while (rudel-find-document server
   	    				(if (= suffix 1)
   	    				    name
   	    				  (format "%s<%d>" name suffix))
@@ -279,12 +279,12 @@ of her color to COLOR."
   			     name
   			     (format "%x" suffix)
   			     (upcase (symbol-name encoding))))
-  	  
+
   	  ;; Add a jupiter context for (THIS DOCUMENT).
   	  (rudel-add-context server this document)))))
   )
 
-(defmethod rudel-obby/obby_document ((this rudel-obby-client) 
+(defmethod rudel-obby/obby_document ((this rudel-obby-client)
 				     doc-id action &rest arguments)
   "Handle 'obby_document' messages."
   (with-parsed-arguments ((doc-id document-id))
@@ -329,11 +329,11 @@ of her color to COLOR."
 			    (format "%x %x" owner-id doc-id)
 			    "sync_chunk"
 			    string
-			    (format "%x" 
+			    (format "%x"
 				    (if author
 					(oref author :user-id)
 				      0)))))))
-	
+
 	;; Notify clients of the new subscription (including our own
 	;; client, who requested the subscription).
 	(with-slots ((user-id :user-id)) user
@@ -342,7 +342,7 @@ of her color to COLOR."
 			   (format "%x %x" owner-id doc-id)
 			   "subscribe"
 			   (format "%x" user-id))))
-      
+
       ;; Add a jupiter context for (THIS document).
       (with-slots (server) this
 	(rudel-add-context server this document))))
@@ -399,11 +399,11 @@ of her color to COLOR."
     (with-slots (server user) this
       ;; Transform the operation.
       (let* ((context     (rudel-find-context server this document))
-	     (transformed (jupiter-remote-operation 
-			   context 
-			   remote-revision local-revision 
+	     (transformed (jupiter-remote-operation
+			   context
+			   remote-revision local-revision
 			   (jupiter-insert
-			    (format "insert-%d-%d" 
+			    (format "insert-%d-%d"
 				    remote-revision local-revision)
 			    :from position :data data))))
 
@@ -456,13 +456,13 @@ of her color to COLOR."
 
       ;; Transform the operation.
       (let* ((context     (rudel-find-context server this document))
-	     (transformed (jupiter-remote-operation 
+	     (transformed (jupiter-remote-operation
 			   context
-			   remote-revision local-revision 
+			   remote-revision local-revision
 			   (jupiter-delete
-			    (format "delete-%d-%d" 
+			    (format "delete-%d-%d"
 				    remote-revision local-revision)
-			    :from position 
+			    :from position
 			    :to   (+ position length)))))
 
 	;; Incorporate change into DOCUMENT.
@@ -504,12 +504,12 @@ of her color to COLOR."
 		  :to   (+ position length))))))))))
   )
 
-(defmethod rudel-subscribed-clients-not-self ((this rudel-obby-client) 
+(defmethod rudel-subscribed-clients-not-self ((this rudel-obby-client)
 					      document)
   "Return a list of clients subscribed to DOCUMENT excluding THIS."
   (with-slots (clients) (oref this :server)
     (with-slots (subscribed) document
-      (remove-if 
+      (remove-if
        (lambda (client)
 	 (with-slots (user) client
 	   (or (eq client this)
@@ -521,7 +521,7 @@ of her color to COLOR."
 ;;; Class rudel-obby-server
 ;;
 
-(defclass rudel-obby-server (rudel-server-session 
+(defclass rudel-obby-server (rudel-server-session
 			     rudel-socket-owner)
   ((clients        :initarg  :clients
 		   :type     list
@@ -568,7 +568,7 @@ such objects derived from rudel-obby-client."
 	  ((null receivers) (oref this :clients))
 	  ;; If RECEIVERS is a (non-empty) list of rudel-obby-client
 	  ;; (or derived) objects, treat it as a list of receivers.
-	  ((and (listp receivers) 
+	  ((and (listp receivers)
 		(rudel-obby-client-child-p (car receivers)))
 	   receivers)
 	  ;; If RECEIVERS is a (non-empty) list with cdr equal to
@@ -625,7 +625,7 @@ user. COLOR has to be sufficiently different from used colors."
     rudel-obby-error-color-in-use))
   )
 
-(defmethod rudel-add-client ((this rudel-obby-server) 
+(defmethod rudel-add-client ((this rudel-obby-server)
 			     client-socket)
   ""
   (with-slots (next-client-id clients) this
@@ -676,7 +676,7 @@ user. COLOR has to be sufficiently different from used colors."
   "Remove the jupiter context associated to (CLIENT DOCUMENT) from THIS."
   (with-slots (contexts) this
     (remhash
-     (rudel-obby-context-key client document) 
+     (rudel-obby-context-key client document)
      contexts)))
 
 (defun rudel-obby-context-key (client document)

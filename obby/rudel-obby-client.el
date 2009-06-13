@@ -41,7 +41,6 @@
 
 (require 'rudel-operations)
 
-(require 'rudel-obby)
 (require 'rudel-obby-util)
 
 
@@ -61,11 +60,11 @@
 documents."))
   "Class rudel-obby-connection ")
 
-(defmethod initialize-instance :after ((this rudel-obby-connection) slots)
+(defmethod initialize-instance :after ((this rudel-obby-connection) &rest slots)
   ;; Create a new hash-table object to hold jupiter contexts
   ;; associated to documents.
   (with-slots (contexts) this
-    (setq contexts (make-hash-table :test 'equal))))
+    (setq contexts (make-hash-table :test #'equal))))
 
 (defmethod rudel-disconnect ((this rudel-obby-connection))
   ""
@@ -107,10 +106,8 @@ nothing else."
 
 (defmethod rudel-change-color- ((this rudel-obby-connection) color)
   ""
-  (with-slots (socket) this
-    (rudel-send this "obby_user_colour" 
-		(rudel-obby-format-color color)))
-  )
+  (rudel-send this "obby_user_colour"
+	      (rudel-obby-format-color color)))
 
 (defmethod rudel-publish ((this rudel-obby-connection) document)
   ""
@@ -135,13 +132,13 @@ nothing else."
 
   ;; Announce the subscription to the server.
   (with-slots (session) this
-    (with-slots ((user-id :user-id)) (oref session :self)
-      (with-slots (id owner-id subscribed) document
+    (with-slots (user-id) (oref session :self)
+      (with-slots ((doc-id :id) owner-id) document
 	(rudel-send this "obby_document"
-		    (format "%x %x" owner-id id)
+		    (format "%x %x" owner-id doc-id)
 		    "subscribe"
 		    (format "%x" user-id)))))
-  
+
   ;; We receive a notification of our own subscription from the
   ;; server. Consequently we do not add SELF to the list of subscribed
   ;; users of DOCUMENT.
@@ -155,34 +152,34 @@ nothing else."
   ;; Announce the end of our subscription to the server.
   (with-slots (session) this
     (with-slots (user-id) (oref session :self)
-      (with-slots (id owner-id subscribed) document
+      (with-slots ((doc-id :id) owner-id) document
 	(rudel-send this "obby_document"
-		    (format "%x %x" owner-id id)
+		    (format "%x %x" owner-id doc-id)
 		    "unsubscribe"
 		    (format "%x" user-id)))))
-  
+
   ;; We receive a notification of the end of our own subscription from
   ;; the server. Consequently we do not remove SELF from the list of
   ;; subscribed users of DOCUMENT.
   )
 
 (defmethod rudel-local-insert ((this rudel-obby-connection)
-			       document position data)
+ 			       document position data)
   ""
-  (rudel-local-operation 
-   this 
-   document 
+  (rudel-local-operation
+   this
+   document
    (jupiter-insert "insert" :from position :data data)))
 
 (defmethod rudel-local-delete ((this rudel-obby-connection)
 			       document position length)
   ""
-  (rudel-local-operation 
-   this 
-   document 
+  (rudel-local-operation
+   this
+   document
    (jupiter-delete "delete" :from position :to (+ position length))))
 
-(defmethod rudel-local-operation ((this rudel-obby-connection) 
+(defmethod rudel-local-operation ((this rudel-obby-connection)
 				  document operation)
   "Handle OPERATION performed on DOCUMENT by sending a message through THIS connection."
   ;; Convert character positions in OPERATION to byte positions, since
@@ -197,7 +194,7 @@ nothing else."
     ;; Notify the server of the operation.
     (with-slots (owner-id (doc-id :id)) document
       (with-slots (local-revision remote-revision) context
-	(apply 'rudel-send
+	(apply #'rudel-send
 	       this
 	       "obby_document"
 	       (format "%x %x" owner-id doc-id)
@@ -212,14 +209,14 @@ nothing else."
 
 (defmethod rudel-remote-operation ((this rudel-obby-connection)
 				   document user
-				   remote-revision local-revision 
+				   remote-revision local-revision
 				   operation)
   "Handle OPERATION received through THIS connection performed by USER on DOCUMENT."
   (let* (;; Find jupiter context for DOCUMENT.
 	 (context     (rudel-find-context this document))
 	 ;; And transform the operation.
 	 (transformed (jupiter-remote-operation
-		       context 
+		       context
 		       remote-revision local-revision
 		       operation)))
 
@@ -255,7 +252,7 @@ nothing else."
   (with-slots (info) this
     (let ((username (plist-get info :username))
 	  (color    (plist-get info :color)))
-      (rudel-send this 
+      (rudel-send this
 		  "net6_client_login"
 		  username (rudel-obby-format-color color))))
   )
@@ -274,7 +271,7 @@ nothing else."
       ;; or color is already taken.
       (let ((username (plist-get info :username))
 	    (color    (plist-get info :color)))
-	(rudel-send this 
+	(rudel-send this
 		    "net6_client_login"
 		    username (rudel-obby-format-color color)))))
   )
@@ -283,7 +280,7 @@ nothing else."
   "Handle net6 'encryption_failed' message."
   )
 
-(defmethod rudel-obby/net6_client_join ((this rudel-obby-connection) 
+(defmethod rudel-obby/net6_client_join ((this rudel-obby-connection)
 					client-id name encryption user-id color)
   "Handle 'net6_client_join message."
   (with-parsed-arguments ((client-id number)
@@ -302,7 +299,7 @@ nothing else."
     (message "Client joined: %s %s" name color))
   )
 
-(defmethod rudel-obby/net6_client_part ((this rudel-obby-connection) 
+(defmethod rudel-obby/net6_client_part ((this rudel-obby-connection)
 					client-id)
   "Handle net6 'client_part' message."
   ;; Find the user object, associated to the client id. Remove the
@@ -335,7 +332,7 @@ nothing else."
 						user-id name color)
   ""
   (with-slots (session) this
-    (with-parsed-arguments ((user-id number) 
+    (with-parsed-arguments ((user-id number)
 			    (color   color))
       (rudel-add-user session (rudel-obby-user name
 			      :user-id    user-id
@@ -343,10 +340,10 @@ nothing else."
 			      :color      color))))
   )
 
-(defmethod rudel-obby/obby_user_colour ((this rudel-obby-connection) 
+(defmethod rudel-obby/obby_user_colour ((this rudel-obby-connection)
 					user-id color)
   ""
-  (with-parsed-arguments ((user-id number) 
+  (with-parsed-arguments ((user-id number)
 			  (color   color))
     (with-slots (session) this
       (let ((user (rudel-find-user session user-id
@@ -359,7 +356,7 @@ nothing else."
    owner-id doc-id name suffix encoding &rest subscribed-user-ids)
   ""
   (with-parsed-arguments ((doc-id   number)
-			  (owner-id number) 
+			  (owner-id number)
 			  (suffix   number)
 			  (encoding coding-system))
     (with-slots (session) this
@@ -385,9 +382,9 @@ nothing else."
 (defmethod rudel-obby/obby_document_create ((this rudel-obby-connection)
 					    owner-id doc-id name suffix encoding)
   ""
-  (with-parsed-arguments ((owner-id number) 
-			  (doc-id   number) 
-			  (suffix   number) 
+  (with-parsed-arguments ((owner-id number)
+			  (doc-id   number)
+			  (suffix   number)
 			  (encoding coding-system))
     (with-slots (session) this
       (let ((owner (rudel-find-user session owner-id
@@ -400,7 +397,7 @@ nothing else."
     (message "New document %s" name))
   )
 
-(defmethod rudel-obby/obby_document_remove ((this rudel-obby-connection) 
+(defmethod rudel-obby/obby_document_remove ((this rudel-obby-connection)
 					    doc-id)
   ""
   (with-parsed-arguments ((doc-id number))
@@ -425,7 +422,7 @@ nothing else."
   )
 
 (defmethod rudel-obby/obby_document/rename ((this rudel-obby-connection)
-					    document 
+					    document
 					    user new-name new-suffix)
   "Handle obby 'rename' submessage of the 'obby_document' message."
   (with-parsed-arguments ((new-suffix number))
@@ -474,11 +471,11 @@ nothing else."
   )
 
 (defmethod rudel-obby/obby_document/record ((this rudel-obby-connection)
-					    document user-id 
+					    document user-id
 					    local-revision remote-revision
 					    action &rest arguments)
   ""
-  (with-parsed-arguments ((user-id         number) 
+  (with-parsed-arguments ((user-id         number)
 			  (local-revision  number)
 			  (remote-revision number))
     (with-slots (session) this
@@ -521,10 +518,10 @@ nothing else."
   ""
   (with-parsed-arguments ((position number)
 			  (length   number))
-    (let ((operation (jupiter-delete 
-		      (format "delete-%d-%d" 
+    (let ((operation (jupiter-delete
+		      (format "delete-%d-%d"
 			      remote-revision local-revision)
-		      :from position 
+		      :from position
 		      :to   (+ position length))))
       (rudel-remote-operation this
 			      document user
@@ -550,10 +547,10 @@ nothing else."
 						 document user
 						 local-revision remote-revision)
   ""
-  (let ((operation (jupiter-nop 
-		    (format "nop-%d-%d" 
+  (let ((operation (jupiter-nop
+		    (format "nop-%d-%d"
 			    remote-revision local-revision))))
-    (rudel-remote-operation this 
+    (rudel-remote-operation this
 			    document user
 			    remote-revision local-revision
 			    operation))
