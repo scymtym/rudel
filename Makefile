@@ -10,10 +10,12 @@ top=
 ede_FILES=Project.ede Makefile
 
 EMACS=emacs
-LOADPATH= ../../../home/jan/opt/emacs/share/emacs/site-lisp/cedet/common/
+LOADPATH= ../../opt/emacs/share/emacs/site-lisp/cedet/common/
 LOADDEFS=rudel-loaddefs.el
 LOADDIRS=. jupiter obby
-rudel_LISP=rudel.el rudel-util.el rudel-mode.el rudel-interactive.el rudel-overlay.el rudel-speedbar.el rudel-operators.el rudel-operations.el rudel-compat.el rudel-tls.el
+rudel_LISP=rudel.el rudel-util.el rudel-mode.el rudel-interactive.el rudel-overlay.el rudel-speedbar.el rudel-operators.el rudel-operations.el rudel-compat.el rudel-tls.el rudel-errors.el rudel-state-machine.el
+EMACS=emacs
+EMACSFLAGS=-batch --no-site-file
 VERSION=0.1
 DISTDIR=$(top)rudel-$(VERSION)
 
@@ -37,19 +39,19 @@ rudel: $(rudel_LISP)
 	   echo "(add-to-list 'load-path \"$$loadpath\")" >> $@-compile-script; \
 	done;
 	@echo "(setq debug-on-error t)" >> $@-compile-script
-	"$(EMACS)" -batch --no-site-file -l $@-compile-script -f batch-byte-compile $^
+	"$(EMACS)" $(EMACSFLAGS) -l $@-compile-script -f batch-byte-compile $^
 
 .PHONY:obby
 obby:
-	cd obby; $(MAKE)
+	$(MAKE) -C obby
 
 .PHONY:jupiter
 jupiter:
-	cd jupiter; $(MAKE)
+	$(MAKE) -C jupiter
 
 tags: 
-	cd obby/; make $(MFLAGS) $@
-	cd jupiter/; make $(MFLAGS) $@
+	$(MAKE) -C obby/ $(MFLAGS) $@
+	$(MAKE) -C jupiter/ $(MFLAGS) $@
 
 
 clean:
@@ -61,8 +63,8 @@ dist: autoloads
 	rm -rf $(DISTDIR)
 	mkdir $(DISTDIR)
 	cp rudel-loaddefs.el $(rudel_LISP) $(ede_FILES) $(DISTDIR)
-	cd obby; $(MAKE) $(MFLAGS) DISTDIR=$(DISTDIR)/obby dist
-	cd jupiter; $(MAKE) $(MFLAGS) DISTDIR=$(DISTDIR)/jupiter dist
+	$(MAKE) -C obby $(MFLAGS) DISTDIR=$(DISTDIR)/obby dist
+	$(MAKE) -C jupiter $(MFLAGS) DISTDIR=$(DISTDIR)/jupiter dist
 	tar -cvzf $(DISTDIR).tar.gz $(DISTDIR)
 	rm -rf $(DISTDIR)
 
