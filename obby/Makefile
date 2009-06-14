@@ -9,7 +9,7 @@
 top=../
 ede_FILES=Project.ede Makefile
 
-obby_LISP=rudel-obby.el rudel-obby-util.el rudel-obby-client.el rudel-obby-server.el rudel-obby-errors.el
+obby_LISP=rudel-obby.el rudel-obby-util.el rudel-obby-client.el rudel-obby-server.el rudel-obby-errors.el rudel-obby-state.el
 EMACS=emacs
 EMACSFLAGS=-batch --no-site-file
 LOADPATH= ../jupiter/ ../
@@ -29,7 +29,7 @@ obby: $(obby_LISP)
 	@echo "(setq debug-on-error t)" >> $@-compile-script
 	"$(EMACS)" $(EMACSFLAGS) -l $@-compile-script -f batch-byte-compile $^
 
-tags: 
+tags:
 
 
 clean:
