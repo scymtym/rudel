@@ -30,6 +30,8 @@
 ;;; History:
 ;;
 ;; 0.1 - Initial revision.
+;;
+;; 0.2 - Use define-minor-mode
 
 ;;; Code:
 ;;
@@ -42,12 +44,6 @@
 
 ;;; Global mode, menu and keymap
 ;;
-
-;;;###autoload
-(defvar global-rudel-minor-mode nil
-  "Non-nil when Rudel is active globally.")
-
-(add-to-list 'minor-mode-alist '(global-rudel-minor-mode ""))
 
 (defvar rudel-minor-keymap
   (let ((map     (make-sparse-keymap))
