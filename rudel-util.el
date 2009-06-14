@@ -33,16 +33,33 @@
 ;;
 
 (eval-when-compile
-  (require 'cl)) ; TODO check
+  (require 'cl))
 
 (require 'eieio)
+
+(require 'rudel-errors)
+
+
+;;; Errors
+;;
+
+;; rudel-dispatch-error
+
+(intern "rudel-dispatch-error")
+
+(put 'rudel-dispatch-error 'error-conditions
+     '(error
+       rudel-error rudel-dispatch-error))
+
+(put 'rudel-dispatch-error 'error-message
+     "Could not dispatch message to handler")
 
 
 ;;; Class rudel-socket-owner
 ;;
 
 (defclass rudel-socket-owner ()
-  ((socket :initarg :socket 
+  ((socket :initarg :socket
 	   :type    process
 	   :documentation
 	   "The process object representing the socket through
@@ -119,7 +136,7 @@ data from last and concatenate with DATA before processing."
        ;; Try to find a line break in the augmented data.
        (let ((,index (position ?\n ,data :from-end t)))
 	 (unless (and ,index (eq ,index (- (length ,data) 1)))
-	   (setq ,storage (if ,index 
+	   (setq ,storage (if ,index
 			      (substring ,data (+ ,index 1))
 			    ,data))
 	   (setq ,data    (when ,index
@@ -163,6 +180,31 @@ it is a number."
 		 ,var    (substring ,rest 0 ,amount)
 		 ,rest   (substring ,rest ,amount))
 	   (progn ,@forms)))))
+  )
+
+
+;;; Miscellaneous functions
+;;
+
+(defun rudel-dispatch (object prefix name arguments)
+  "Call method (concat PREFIX NAME) of OBJECT with ARGUMENTS.
+If no such method can be found, the condition
+rudel-dispatch-error is signalled."
+  ;; Construct a matching symbol.
+  (let* ((method (intern-soft (concat prefix name))))
+    ;; If we found a suitable method, run it; Otherwise signal.
+    (unless method
+      (signal 'rudel-dispatch-error 'method-symbol-unbound))
+    (condition-case error
+	;; Try to call METHOD. This can still fail when METHOD is not
+	;; defined for the class of OBJECT.
+	(apply method object arguments)
+      ;; Only handle a condition 'no-method-definition' that refers to
+      ;; METHOD, otherwise continue unwinding.
+      (no-method-definition
+       (if (eq method (cadr error))
+	   (signal 'rudel-dispatch-error 'no-method-for-object)
+	 (signal (car error) (cdr error))))))
   )
 
 (provide 'rudel-util)
