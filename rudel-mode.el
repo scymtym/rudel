@@ -34,6 +34,7 @@
 ;;; Code:
 ;;
 
+(require 'easy-mmode)
 (require 'easymenu)
 
 (require 'rudel)
@@ -49,21 +50,21 @@
 (add-to-list 'minor-mode-alist '(global-rudel-minor-mode ""))
 
 (defvar rudel-minor-keymap
-  (let ((map  (make-sparse-keymap))
-	(pmap (make-sparse-keymap)))
+  (let ((map     (make-sparse-keymap))
+	(sub-map (make-sparse-keymap)))
     ;; Define sub keymap
-    (define-key pmap "j" 'rudel-join-session)
-    (define-key pmap "h" 'rudel-host-session)
-    (define-key pmap "e" 'rudel-end-session)
+    (define-key sub-map "j" #'rudel-join-session)
+    (define-key sub-map "h" #'rudel-host-session)
+    (define-key sub-map "e" #'rudel-end-session)
 
-    (define-key pmap "c" 'rudel-change-color)
+    (define-key sub-map "c" #'rudel-change-color)
 
-    (define-key pmap "p" 'rudel-publish-buffer)
-    (define-key pmap "u" 'rudel-unpublish-buffer)
-    (define-key pmap "s" 'rudel-subscribe)
+    (define-key sub-map "p" #'rudel-publish-buffer)
+    (define-key sub-map "u" #'rudel-unpublish-buffer)
+    (define-key sub-map "s" #'rudel-subscribe)
 
     ;; Bind the sub keymap into map
-    (define-key map "\C-cc" pmap)
+    (define-key map "\C-cc" sub-map)
     map)
   "Keymap used in Rudel minor mode.")
 
@@ -81,43 +82,48 @@
       "---"
       [ "Change Color"             rudel-change-color
 	                           (and rudel-current-session
-					(rudel-capable-of-p 
+					(rudel-capable-of-p
 					 (oref rudel-current-session :backend)
 					 'change-color)) ] ; TODO bulky
       "---"
-      [ "Publish current Buffer"   rudel-publish-buffer 
-	                           (and rudel-current-session 
+      [ "Publish current Buffer"   rudel-publish-buffer
+	                           (and rudel-current-session
 					(not (rudel-buffer-has-document-p))) ]
       [ "Unpublish current Buffer" rudel-unpublish-buffer
 	                           (rudel-buffer-has-document-p) ]
       [ "Subscribe to Document"    rudel-subscribe
 	                           rudel-current-session ]
       "---"
-      [ "Rudel Overview"           rudel-speedbar 
+      [ "Rudel Overview"           rudel-speedbar
 	                           t ]
       "---"
       ( "Options")
       ))
   )
 
-(add-to-list 'minor-mode-map-alist
-	     (cons 'global-rudel-minor-mode rudel-minor-keymap))
-
 ;;;###autoload
-(defun global-rudel-minor-mode (&optional arg)
-  "Global Rudel minor mode.
-Install Rudel menu and keymap.
+(define-minor-mode global-rudel-minor-mode
+  "Toggle global Rudel minor mode (No modeline indicator).
 
-With argument ARG positive, turn on the mode. Negative, turn off
-the mode. nil means to toggle the mode."
-  (interactive "P")
-  ;; Update mode variable.
-  (setq global-rudel-minor-mode
-	(cond 
-	 ((null arg)
-	  (not global-rudel-minor-mode))
-	 (t
-	  (> (prefix-numeric-value arg) 0))))
+If ARG is null, toggle global Rudel mode.
+If ARG is a number greater than zero, turn on global Rudel mode;
+otherwise, turn it off."
+  :init-value nil
+  :keymap     rudel-minor-keymap
+  :global     t
+  :group      'rudel
+  (cond
+   ;; Emacs session is not interactive
+   (noninteractive
+    (setq global-rudel-minor-mode nil))
+
+   ;; Mode is enabled
+   (global-rudel-minor-mode
+    )
+
+   ;; Mode is disabled
+   (t
+    ))
   )
 
 (provide 'rudel-mode)
