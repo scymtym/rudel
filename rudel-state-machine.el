@@ -54,10 +54,10 @@
 (intern "rudel-state-error")
 
 (put 'rudel-state-error 'error-conditions
-     '(error 
+     '(error
        rudel-error rudel-state-error))
 
-(put 'rudel-state-error 'error-message 
+(put 'rudel-state-error 'error-message
      "Invalid state or state transition")
 
 ;; rudel-invalid-successor-state
@@ -68,7 +68,7 @@
      '(error
        rudel-error rudel-state-error rudel-invalid-successor-state))
 
-(put 'rudel-invalid-successor-state 'error-message 
+(put 'rudel-invalid-successor-state 'error-message
      "Invalid successor state in state transition")
 
 ;; rudel-entered-error-state
@@ -76,10 +76,10 @@
 (intern "rudel-entered-error-state")
 
 (put 'rudel-entered-error-state 'error-conditions
-     '(error 
+     '(error
        rudel-error rudel-state-error rudel-entered-error-state))
 
-(put 'rudel-entered-error-state 'error-message 
+(put 'rudel-entered-error-state 'error-message
      "Transition to error state")
 
 
@@ -117,12 +117,13 @@ and STATE is an object of a class derived from rudel-state.")
 	   "The current state of the machine."))
   "A finite state machine.")
 
-;; (defmethod initialize-instance :after ((this rudel-state-machine)
-;; 				       &rest slots)
-;;   "Set state of THIS to the first state in the state list."
-;;   (with-slots (states state) this
-;;     (setq state (cdr (nth 0 states)))
-;;     (rudel-enter state)))
+(defmethod initialize-instance :after ((this rudel-state-machine)
+				       &rest slots)
+  "Set state of THIS to the first state in the state list."
+  (with-slots (states state) this
+    (let ((start (or (plist-get slots :start) 'new)))
+      (setq state (cdr (assoc start states)))
+      (rudel-enter state))))
 
 (defmethod rudel-find-state ((this rudel-state-machine) name)
   "Return state object for symbol NAME."
@@ -139,7 +140,7 @@ STATES is a list of cons cells whose car is a symbol - the name
 of the state - and whose cdr is a class."
   (dolist (symbol-and-state states)
     (destructuring-bind (name . class) symbol-and-state
-      (rudel-register-state 
+      (rudel-register-state
        this name (make-instance class (symbol-name name)))))
   )
 
@@ -149,7 +150,7 @@ If OBJECT is non-nil, (NAME . OBJECT) is returned. Otherwise,
 just NAME."
   (with-slots (states state) this
     (let ((state-symbol (car (find state states :key #'cdr :test #'eq))))
-      (if object 
+      (if object
 	  (cons state-symbol state)
 	state-symbol)))
   )
@@ -186,7 +187,7 @@ state."
      ((rudel-state-child-p next))
 
      ;; When NEXT is nil, stay in the current state.
-     ((null next) 
+     ((null next)
       (setq next state))
 
      ;; When NEXT is a symbol (but not nil), look up the corresponding
@@ -194,7 +195,7 @@ state."
      ((symbolp next)
       (let ((next-state (assoc next states)))
 	(unless next-state
-	  (signal 'rudel-invalid-successor-state 
+	  (signal 'rudel-invalid-successor-state
 		  (list next '<- state)))
 	(setq next (cdr next-state))))
 
@@ -237,7 +238,7 @@ list infinitely."
 	   (catch 'state-wait
 	     (while t
 	       ;; Retrieve current state.
-	       (destructuring-bind (symbol . state) 
+	       (destructuring-bind (symbol . state)
 		   (rudel-current-state machine t)
 		 ;; Check against success and error states.
 		 (when (memq symbol success-states)
