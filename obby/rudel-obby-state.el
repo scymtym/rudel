@@ -101,5 +101,45 @@ Display a warning if no such handler is found."
   "Handle net6 'ping' message."
   (rudel-send this "net6_pong"))
 
+
+;;; Class rudel-obby-document-handler
+;;
+
+(defclass rudel-obby-document-handler ()
+  ()
+  "Mixin class that provides ability to process submessages of
+  obby 'document' messages.")
+
+(defmethod rudel-obby/obby_document
+  ((this rudel-obby-document-handler) doc-id action &rest arguments)
+  "Handle obby 'document' message family."
+  ;; Try to dispatch to the correct message handler. If there is none,
+  ;; warn.
+  (with-parsed-arguments ((doc-id document-id))
+    ;; Locate the document based on owner id and document id.
+    (let ((document (with-slots (connection) this
+		      (with-slots (session) connection
+			(rudel-find-document session doc-id
+					     #'equal #'rudel-both-ids)))))
+      (if document
+	  (condition-case error
+	      ;; Try to dispatch
+	      (rudel-dispatch this "rudel-obby/obby_document/" action
+			      (cons document arguments))
+	    ;; Warn if we failed to locate or execute the
+	    ;; method. Return nil in this case, so we remain in the
+	    ;; current state.
+	    (rudel-dispatch-error
+	     (progn
+	       (warn "%s: no method (%s: %s): `%s:%s'; arguments: %s"
+		     (object-print this) (car error) (cdr error)
+		     "rudel-obby/obby_document/" action arguments)
+	       nil)))
+	;; If we did not find the document, warn.
+	(progn
+	  (warn "Document not found: %s" doc-id)
+	  nil))))
+  )
+
 (provide 'rudel-obby-state)
 ;;; rudel-obby-state.el ends here
