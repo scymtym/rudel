@@ -1,9 +1,14 @@
 * REQUIREMENTS
-  
+
   Rudel is developed and tested only with GNU Emacs and therefore
   unlikely to run on other Emacs variants like XEmacs.
 
   To use Rudel, the following additional software is required:
+
+** GNU Emacs 22 or above
+   Rudel should work with recent versions of GNU Emacs starting from
+   version 22. Older versions of GNU Emacs or XEmacs may or not work
+   but are not actively tested.
 
 ** Collection of Emacs Development Environment Tools (CEDET)
    Cedet contains the object system Eieio, which is used in Rudel's
@@ -12,6 +17,10 @@
 
    IMPORTANT: It is necessary to use the latest CVS version of CEDET
    since it fixes a serious problem in the object system Eieio.
+
+** GnuTLS (optional)
+   Encrypted connections to Gobby servers require the gnutls-cli
+   program.
 
 * INSTALLING
 
@@ -37,7 +46,7 @@
   in the `rudel' directory (or equivalent) mentioned above. Once the
   file has been generated, auto loading of Rudel can be activated
   permanently by executing
-  
+
   : (load "SOMEDIR/rudel/rudel-loaddefs.el")
 
   in your .emacs file.
@@ -54,3 +63,7 @@
   : make
 
   in the `rudel' directory (or equivalent) mentioned above.
+
+Local variables:
+mode: org
+end:
