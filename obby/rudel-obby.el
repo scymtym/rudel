@@ -67,10 +67,11 @@ multiple chunks.")
   ((capabilities :initform '(join host
 			     change-color
 			     track-subscriptions)))
-  "Class rudel-obby-backend ")
+  "Main class of the Rudel obby backend. Creates obby client
+connections and creates obby servers.")
 
 (defmethod rudel-ask-connect-info ((this rudel-obby-backend))
-  ""
+  "Ask user for the information required to connect to an obby server."
   ;; Read server host and port.
   (let ((host     (read-string "Server: "))
 	(port     (read-number "Port: " 6522))
@@ -84,7 +85,8 @@ multiple chunks.")
   )
 
 (defmethod rudel-connect ((this rudel-obby-backend) info)
-  ""
+  "Connect to an obby server using the information INFO.
+Return the connection object."
   ;; Before we start, load the client functionality.
   (require 'rudel-obby-client)
   ;; Create the network process
@@ -93,7 +95,7 @@ multiple chunks.")
 	 (port       (plist-get info :port))
 	 (encryption (plist-get info :encryption))
 	 ;; Create the network process
-	 (socket     (funcall 
+	 (socket     (funcall
 		      (if encryption
 			  (progn
 			    (require 'rudel-tls)
@@ -115,12 +117,13 @@ multiple chunks.")
   )
 
 (defmethod rudel-ask-host-info ((this rudel-obby-backend))
-  ""
+  "Ask user for information required to host an obby session."
   (let ((port (read-number "Port: " 6522)))
     (list :port port)))
 
 (defmethod rudel-host ((this rudel-obby-backend) info)
-  ""
+  "Host an obby session using the information INFO.
+Return the created server."
   ;; Before we start, we load the server functionality.
   (require 'rudel-obby-server)
   ;; Create the network process.
@@ -149,11 +152,12 @@ multiple chunks.")
 
 (defmethod rudel-make-document ((this rudel-obby-backend)
 				name session)
-  ""
+  "Make a new document in SESSION named NAME.
+Return the new document."
   ;; Find an unused document id and create a document with that id.
   (let ((id (rudel-available-document-id this session)))
     (with-slots (user-id) (oref session :self)
-      (rudel-obby-document name 
+      (rudel-obby-document name
 			   :session  session
 			   :id       id
 			   :owner-id user-id
@@ -288,15 +292,15 @@ whose cdr is the replacement for the pattern."
 
 (defun rudel-obby-escape-string (string)
   "Replace meta characters in STRING with their escape sequences."
-  (rudel-obby-replace-in-string 
-   string 
+  (rudel-obby-replace-in-string
+   string
    '(("\\\\" . "\\b") ("\n" . "\\n") (":" . "\\d")))
   )
 
 (defun rudel-obby-unescape-string (string)
   "Replace escaped versions of obby meta characters in STRING with the actual meta characters."
-  (rudel-obby-replace-in-string 
-   string 
+  (rudel-obby-replace-in-string
+   string
    '(("\\\\n" . "\n") ("\\\\d" . ":") ("\\\\b" . "\\")))
   )
 
@@ -309,7 +313,7 @@ whose cdr is the replacement for the pattern."
 				(lsh (logand #x0000ff color-numeric)  08))))
     color-string)
   )
-  
+
 (defun rudel-obby-format-color (color)
   "Format the Emacs color COLOR as obby color string."
   (multiple-value-bind (red green blue) (color-values color)
@@ -336,12 +340,12 @@ calling this function."
 (defun rudel-obby-send (socket name arguments)
   "Send an obby message NAME with arguments ARGUMENTS through SOCKET."
   ;; First, assemble the message string.
-  (let ((message (apply 'rudel-obby-assemble-message
+  (let ((message (apply #'rudel-obby-assemble-message
 			name arguments)))
     (if (>= (length message) rudel-obby-long-message-threshold)
 	;; For huge messages, chunk the message data and transmit the
 	;; chunks
-	(let ((total   (/ (length message) 
+	(let ((total   (/ (length message)
 			  rudel-obby-long-message-chunk-size ))
 	      (current 0))
 	  (working-status-forms "Sending data" "done"
