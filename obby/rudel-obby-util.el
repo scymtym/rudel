@@ -59,7 +59,7 @@ be assembled."))
   "This class adds functions for sending and receiving obby
 messages to the base class rudel-socket-owner.")
 
-(defmethod rudel-send ((this rudel-obby-socket-owner) 
+(defmethod rudel-send ((this rudel-obby-socket-owner)
 		       name &rest arguments)
   "Send obby message NAME with arguments ARGUMENTS through the socket associated to THIS."
   (with-slots (socket) this
@@ -103,7 +103,7 @@ Should be implemented in derived classes.")
 (defmethod rudel-operation->message ((this jupiter-compound))
   "Serialize THIS compound operation."
   (with-slots (children) this
-    (apply #'append 
+    (apply #'append
 	   (list "split" )
 	   (mapcar #'rudel-operation->message children))))
 
@@ -132,17 +132,17 @@ construction of the name of the new operation. "
      ((string= type "del")
       (let ((position-numeric (string-to-number (nth 1 message) 16))
 	    (length-numeric   (string-to-number (nth 2 message) 16)))
-	(jupiter-delete 
-	 (format "delete-%d-%d" 
+	(jupiter-delete
+	 (format "delete-%d-%d"
 		 remote-revision local-revision)
-	 :from position-numeric 
+	 :from position-numeric
 	 :to   (+ position-numeric length-numeric))))
 
      ;; Compound operation
      ((string= type "split")
       (let* ((rest   (cdr message))
-	     (offset (position-if 
-		       (lambda (item) 
+	     (offset (position-if
+		       (lambda (item)
 			 (member* item '("ins" "del" "nop")
 				  :test #'string=))
 		       rest
@@ -150,7 +150,7 @@ construction of the name of the new operation. "
 	     (first  (subseq rest 0 offset))
 	     (second (subseq rest offset)))
 	(jupiter-compound
-	 (format "compound-%d-%d" 
+	 (format "compound-%d-%d"
 		 remote-revision local-revision)
 	 :children
 	 (list (rudel-message->operation
@@ -160,8 +160,8 @@ construction of the name of the new operation. "
 
      ;; No operation
      ((string= type "nop")
-      (jupiter-nop 
-       (format "nop-%d-%d" 
+      (jupiter-nop
+       (format "nop-%d-%d"
 	       remote-revision local-revision)))
 
      ;; Unknown operation type
@@ -187,7 +187,7 @@ construction of the name of the new operation. "
     (let ((old-from (+ from 1))
 	  (old-to   (+ to   1)))
       (with-current-buffer buffer
-	(destructuring-bind (change-from change-to string) 
+	(destructuring-bind (change-from change-to string)
 	    rudel-buffer-change-workaround-data
 	  (setq from   (- (position-bytes old-from) 1)
 		length (string-bytes
@@ -199,7 +199,7 @@ construction of the name of the new operation. "
 (defmethod rudel-obby-char->byte ((this jupiter-compound) buffer)
   "Convert character positions and lengths in THIS compound to bytes.."
   (with-slots (children) this
-    (mapc 
+    (mapc
      (lambda (child)
        (rudel-obby-char->byte child buffer))
      children))
@@ -230,7 +230,7 @@ construction of the name of the new operation. "
 (defmethod rudel-obby-byte->char ((this jupiter-compound) buffer)
   "Convert byte positions and lengths in THIS compound to character positions."
   (with-slots (children) this
-    (mapc 
+    (mapc
      (lambda (child)
        (rudel-obby-byte->char child buffer))
      children))
@@ -268,7 +268,7 @@ When PREFIX is not specified, \"rudel-obby/\" is used."
 		    (if (eq method (cadr error))
 			nil
 		      (signal (car error) (cdr error))))))
-      (warn "%s: in context `%s': no method: `%s'; arguments:  %s" 
+      (warn "%s: in context `%s': no method: `%s'; arguments: %s"
 	    (object-name-string object) prefix name arguments)))
   )
 
@@ -279,7 +279,8 @@ SPECS   ::= (BINDING*)
 BINDING ::= (VAR TYPE)
 VAR is a symbol and TYPE is one of number, color, document-id and
 coding-system."
-  (declare (indent 1))
+  (declare (indent 1)
+	   (debug (listp &rest form)))
   (let ((bindings
 	 (mapcar
 	  (lambda (spec)
@@ -299,7 +300,7 @@ coding-system."
 			   (string-to-number string 16))
 			 (split-string ,var " " t)))
 		      ;; Coding System
-		      (coding-system 
+		      (coding-system
 		       `(coding-system-from-name (downcase ,var)))))))
 	  specs)))
     `(let (,@bindings)

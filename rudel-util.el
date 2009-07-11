@@ -127,6 +127,7 @@ occurred."
   "Find an return complete lines in DATA, store excess data in STORAGE.
 If STORAGE is non-nil when calling, consider content as leftover
 data from last and concatenate with DATA before processing."
+  (declare (debug (form form)))
   (let ((index (make-symbol "index")))
     `(progn
        ;; If there are stored fragments, append them to the new data.
@@ -146,7 +147,8 @@ data from last and concatenate with DATA before processing."
 
 (defmacro rudel-loop-lines (data var &rest forms)
   "Execute FROMS with VAR subsequently bound to all lines in DATA."
-  (declare (indent 2))
+  (declare (indent 2)
+	   (debug (form symbolp &rest form)))
   (let ((lines (make-symbol "lines")))
     `(when ,data
        (let ((,lines (split-string ,data "\n" t)))
@@ -155,11 +157,12 @@ data from last and concatenate with DATA before processing."
   )
 
 (defmacro rudel-loop-chunks (data var size &rest forms)
-  "Execute FROMS in a loop with VAR bound chunks of DATA of SIZE.
+  "Execute FROMS in a loop with VAR bound to chunks of DATA of SIZE.
 Unless (zerop (mod (length data) size) 0) the final chunk is
 truncated. The expression SIZE is evaluated in each loop unless
 it is a number."
-  (declare (indent 3))
+  (declare (indent 3)
+	   (debug (form symbolp numberp &rest form)))
   ;; If we got a constant number as SIZE, we can check right away.
   (when (and (numberp size) (<= size 0))
     (error "Size should be positive"))
