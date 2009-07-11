@@ -82,6 +82,17 @@
 (put 'rudel-entered-error-state 'error-message
      "Transition to error state")
 
+;; rudel-no-start-state
+
+(intern "rudel-no-start-state")
+
+(put 'rudel-no-start-state 'error-conditions
+     '(error
+       rudel-error rudel-state-error rudel-no-start-state))
+
+(put 'rudel-no-start-state 'error-message
+     "No start state specified for state machine")
+
 
 ;;; Class rudel-state
 ;;
@@ -117,13 +128,26 @@ and STATE is an object of a class derived from rudel-state.")
 	   "The current state of the machine."))
   "A finite state machine.")
 
-(defmethod initialize-instance :after ((this rudel-state-machine)
-				       &rest slots)
-  "Set state of THIS to the first state in the state list."
-  (with-slots (states state) this
-    (let ((start (or (plist-get slots :start) 'new)))
-      (setq state (cdr (assoc start states)))
-      (rudel-enter state))))
+(defmethod initialize-instance :after ((this rudel-state-machine) slots)
+  "Set current state of THIS to a proper initial value.
+If a start state is specified in the arguments to the
+constructor, that state is used. If there is no such state, the
+list of states is search for a state named start. If that fails
+as well, the first state in the state list is used."
+  (with-slots (states) this
+    ;; Find a suitable start state and switch to it.
+    (let ((start (or (plist-get slots :start)
+		     (car (assoc 'start states))
+		     (when (length states)
+		       (car (nth 0 states))))))
+      (unless start
+	(signal 'rudel-no-start-state nil))
+      ;; Make start state the current state and call send an enter
+      ;; message.
+      (let ((start (cdr (assoc start states))))
+	(oset this :state start)
+	(rudel-switch this (rudel-enter start)))))
+  )
 
 (defmethod rudel-find-state ((this rudel-state-machine) name)
   "Return state object for symbol NAME."
@@ -205,14 +229,37 @@ state."
 
     ;; Unless the successor state is equal to the current state, leave
     ;; the current state and switch to the successor.
-    (unless (and (eq state next)
-		 (null arguments))
+    (if (and (eq state next)
+	     (null arguments))
+	;; Return state
+	state
       ;; Notify (old) current state.
       (rudel-leave state)
       ;; Update current state.
       (setq state next)
-      ;; Notify (new) current state.
-      (apply #'rudel-enter state arguments)))
+      ;; Notify (new) current state. Using the call's value as next
+      ;; state is a bit dangerous since a long sequence of immediate
+      ;; state switches could exhaust the stack.
+      (let ((next2 (apply #'rudel-enter state arguments)))
+	(cond
+	 ((null next2)
+	  state)
+	 ((listp next2)
+	  (apply #'rudel-switch this next2))
+	 (t
+	  (rudel-switch this next2))))))
+  )
+
+(defmethod object-print ((this rudel-state-machine) &rest strings)
+  "Add current state to the string representation of THIS."
+  (if (slot-boundp this 'state)
+      (with-slots (state) this
+	(apply #'call-next-method
+	       this
+	       (format " state: %s"
+		       (object-name-string state))
+	       strings))
+    (call-next-method this " state: #start"))
   )
 
 
@@ -244,7 +291,7 @@ list infinitely."
 		 (when (memq symbol success-states)
 		   (throw 'state-wait (cons 'success (cons symbol state))))
 		 (when (memq symbol error-states)
-		   (throw 'state-wait (cons 'error (cons symbol state))))
+		   (throw 'state-wait (cons 'error   (cons symbol state))))
 		 ;; Update progress indicator and sleep.
 		 (working-dynamic-status nil symbol)
 		 (sleep-for 0.05)))))))
