@@ -57,7 +57,7 @@
 
 (defmethod rudel-enter ((this rudel-obby-state))
   "Default behavior is doing nothing when entering a state."
-  )
+  nil)
 
 (defmethod rudel-leave ((this rudel-obby-state))
   "Default behavior is doing nothing when leaving a state."
