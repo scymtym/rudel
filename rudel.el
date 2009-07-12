@@ -28,7 +28,7 @@
 ;; editors.
 
 ;;; History:
-;; 
+;;
 ;; 0.1 - Initial revision.
 
 ;;; Code:
@@ -82,7 +82,7 @@ It would be nice to find another way to do this.")
   "Rudel collaborative editing framework."
   :group 'applications)
 
-(defcustom rudel-allocate-buffer-function 
+(defcustom rudel-allocate-buffer-function
   'rudel-allocate-buffer-clear-existing
   "*"
   :group   'rudel
@@ -171,11 +171,12 @@ to client and server sessions."
 
 (defmethod rudel-find-user ((this rudel-session)
 			    which &optional test key)
-  ""
+  "Find user WHICH in the user list.
+WHICH is compared to the result of KEY using TEST."
   (unless test
-    (setq test 'string=))
+    (setq test #'string=))
   (unless key
-    (setq key 'object-name-string))
+    (setq key #'object-name-string))
   (with-slots (users) this
     (find which users :key key :test test))
   )
@@ -193,11 +194,12 @@ to client and server sessions."
 
 (defmethod rudel-find-document ((this rudel-session)
 				which &optional test key)
-  ""
+  "Find document WHICH in the document list.
+WHICH is compared to the result of KEY using TEST."
   (unless test
-    (setq test 'string=))
+    (setq test #'string=))
   (unless key
-    (setq key 'object-name-string))
+    (setq key #'object-name-string))
   (with-slots (documents) this
     (find which documents :key key :test test))
   )
@@ -239,7 +241,7 @@ client perspective.")
     ;; Terminate the connection
     (rudel-disconnect connection))
 
-  ;; 
+  ;;
   (call-next-method)
   )
 
@@ -282,13 +284,13 @@ client protocols have to obey."
 
 (defgeneric rudel-local-insert ((this rudel-connection))
   "")
-  
+
 (defgeneric rudel-local-delete ((this rudel-connection))
   "")
 
 (defgeneric rudel-remote-insert ((this rudel-connection))
   "")
-  
+
 (defgeneric rudel-remote-delete ((this rudel-connection))
   "")
 
@@ -297,7 +299,7 @@ client protocols have to obey."
 ;;
 
 (defclass rudel-user (eieio-speedbar-file-button)
-  ((color :initarg  :color 
+  ((color :initarg  :color
 	  :accessor rudel-color
 	  :documentation
 	  "Color used to indicate ownership or authorship by the
@@ -367,8 +369,8 @@ collaborative editing session can subscribe to."
 		#'rudel-unpublish-buffer
 		nil t)
 
-      ;; 
-      (add-hook 'change-major-mode-hook 
+      ;;
+      (add-hook 'change-major-mode-hook
 		#'rudel-handle-major-mode-change
 		nil t)))
   )
@@ -381,7 +383,7 @@ Do nothing, if THIS is not attached to any buffer."
     ;; nil, if the user did not subscribe to the document, or
     ;; unsubscribed after subscribing.
     (when buffer
-      
+
       (with-current-buffer buffer
 	;; Remove our handler function from the after-change hook.
 	(remove-hook 'after-change-functions
@@ -398,7 +400,7 @@ Do nothing, if THIS is not attached to any buffer."
 		     #'rudel-unpublish-buffer
 		     t)
 
-	(remove-hook 'change-major-mode-hook 
+	(remove-hook 'change-major-mode-hook
 		     #'rudel-handle-major-mode-change
 		     t))
 
@@ -440,7 +442,7 @@ Modification hooks are disabled during the insertion."
   "Apply the local operation OPERATION to THIS."
   (with-slots (session buffer) this
     (with-slots (connection (user :self)) session
-      (dolist (operations (list
+      (dolist (operators (list
 
 			   ;; Update overlays
 			   (rudel-overlay-operators
@@ -455,12 +457,12 @@ Modification hooks are disabled during the insertion."
 			    :document   this)))
 
 	;; Apply the operation using each set of operators
-	(rudel-apply operation operations))))
+	(rudel-apply operation operators))))
   )
 
 (defmethod rudel-remote-operation ((this rudel-document) user operation)
   "Apply the remote operation OPERATION performed by USER to THIS."
-  (dolist (operations (append
+  (dolist (operators (append
 
 		       ;; Update buffer contents
 		       (list (rudel-document-operators
@@ -475,7 +477,7 @@ Modification hooks are disabled during the insertion."
 				:user     user)))))
 
     ;; Apply the operation using each set of operators
-    (rudel-apply operation operations))
+    (rudel-apply operation operators))
   )
 
 (defmethod rudel-chunks ((this rudel-document))
@@ -488,12 +490,12 @@ null rudel-user-child)."
     ;; string according to the respective author (or nil).
     (with-current-buffer buffer
       (let ((string         (buffer-string)) ;; TODO no-properties?
-	    (overlay-chunks (mapcar 
+	    (overlay-chunks (mapcar
 			     (lambda (overlay)
 			       (list (- (overlay-start overlay) 1)
 				     (- (overlay-end   overlay) 1)
 				     (rudel-overlay-user overlay)))
-			     (sort* (rudel-author-overlays) 
+			     (sort* (rudel-author-overlays)
 				    '< :key 'overlay-start)))
 	    (last)
 	    (augmented-chunks))
@@ -566,7 +568,7 @@ See after-change-functions for more information."
   (when (rudel-buffer-has-document-p)
     (let ((document (rudel-buffer-document))
 	  (text)) ; TODO with-rudel-buffer-document?
-      (cond 
+      (cond
        ;; The change was an insert
        ((and (/= from to)
 	     (zerop length))
@@ -583,7 +585,7 @@ See after-change-functions for more information."
        ((and (= from to)
 	     (not (zerop length)))
 	(rudel-local-operation document
-			       (rudel-delete-op 
+			       (rudel-delete-op
 				"delete"
 				:from   (- from 1)
 				:length length)))
@@ -597,7 +599,7 @@ See after-change-functions for more information."
 	  (with-current-buffer buffer
 	    (setq text (buffer-substring-no-properties from to)))
 	  (rudel-local-operation document
-				 (rudel-delete-op 
+				 (rudel-delete-op
 				  "delete"
 				  :from   (- from 1)
 				  :length length))
@@ -632,7 +634,7 @@ Ponce and Eric M. Ludlam."
 
   ;; Schedule `rudel-after-major-mode-change' to run after the
   ;; command, that caused the major mode change.
-  (add-hook 'post-command-hook 
+  (add-hook 'post-command-hook
 	    #'rudel-after-major-mode-change)
   )
 
@@ -644,12 +646,12 @@ a `major-mode' change.
 Note: The way this works is inspired by mode-local.el by David
 Ponce and Eric M. Ludlam."
   ;; Remove this function from `post-command-hook'.
-  (remove-hook 'post-command-hook 
+  (remove-hook 'post-command-hook
 	       #'rudel-after-major-mode-change)
 
   ;; Repair all buffers affected by the major mode change.
   (dolist (buffer rudel-mode-changed-buffers)
-    (let ((document (buffer-local-value 'rudel-buffer-document 
+    (let ((document (buffer-local-value 'rudel-buffer-document
 					buffer)))
       (rudel-attach-to-buffer document buffer)))
   )
@@ -697,7 +699,7 @@ Backends are loaded, if necessary."
 	(prog1
 	  (cdar backends)
 	  (when (interactive-p)
-	    (message "Using backend `%s'" (object-name-string 
+	    (message "Using backend `%s'" (object-name-string
 					   (cdar backends)))
 	    (sit-for 0 500)))
 
@@ -732,7 +734,7 @@ All data required to join a session will be prompted for interactively."
 		     (car error-data))))
     ;; Store the new session object globally.
     (setq rudel-current-session (rudel-client-session
-				 (format "%s session" 
+				 (format "%s session"
 					 (object-name-string backend))
 				 :backend    backend
 			         :connection connection))
@@ -754,11 +756,11 @@ interactively."
     ;; Try to create the server
     (condition-case error-data
 	(setq server (rudel-host backend info))
-      ('error 
+      ('error
        (error "Could not host session using backend `%s' with %s: %s"
-       	      (object-name-string backend)
-       	      info
-       	      (car error-data))))
+	      (object-name-string backend)
+	      info
+	      (car error-data))))
     server))
 
 ;;;###autoload
@@ -784,7 +786,7 @@ Not all backends support this operation."
   (with-slots (backend connection self) rudel-current-session
     ;; Make sure the backend can change colors.
     (unless (rudel-capable-of-p backend 'change-color)
-      (error "Backend `%s' cannot change colors" 
+      (error "Backend `%s' cannot change colors"
 	     (object-name-string backend)))
 
     ;; Ask the user for a new color, tell the connection to announce
