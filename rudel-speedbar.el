@@ -59,7 +59,7 @@
 
 (defmethod eieio-speedbar-object-buttonname ((this rudel-document))
   "Return a string to use as a speedbar button for OBJECT."
-  (object-name-string this))
+  (rudel-unique-name this))
 
 ;;; Speedbar support mode
 ;;
@@ -111,13 +111,13 @@ Argument DIR is the directory from which to derive the list of objects."
 ;; 	(re-search-backward (format "^%d:" (1- depth)))
 ;; 	(setq depth (1- depth)))
 ;;       (speedbar-line-token))))
-;; 
+;;
 ;; (defmethod eieio-speedbar-derive-line-path ((obj rudel-session) &optional depth)
 ;;   "Return the path to OBJ.
 ;; Optional DEPTH is the depth we start at."
 ;;   "session" ;(file-name-directory (oref obj file))
 ;;   )
-;; 
+;;
 ;; (defmethod eieio-speedbar-derive-line-path ((obj rudel-session) &optional depth)
 ;;   "Return the path to OBJ.
 ;; Optional DEPTH is the depth we start at."
@@ -131,27 +131,27 @@ Argument DIR is the directory from which to derive the list of objects."
 ;; 	  ;; a child element is a token.  Do some work to get a filename too.
 ;; 	  (concat (eieio-speedbar-derive-line-path proj)
 ;; 		  (rudel-find-nearest-file-line)))))))
-;; 
+;;
 ;; (defmethod eieio-speedbar-description ((obj rudel-session))
 ;;   "Provide a speedbar description for OBJ."
 ;;   "bla") ;(rudel-description obj))
-;; 
-;; 
+;;
+;;
 ;; (defmethod eieio-speedbar-object-buttonname ((object rudel-project))
 ;;   "Return a string to use as a speedbar button for OBJECT."
 ;;   (if (rudel-parent-project object)
 ;;       (rudel-name object)
 ;;     (concat (rudel-name object) " " (oref object version))))
-;; 
-;; 
+;;
+;;
 ;; (defmethod eieio-speedbar-object-children ((this rudel-project))
 ;;   "Return the list of speedbar display children for THIS."
 ;;   (condition-case nil
 ;;       (with-slots (subproj targets) this
 ;; 	(append subproj targets))
 ;;     (error nil)))
-;; 
-;; 
+;;
+;;
 ;; ;;; Generic file management for TARGETS
 ;; ;;
 ;; (defun rudel-file-find (text token indent)
@@ -160,7 +160,7 @@ Argument DIR is the directory from which to derive the list of objects."
 ;;   (speedbar-find-file-in-frame
 ;;    (expand-file-name token (speedbar-line-directory indent)))
 ;;   (speedbar-maybee-jump-to-attached-frame))
-;; 
+;;
 ;; (defun rudel-create-tag-buttons (filename indent)
 ;;   "Create the tag buttons associated with FILENAME at INDENT."
 ;;   (let* ((lst (speedbar-fetch-dynamic-tags filename)))
@@ -173,7 +173,7 @@ Argument DIR is the directory from which to derive the list of objects."
 ;; 				      lst
 ;; 				      'rudel-tag-expand
 ;; 				      'rudel-tag-find)))))
-;; 
+;;
 ;; (defun rudel-tag-expand (text token indent)
 ;;   "Expand a tag sublist.  Imenu will return sub-lists of specialized tag types.
 ;; Etags does not support this feature.  TEXT will be the button
@@ -192,7 +192,7 @@ Argument DIR is the directory from which to derive the list of objects."
 ;; 	 (speedbar-delete-subblock indent))
 ;; 	(t (error "Ooops...  not sure what to do")))
 ;;   (speedbar-center-buffer-smartly))
-;; 
+;;
 ;; (defun rudel-tag-find (text token indent)
 ;;   "For the tag TEXT in a file TOKEN, goto that position.
 ;; INDENT is the current indentation level."
