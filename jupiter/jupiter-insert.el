@@ -58,8 +58,14 @@
    ;; Transform an insert operation
    ;;
    ((jupiter-insert-p other)
-    (with-slots ((this-from :from) (this-to :to) (this-length :length) (this-data :data)) this
-      (with-slots ((other-from :from) (other-to :to) (other-length :length) (other-data :data)) other
+    (with-slots ((this-from   :from)
+		 (this-to     :to)
+		 (this-length :length)
+		 (this-data   :data)) this
+      (with-slots ((other-from   :from)
+		   (other-to     :to)
+		   (other-length :length)
+		   (other-data   :data)) other
 	(cond
 	 ;;
 	 ;; <other>
@@ -89,10 +95,14 @@
    ;; Transform a delete operation
    ;;
    ((jupiter-delete-p other)
-    (with-slots ((this-from :from) (this-to :to) (this-length :length)) this
-      (with-slots ((other-from :from) (other-to :to) (other-length :length)) other
+    (with-slots ((this-from   :from)
+		 (this-to     :to)
+		 (this-length :length)) this
+      (with-slots ((other-from   :from)
+		   (other-to     :to)
+		   (other-length :length)) other
 	(cond
-	   
+
 	 ;;
 	 ;; <other>
 	 ;;         <this>
