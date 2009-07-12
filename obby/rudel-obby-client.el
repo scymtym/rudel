@@ -129,7 +129,7 @@
       (rudel-send this
 		  "net6_client_login"
 		  username (rudel-obby-format-color color))))
-  )
+  nil)
 
 (defmethod rudel-obby/obby_sync_init
   ((this rudel-obby-client-state-joining) count)
@@ -186,7 +186,8 @@
   "When the state is entered, store the error data passed in ERROR."
   (with-slots (error-symbol error-data) this
     (setq error-symbol (car error)
-	  error-data   (cdr error))))
+	  error-data   (cdr error)))
+  nil)
 
 
 ;;; Class rudel-obby-client-state idle
@@ -442,7 +443,8 @@
   (with-slots (all-items remaining-items have-self) this
     (setq all-items       num-items
 	  remaining-items num-items
-	  have-self       nil)))
+	  have-self       nil))
+  nil)
 
 (defmethod rudel-obby/net6_client_join
   ((this rudel-obby-client-state-session-synching)
@@ -526,6 +528,12 @@
   "Handle obby 'sync_final' message."
   'idle)
 
+(defmethod object-print ((this rudel-obby-client-state-session-synching)
+			 &rest strings)
+  "Append number of remaining items to string representation."
+  (with-slots (remaining-items) this
+    (call-next-method this (format " remaining: %d" remaining-items))))
+
 
 ;;; Class rudel-obby-client-state-subscribing
 ;;
@@ -551,7 +559,7 @@
 		    (format "%x %x" owner-id doc-id)
 		    "subscribe"
 		    (format "%x" user-id)))))
-  )
+  nil)
 
 (defmethod rudel-obby/obby_document/sync_init
   ((this rudel-obby-client-state-subscribing)
@@ -592,7 +600,7 @@
     (setq document1       document
 	  all-bytes       num-bytes
 	  remaining-bytes num-bytes))
-  )
+  nil)
 
 (defmethod rudel-obby/obby_document/sync_chunk
   ((this rudel-obby-client-state-document-synching)
@@ -615,6 +623,12 @@
 	  'idle
 	nil)))
   )
+
+(defmethod object-print ((this rudel-obby-client-state-document-synching)
+			 &rest strings)
+  "Append number of remaining items to string representation."
+  (with-slots (remaining-items) this
+    (call-next-method this (format " remaining: %d" remaining-bytes))))
 
 
 ;;; Client connection states.
