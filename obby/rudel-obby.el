@@ -89,6 +89,7 @@ connections and creates obby servers.")
 Return the connection object."
   ;; Before we start, load the client functionality.
   (require 'rudel-obby-client)
+
   ;; Create the network process
   (let* ((session    (plist-get info :session))
 	 (host       (plist-get info :host))
@@ -109,10 +110,33 @@ Return the connection object."
 		      :filter   #'rudel-filter-dispatch
 		      ;; Install connection sentinel to redirect state
 		      ;; changes to the connection object
-		      :sentinel #'rudel-sentinel-dispatch))
-	 (connection (rudel-obby-connection host
-                      :socket socket
-		      :info   info)))
+		      :sentinel #'rudel-sentinel-dispatch
+		      ;; Do not start receiving immediately since the
+		      ;; filter function is not yet setup properly.
+		      :stop     t))
+	 (connection (rudel-obby-connection
+		      host
+		      :session session
+		      :socket  socket
+		      :info    info)))
+
+    ;; Now start receiving and wait until the basic session setup is
+    ;; complete.
+    (continue-process socket)
+
+    ;; Wait for the connection to reach one of the states idle and
+    ;; join-failed.
+    (condition-case error
+	(rudel-state-wait connection
+			  '(idle) '(join-failed)
+			  "Joining")
+      (rudel-entered-error-state
+       (destructuring-bind (symbol . state) (cdr error)
+	 (with-slots (error-symbol error-data) state
+	   (signal 'rudel-join-error
+		   (append (list error-symbol) error-data))))))
+
+    ;; The connection is now usable; return it.
     connection)
   )
 
@@ -126,6 +150,7 @@ Return the connection object."
 Return the created server."
   ;; Before we start, we load the server functionality.
   (require 'rudel-obby-server)
+
   ;; Create the network process.
   (let* ((port   (plist-get info :port))
 	 ;; Make a server socket
@@ -134,8 +159,8 @@ Return the created server."
 		  :host     "0.0.0.0"
 		  :service  port
 		  :server   t
-		  :filter   'rudel-filter-dispatch
-		  :sentinel 'rudel-sentinel-dispatch
+		  :filter   #'rudel-filter-dispatch
+		  :sentinel #'rudel-sentinel-dispatch
 		  ;;
 		  :log
 		  (lambda (server-process client-process message)
@@ -180,9 +205,9 @@ Return the new document."
 
 (defclass rudel-obby-user (rudel-user)
   ((client-id  :initarg  :client-id
-	       :type     (or null integer) ;; We allow nil instead of make
+	       :type     (or null integer) ;; We allow nil instead of making
 	       :accessor rudel-client-id   ;; the slot unbound, to be able to
-	       :initform nil               ;; search with test 'rudel-client-id
+	       :initform nil               ;; search with test `rudel-client-id
 	       :documentation              ;; without headaches
 	       "Id of the client connection, which the user used to log in.
 The value is an integer, if the user is connected, and nil

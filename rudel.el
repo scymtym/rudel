@@ -719,26 +719,30 @@ Backends are loaded, if necessary."
 All data required to join a session will be prompted for interactively."
   (interactive)
   ;; First, we have to ask to user for the backend we should use
-  (let ((backend (rudel-choose-backend
-		  (lambda (backend)
-		    (rudel-capable-of-p backend 'join))))
-	(connect-info)
-	(connection))
-    (setq connect-info (rudel-ask-connect-info backend))
-    ;; Try to connect
-    (condition-case error-data
-	(setq connection (rudel-connect backend connect-info))
-      ('error (error "Could not connect using backend `%s' with %s: %s"
-		     (object-name-string backend)
-		     connect-info
-		     (car error-data))))
-    ;; Store the new session object globally.
-    (setq rudel-current-session (rudel-client-session
-				 (format "%s session"
-					 (object-name-string backend))
-				 :backend    backend
-			         :connection connection))
-    (oset connection :session rudel-current-session))
+  (let* ((backend    (rudel-choose-backend
+		      (lambda (backend)
+			(rudel-capable-of-p backend 'join))))
+	 (info       (rudel-ask-connect-info backend))
+
+	 ;; First, create the session object.
+	 (session    (rudel-client-session
+		      (format "%s session"
+			      (object-name-string backend))
+		      :backend backend))
+
+	 (connection))
+
+    ;; Add the session object to the connect information.
+    (plist-put info :session session)
+
+    ;; Ask BACKEND to connect using INFO. Do not catch errors since
+    ;; the error messages are probably the best feedback we can give.
+    (setq connection (rudel-connect backend info))
+
+    ;; Set the connection slot of the session object and store it
+    ;; globally.
+    (oset session :connection connection)
+    (setq rudel-current-session session))
   )
 
 ;;;###autoload
