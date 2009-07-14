@@ -386,6 +386,11 @@ Do nothing, if THIS is not attached to any buffer."
     (when buffer
 
       (with-current-buffer buffer
+	;; Remove our handler function from the kill-buffer hook.
+	(remove-hook 'kill-buffer-hook
+		     #'rudel-unpublish-buffer
+		     t)
+
 	;; Remove our handler function from the after-change hook.
 	(remove-hook 'after-change-functions
 		     #'rudel-handle-buffer-change
@@ -396,11 +401,10 @@ Do nothing, if THIS is not attached to any buffer."
 		     #'rudel-buffer-change-workaround
 		     t)
 
-	;; Remove our handler function from the kill-buffer hook.
-	(remove-hook 'kill-buffer-hook
-		     #'rudel-unpublish-buffer
-		     t)
+	;; Remove all overlays.
+	(rudel-overlays-remove-all)
 
+	;; Remove the major mode change handler.
 	(remove-hook 'change-major-mode-hook
 		     #'rudel-handle-major-mode-change
 		     t))

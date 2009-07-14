@@ -72,10 +72,10 @@ author."
 If PREDICATE is non-nil returned overlays satisfy PREDICATES;
 Otherwise all Rudel-related overlays are returned."
   (unless predicate
-    (setq predicate 'rudel-overlay-p))
+    (setq predicate #'rudel-overlay-p))
 
   (let* ((overlay-lists (overlay-lists))
-	 (overlays      (append (car overlay-lists) 
+	 (overlays      (append (car overlay-lists)
 				(cdr overlay-lists))))
     (remove-if-not predicate overlays))
   )
@@ -85,7 +85,7 @@ Otherwise all Rudel-related overlays are returned."
 If PREDICATE is non-nil returned overlays satisfy PREDICATES;
 Otherwise all Rudel-related overlays are returned."
   (unless predicate
-    (setq predicate 'rudel-overlay-p))
+    (setq predicate #'rudel-overlay-p))
   (remove-if-not predicate (overlays-at position)))
 
 (defun rudel-overlays-in (start end &optional predicate)
@@ -93,8 +93,12 @@ Otherwise all Rudel-related overlays are returned."
 If PREDICATE is non-nil returned overlays satisfy PREDICATES;
 Otherwise all Rudel-related overlays are returned."
   (unless predicate
-    (setq predicate 'rudel-overlay-p))
+    (setq predicate #'rudel-overlay-p))
   (remove-if-not predicate (overlays-in start end)))
+
+(defun rudel-overlays-remove-all ()
+  "Remove all Rudel overlays from the current buffer."
+  (mapc #'delete-overlay (rudel-overlays)))
 
 
 ;;; Author overlay
@@ -106,23 +110,23 @@ Otherwise all Rudel-related overlays are returned."
 
 (defun rudel-author-overlays ()
   "Return the list of author overlays in the current buffer."
-  (rudel-overlays 'rudel-author-overlay-p))
+  (rudel-overlays #'rudel-author-overlay-p))
 
 (defun rudel-author-overlay-at (position &optional author)
   ""
-  (let ((overlays (rudel-overlays-at 
-		   position'rudel-author-overlay-p)))
+  (let ((overlays (rudel-overlays-at
+		   position #'rudel-author-overlay-p)))
     ;; There can only be one rudel overlay at any given position
     (when overlays
-      (when (or (not author) 
+      (when (or (not author)
 		(eq (rudel-overlay-user (car overlays)) author))
 	(car overlays))))
   )
 
 (defun rudel-author-overlays-in (start end &optional author)
   ""
-  (rudel-overlays-in 
-   start end 
+  (rudel-overlays-in
+   start end
    (lambda (overlay)
      (and (rudel-overlay-p overlay)
 	  (or (not author)
@@ -138,9 +142,9 @@ AUTHOR has to be an object of type rudel-user-child."
       (overlay-put overlay :rudel     'author)
       (overlay-put overlay :user      author)
       (overlay-put overlay 'face      (rudel-overlay-make-face
-				       (make-symbol 
-					(format 
-					 "rudel-author-overlay-%s-face" 
+				       (make-symbol
+					(format
+					 "rudel-author-overlay-%s-face"
 					 name))
 				       'rudel-author-overlay-face
 				       color))
@@ -153,16 +157,16 @@ AUTHOR has to be an object of type rudel-user-child."
 ;;
 
 (defun rudel-update-author-overlay-after-insert (buffer position length author)
-  "Update author overlays in BUFFER to incoporate an insertion of length LENGTH at POSITION by AUTHOR.
-POSITION referes to an Emacs buffer position.
+  "Update author overlays in BUFFER to incorporate an insertion of length LENGTH at POSITION by AUTHOR.
+POSITION refers to an Emacs buffer position.
 AUTHOR has to be an object of type rudel-author-child."
   (when author
     (with-current-buffer buffer
       (let* ((end    (+ position length))
-	     (before (when (> position 1) 
+	     (before (when (> position 1)
 		       (rudel-author-overlay-at (- position 1) author)))
 	     (at     (rudel-author-overlay-at position))
-	     (after  (when (< end (point-max)) 
+	     (after  (when (< end (point-max))
 		       (rudel-author-overlay-at (+ end 1) author))))
 	(cond
 	 ;; If there is an overlay, we have to split it unless the
@@ -171,7 +175,7 @@ AUTHOR has to be an object of type rudel-author-child."
 	  (unless (eq (rudel-overlay-user at) author)
 	    (let* ((on-start (= (overlay-start at) position))
 		   (on-end   (= (- (overlay-end at) 1) position))
-		   (before (unless on-start 
+		   (before (unless on-start
 			     (if on-end at (copy-overlay at))))
 		   (after  (unless on-end at)))
 	      (when before
@@ -180,16 +184,16 @@ AUTHOR has to be an object of type rudel-author-child."
 		(move-overlay after end (overlay-end after)))
 	      (rudel-make-author-overlay buffer position end author))))
 	 ;; There is no overlay under the insert, but there are
-	 ;; overlays of the same author immediatly before and after
+	 ;; overlays of the same author immediately before and after
 	 ;; the insert. We merge these two into one large overlay
 	 ;; including the insert.
-	 ((and before after) 
+	 ((and before after)
 	  (let ((end (overlay-end after)))
 	    (delete-overlay after)
 	    (move-overlay before (overlay-start before) end)))
 	 ;; If there is an overlay of the same author before the
 	 ;; insert, we extend it.
-	 (before 
+	 (before
 	  (move-overlay before (overlay-start before) end))
 	 ;; If there is an overlay of the same author after the
 	 ;; insert, we extend it.
@@ -201,7 +205,7 @@ AUTHOR has to be an object of type rudel-author-child."
   )
 
 (defun rudel-update-author-overlay-after-delete (buffer position length author)
-  "Update author overlays in BUFFER to incoporate a deletion of length LENGTH at POSITION by AUTHOR.
+  "Update author overlays in BUFFER to incorporate a deletion of length LENGTH at POSITION by AUTHOR.
 POSITION refers to an Emacs buffer position.
 AUTHOR has to be an object of type rudel-author-child."
   (with-current-buffer buffer
