@@ -242,7 +242,8 @@ client perspective.")
     (rudel-disconnect connection))
 
   ;;
-  (call-next-method)
+  (when (next-method-p)
+    (call-next-method))
   )
 
 

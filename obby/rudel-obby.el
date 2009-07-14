@@ -282,7 +282,8 @@ documents in obby sessions.")
 (defmethod rudel-unique-name ((this rudel-obby-document))
   "Generate a unique name for THIS based on the name and the suffix."
   (with-slots (suffix) this
-    (concat (call-next-method)
+    (concat (when (next-method-p)
+	      (call-next-method))
 	    (when (> suffix 1)
 	      (format "<%d>" suffix))))
   )

@@ -162,7 +162,6 @@
 	(list 'join-failed error-data))))
   )
 
-
 
 ;;; Class rudel-obby-client-state-join-failed
 ;;
@@ -666,7 +665,8 @@ documents."))
 
 (defmethod initialize-instance ((this rudel-obby-connection) &rest slots)
   ;; Initialize slots of THIS
-  (call-next-method)
+  (when (next-method-p)
+    (call-next-method))
 
   ;; Create a new hash-table object to hold jupiter contexts
   ;; associated to documents.
@@ -684,11 +684,14 @@ documents."))
   (oset state :connection this)
 
   ;; Register STATE.
-  (call-next-method))
+  (when (next-method-p)
+    (call-next-method))
+  )
 
 (defmethod rudel-disconnect ((this rudel-obby-connection))
   ""
-  (call-next-method))
+  (when (next-method-p)
+    (call-next-method)))
 
 (defmethod rudel-close ((this rudel-obby-connection))
   ""
