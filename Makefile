@@ -13,7 +13,7 @@ EMACS=emacs
 LOADPATH= ../../opt/emacs/share/emacs/site-lisp/cedet/common/
 LOADDEFS=rudel-loaddefs.el
 LOADDIRS=. jupiter obby
-rudel_LISP=rudel.el rudel-util.el rudel-mode.el rudel-interactive.el rudel-overlay.el rudel-speedbar.el rudel-operators.el rudel-operations.el rudel-compat.el rudel-tls.el rudel-errors.el rudel-state-machine.el
+rudel_LISP=rudel.el rudel-util.el rudel-mode.el rudel-interactive.el rudel-overlay.el rudel-speedbar.el rudel-operators.el rudel-operations.el rudel-compat.el rudel-tls.el rudel-errors.el rudel-state-machine.el rudel-backend.el
 EMACS=emacs
 EMACSFLAGS=-batch --no-site-file
 VERSION=0.1
@@ -24,7 +24,7 @@ DISTDIR=$(top)rudel-$(VERSION)
 all: autoloads rudel obby jupiter
 
 .PHONY: autoloads
-autoloads: 
+autoloads:
 	@echo "(add-to-list 'load-path nil)" > $@-compile-script
 	for loadpath in . ${LOADPATH}; do \
 	   echo "(add-to-list 'load-path \"$$loadpath\")" >> $@-compile-script; \
@@ -49,7 +49,7 @@ obby:
 jupiter:
 	$(MAKE) -C jupiter
 
-tags: 
+tags:
 	$(MAKE) -C obby/ $(MFLAGS) $@
 	$(MAKE) -C jupiter/ $(MFLAGS) $@
 

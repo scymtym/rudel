@@ -11,6 +11,7 @@ ede_FILES=Project.ede Makefile
 
 jupiter_LISP=jupiter.el jupiter-operation.el jupiter-insert.el jupiter-delete.el jupiter-compound.el jupiter-nop.el
 EMACS=emacs
+EMACSFLAGS=-batch --no-site-file
 LOADPATH= ../
 VERSION=0.1
 DISTDIR=$(top)rudel-$(VERSION)/jupiter
@@ -26,9 +27,9 @@ jupiter: $(jupiter_LISP)
 	   echo "(add-to-list 'load-path \"$$loadpath\")" >> $@-compile-script; \
 	done;
 	@echo "(setq debug-on-error t)" >> $@-compile-script
-	"$(EMACS)" -batch --no-site-file -l $@-compile-script -f batch-byte-compile $^
+	"$(EMACS)" $(EMACSFLAGS) -l $@-compile-script -f batch-byte-compile $^
 
-tags: 
+tags:
 
 
 clean:
