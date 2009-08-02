@@ -128,7 +128,8 @@ and STATE is an object of a class derived from rudel-state.")
 	   "The current state of the machine."))
   "A finite state machine.")
 
-(defmethod initialize-instance :after ((this rudel-state-machine) slots)
+(defmethod initialize-instance :after ((this rudel-state-machine)
+				       &rest slots)
   "Set current state of THIS to a proper initial value.
 If a start state is specified in the arguments to the
 constructor, that state is used. If there is no such state, the
