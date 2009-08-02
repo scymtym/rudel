@@ -143,15 +143,14 @@ failed encryption negotiation.")
 
 	  ;; Broadcast the join event to all clients (including the
 	  ;; new one).
-	  (let ((name (object-name-string user)))
-	    (with-slots (color (user-id :user-id)) user
-	      (rudel-broadcast this (list 'exclude this)
-			       "net6_client_join"
-			       (format "%x" client-id)
-			       name
-			       "0"
-			       (format "%x" user-id)
-			       (rudel-obby-format-color color))))
+	  (with-slots ((name :object-name) color (user-id :user-id)) user
+	    (rudel-broadcast this (list 'exclude this)
+			     "net6_client_join"
+			     (format "%x" client-id)
+			     name
+			     "0"
+			     (format "%x" user-id)
+			     (rudel-obby-format-color color)))
 
 	  ;; Get the new client up to date:
 	  ;; - transmit user list
@@ -168,44 +167,46 @@ failed encryption negotiation.")
 	    ;; Transmit list of connected users.
 	    (dolist (client clients)
 	      (with-slots ((client-id :id) user) client
-		(let ((name (object-name-string user)))
-		  (with-slots (color (user-id :user-id)) user
-		    (rudel-send this
-				"net6_client_join"
-				(format "%x" client-id)
-				name
-				"0"
-				(format "%x" user-id)
-				(rudel-obby-format-color color))))))
+		(with-slots ((name :object-name)
+			     color
+			     (user-id :user-id)) user
+		  (rudel-send this
+			      "net6_client_join"
+			      (format "%x" client-id)
+			      name
+			      "0"
+			      (format "%x" user-id)
+			      (rudel-obby-format-color color)))))
 
 	    ;; Transmit list of disconnected users.
 	    (let ((offline-users (remove-if 'rudel-connected users)))
 	      (dolist (user offline-users)
-		(let ((name (object-name-string user)))
-		  (with-slots (user-id color) user
-		    (rudel-send this
-				"obby_sync_usertable_user"
-				(format "%x" user-id)
-				name
-				(rudel-obby-format-color color))))))
+		(with-slots ((name :object-name) user-id color) user
+		  (rudel-send this
+			      "obby_sync_usertable_user"
+			      (format "%x" user-id)
+			      name
+			      (rudel-obby-format-color color)))))
 
 	    ;; Transmit document list
 	    (dolist (document documents)
-	      (with-slots ((doc-id :id) owner-id suffix subscribed) document
-		(let ((name (object-name-string document)))
-		  (apply 'rudel-send
-			 (append
-			  (list this
-				"obby_sync_doclist_document"
-				(format "%x" owner-id)
-				(format "%x" doc-id)
-				name
-				(format "%x" suffix)
-				"UTF-8")
-			  (mapcar
-			   (lambda (user)
-			     (format "%x" (rudel-id user)))
-			   subscribed))))))
+	      (with-slots ((name      :object-name)
+			   (doc-id    :id)
+			   owner-id
+			   suffix
+			   subscribed) document
+		(apply #'rudel-send
+		       this
+		       "obby_sync_doclist_document"
+		       (format "%x" owner-id)
+		       (format "%x" doc-id)
+		       name
+		       (format "%x" suffix)
+		       "UTF-8"
+		       (mapcar
+			(lambda (user-) ;; TODO we could use `user' here, but there is a bug in cl
+			  (format "%x" (rudel-id user-)))
+			subscribed))))
 
 	    (rudel-send this "obby_sync_final"))))))
   )
@@ -665,7 +666,7 @@ user. COLOR has to be sufficiently different from used colors."
   "Add a jupiter context for (CLIENT DOCUMENT) to THIS."
   (with-slots (contexts) this
     (with-slots ((client-id :id)) client
-      (let ((doc-name (object-name-string document)))
+      (with-slots ((doc-name :object-name)) document
 	(puthash
 	 (rudel-obby-context-key client document)
 	 (jupiter-context (format "%d-%s" client-id doc-name))

@@ -136,9 +136,8 @@ Otherwise all Rudel-related overlays are returned."
 (defun rudel-make-author-overlay (buffer from to author)
   "Make and return an overlay for the range FROM to TO in BUFFER suitable for contributions by AUTHOR.
 AUTHOR has to be an object of type rudel-user-child."
-  (with-slots (color) author
-    (let ((name    (object-name-string author))
-	  (overlay (make-overlay from to buffer t)))
+  (with-slots ((name :object-name) color) author
+    (let ((overlay (make-overlay from to buffer t)))
       (overlay-put overlay :rudel     'author)
       (overlay-put overlay :user      author)
       (overlay-put overlay 'face      (rudel-overlay-make-face

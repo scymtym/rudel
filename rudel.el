@@ -299,7 +299,8 @@ client protocols have to obey."
 ;;; Class rudel-user
 ;;
 
-(defclass rudel-user (eieio-speedbar-file-button)
+(defclass rudel-user (eieio-named
+		      eieio-speedbar-file-button)
   ((color :initarg  :color
 	  :accessor rudel-color
 	  :documentation
@@ -308,14 +309,15 @@ user. Examples includes text written by the user or the user name
 itself."))
   "Objects of this class represent users participating in
 collaborative editing session. Note that a participating user
-does not have to be connected to the session at any given time.")
-; abstract
+does not have to be connected to the session at any given time."
+  :abstract t)
 
 
 ;;; Class rudel-document
 ;;
 
-(defclass rudel-document (eieio-speedbar-file-button)
+(defclass rudel-document (eieio-named
+			  eieio-speedbar-file-button)
   ((session    :initarg  :session
 	       :type     rudel-session
 	       :documentation

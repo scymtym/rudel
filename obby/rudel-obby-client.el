@@ -283,9 +283,9 @@
    document user new-name new-suffix)
   "Handle obby 'rename' submessage of the 'obby_document' message."
   (with-parsed-arguments ((new-suffix number))
-    (with-slots (suffix) document
-      (object-set-name-string document new-name)
-      (setq suffix new-suffix)))
+    (with-slots ((name :object-name) suffix) document
+      (setq name   new-name
+	    suffix new-suffix)))
   nil)
 
 (defmethod rudel-obby/obby_document/subscribe
@@ -706,11 +706,10 @@ documents."))
 (defmethod rudel-add-context ((this rudel-obby-connection) document)
   "Add a jupiter context for DOCUMENT to THIS connection."
   (with-slots (contexts) this
-    (let ((doc-name (object-name-string document)))
-      (with-slots ((doc-id :id)) document
-	(puthash doc-id
-		 (jupiter-context (format "%s" doc-name))
-		 contexts))))
+    (with-slots ((doc-name :object-name) (doc-id :id)) document
+      (puthash doc-id
+	       (jupiter-context (format "%s" doc-name))
+	       contexts)))
   )
 
 (defmethod rudel-remove-context ((this rudel-obby-connection) document)
@@ -736,14 +735,13 @@ nothing else."
   (rudel-add-context this document)
 
   ;; Announce the new document to the server.
-  (let ((name (object-name-string document)))
-    (with-slots (id buffer) document
-      (rudel-send this "obby_document_create"
-		  (format "%x" id)
-		  name
-		  "UTF-8"
-		  (with-current-buffer buffer
-		    (buffer-string)))))
+  (with-slots ((name :object-name) id buffer) document
+    (rudel-send this "obby_document_create"
+		(format "%x" id)
+		name
+		"UTF-8"
+		(with-current-buffer buffer
+		  (buffer-string))))
   )
 
 (defmethod rudel-subscribe-to ((this rudel-obby-connection) document)
