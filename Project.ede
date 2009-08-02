@@ -14,7 +14,7 @@
    (ede-proj-target-elisp "compile"
     :name "rudel"
     :path ""
-    :source '("rudel.el" "rudel-util.el" "rudel-mode.el" "rudel-interactive.el" "rudel-overlay.el" "rudel-speedbar.el" "rudel-operators.el" "rudel-operations.el" "rudel-compat.el" "rudel-tls.el" "rudel-errors.el" "rudel-state-machine.el" "rudel-backend.el")
+    :source '("rudel.el" "rudel-util.el" "rudel-mode.el" "rudel-interactive.el" "rudel-overlay.el" "rudel-speedbar.el" "rudel-operators.el" "rudel-operations.el" "rudel-compat.el" "rudel-tls.el" "rudel-errors.el" "rudel-state-machine.el" "rudel-backend.el" "rudel-protocol.el")
     )
    )
   :web-site-url "http://rudel.sourceforge.net/"
