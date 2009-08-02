@@ -21,15 +21,18 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with Rudel. If not, see <http://www.gnu.org/licenses>.
 
+
 ;;; Commentary:
 ;;
-;; This file contains a Rudel backend, which implements the obby
-;; protocol (used by the Gobby collaborative editor).
+;; This file contains a Rudel protocol backend, which implements the
+;; obby protocol (used by the Gobby collaborative editor).
 
+
 ;;; History:
 ;;
 ;; 0.1 - Initial revision.
 
+
 ;;; Code:
 ;;
 
@@ -39,6 +42,8 @@
 (require 'eieio)
 
 (require 'rudel)
+(require 'rudel-backend)
+(require 'rudel-protocol)
 (require 'rudel-util)
 (require 'rudel-compat) ;; for `read-color' replacement
 
@@ -63,7 +68,8 @@ multiple chunks.")
 ;;; Class rudel-obby-backend
 ;;
 
-(defclass rudel-obby-backend (rudel-backend)
+;;;###autoload
+(defclass rudel-obby-backend (rudel-protocol-backend)
   ((capabilities :initform '(join host
 			     change-color
 			     track-subscriptions)))
@@ -388,8 +394,8 @@ calling this function."
 ;;
 
 ;;;###autoload
-(add-to-list 'rudel-backends
-	     (cons "obby" 'rudel-obby-backend))
+(rudel-add-backend (rudel-backend-get-factory 'protocol)
+		   'obby 'rudel-obby-backend)
 
 (provide 'rudel-obby)
 ;;; rudel-obby.el ends here

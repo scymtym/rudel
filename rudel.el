@@ -41,6 +41,7 @@
 
 (require 'eieio-speedbar) ;; TODO required for now
 
+(require 'rudel-backend)
 (require 'rudel-operations)
 (require 'rudel-operators)
 (require 'rudel-overlay)
@@ -54,10 +55,6 @@
 
 (defconst rudel-version 0.1
   "Version of the Rudel framework.")
-
-;;;###autoload
-(defvar rudel-backends nil
-  "List of Rudel backends.")
 
 (defvar rudel-current-session nil
   "Global object representing the current Rudel session.
@@ -97,42 +94,6 @@ It would be nice to find another way to do this.")
   "*"
   :group 'rudel
   :type  '(string))
-
-
-;;; Class rudel-backend
-;;
-
-(defclass rudel-backend ()
-  ((capabilities :initarg  :capabilities
-		 :type     list
-		 :initform nil
-		 :documentation
-		 ""))
-  "Class rudel-backend "
-  :abstract t)
-
-(defmethod rudel-capable-of-p ((this rudel-backend) capability)
-  ""
-  (with-slots (capabilities) this
-    (member capability capabilities)))
-
-(defgeneric rudel-ask-connect-info ((this rudel-backend))
-  "")
-
-(defgeneric rudel-connect ((this rudel-backend) info)
-  "Create a new connection according to the data in the property list INFO.
-Implementations can rely on the fact that the property :session
-contains the rudel-session object to which the new connection
-will be associated.")
-
-(defgeneric rudel-ask-host-info ((this rudel-backend))
-  "")
-
-(defgeneric rudel-host ((this rudel-backend) info)
-  "")
-
-(defgeneric rudel-make-document ((this rudel-backend) name session)
-  "")
 
 
 ;;; Class rudel-session
@@ -664,59 +625,6 @@ Ponce and Eric M. Ludlam."
   )
 
 
-;;; Backend functions
-;;
-
-(defun rudel-load-backends ()
-  "Resolve and load backends in the `rudel-backends' list."
-  (setq rudel-backends
-	(mapcar
-	 (lambda (name-and-class)
-	   (let ((name  (car name-and-class)) ; TODO ugly
-		 (class (cdr name-and-class)))
-	     (if (eieio-object-p class)
-		 name-and-class
-	       (progn
-		 (load (concat "rudel-" name))
-		 (cons name (make-instance class name))))))
-	 rudel-backends))
-  )
-
-(defun rudel-suitable-backends (predicate)
-  "Return a list of backends which satisfy PREDICATE.
-Backends are loaded, if necessary."
-  (rudel-load-backends)
-  (if predicate
-      (remove-if-not
-       (lambda (cell)
-	 (funcall predicate (cdr cell)))
-       rudel-backends)
-    rudel-backends)
-  )
-
-(defun rudel-choose-backend (&optional predicate)
-  "When possible, choose a backend satisfying PREDICATE automatically or by asking the user."
-  (let ((backends (rudel-suitable-backends predicate)))
-    (unless backends
-      (error "No backends available"))
-
-    (if (= (length backends) 1)
-	;; If there is only one backend, we can choose that one right
-	;; away.
-	(prog1
-	  (cdar backends)
-	  (when (interactive-p)
-	    (message "Using backend `%s'" (object-name-string
-					   (cdar backends)))
-	    (sit-for 0 500)))
-
-      ;; When we have more than one backend, we have to ask the user,
-      ;; which one she wants.
-      (require 'rudel-interactive)
-      (rudel-read-backend backends nil 'object)))
-  )
-
-
 ;;; Interactive functions
 ;;
 
@@ -726,7 +634,8 @@ Backends are loaded, if necessary."
 All data required to join a session will be prompted for interactively."
   (interactive)
   ;; First, we have to ask to user for the backend we should use
-  (let* ((backend    (rudel-choose-backend
+  (let* ((backend    (rudel-backend-choose
+		      'protocol
 		      (lambda (backend)
 			(rudel-capable-of-p backend 'join))))
 	 (info       (rudel-ask-connect-info backend))
@@ -759,8 +668,10 @@ All data required to host a session will be prompted for
 interactively."
   (interactive)
   ;; If necessary, ask the user for the backend we should use.
-  (let* ((backend (rudel-choose-backend
-		   (lambda (backend) (rudel-capable-of-p backend 'host))))
+  (let* ((backend (rudel-backend-choose
+		   'protocol
+		   (lambda (backend)
+		     (rudel-capable-of-p backend 'host))))
 	 (info    (rudel-ask-host-info backend))
 	 (server))
 
