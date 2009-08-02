@@ -120,7 +120,8 @@ same name."
       (puthash name class backends))))
 
 (defmethod rudel-get-backend ((this rudel-backend-factory) name)
-  "Return backend object for name NAME or nil if there is none."
+  "Return backend object for name NAME or nil if there is none.
+Backends are loaded, if necessary."
   ;; Load all available backends
   (rudel-load-backends this)
 
@@ -142,6 +143,7 @@ Each list element is of the form (NAME . CLASS-OR-OBJECT)."
 
 (defmethod rudel-suitable-backends ((this rudel-backend-factory) predicate)
   "Return a list of backends which satisfy PREDICATE.
+Each list element is of the form (NAME . OBJECT).
 Backends are loaded, if necessary."
   ;; Load all available backends
   (rudel-load-backends this)
@@ -187,7 +189,8 @@ objects."
   (rudel-get-factory rudel-backend-factory category))
 
 (defun rudel-backend-suitable-backends (category predicate)
-  "Return backends from category CATEGORY that satisfy PREDICATE."
+  "Return backends from category CATEGORY that satisfy PREDICATE.
+Each list element is of the form (NAME . OBJECT)."
   (rudel-suitable-backends
    (rudel-backend-get-factory category)
    predicate))
@@ -201,11 +204,10 @@ objects."
 
     (if (= (length backends) 1)
 	;; If there is only one backend, we can choose that one right
-	;; away displaying to avoid confusing the user.
-	(let ((backend (nth 0 backends)))
-	  (when (interactive-p)
-	    (message "Using backend `%s'" (object-name-string backend))
-	    (sit-for 0 500))
+	;; away displaying a message to avoid confusing the user.
+	(let ((backend (cdr (nth 0 backends))))
+	  (message "Using backend `%s'" (object-name-string backend))
+	  (sit-for 0.5)
 	  backend)
 
       ;; When we have more than one backend, we have to ask the user,
