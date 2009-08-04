@@ -24,10 +24,11 @@
 
 ;;; Commentary:
 ;;
-;; This is simple implementation of a finite state machine (FSM). The
-;; is modeled by rudel-state-machine class, objects of which contain
-;; state objects of classes derived from rudel-state. There are no
-;; explicit transition rules, since states specify their successors.
+;; This is a simple implementation of a finite state machine
+;; (FSM). The is modeled by rudel-state-machine class, objects of
+;; which contain state objects of classes derived from
+;; rudel-state. There are no explicit transition rules, since states
+;; specify their successors.
 
 
 ;;; History:
@@ -147,7 +148,8 @@ as well, the first state in the state list is used."
       ;; message.
       (let ((start (cdr (assoc start states))))
 	(oset this :state start)
-	(rudel-switch this (rudel-enter start)))))
+	(rudel--switch-to-return-value
+	 this start (rudel-enter start)))))
   )
 
 (defmethod rudel-find-state ((this rudel-state-machine) name)
@@ -241,14 +243,26 @@ state."
       ;; Notify (new) current state. Using the call's value as next
       ;; state is a bit dangerous since a long sequence of immediate
       ;; state switches could exhaust the stack.
-      (let ((next2 (apply #'rudel-enter state arguments)))
-	(cond
-	 ((null next2)
-	  state)
-	 ((listp next2)
-	  (apply #'rudel-switch this next2))
-	 (t
-	  (rudel-switch this next2))))))
+      (rudel--switch-to-return-value
+       this state (apply #'rudel-enter state arguments))))
+  )
+
+(defmethod rudel--switch-to-return-value ((this rudel-state-machine)
+					  state next)
+  "Switch from STATE to the next state indicated by NEXT.
+STATE is the current state.
+NEXT can nil, a list or a `rudel-state' object."
+  (cond
+   ;; Remain in current state.
+   ((null next)
+    state)
+   ;; NEXT contains next state and arguments to pass to it when
+   ;; switching.
+   ((listp next)
+    (apply #'rudel-switch this next))
+   ;; Otherwise NEXT is a `rudel-state' object.
+   (t
+    (rudel-switch this next)))
   )
 
 (defmethod object-print ((this rudel-state-machine) &rest strings)
