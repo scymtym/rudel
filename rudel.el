@@ -38,6 +38,7 @@
   (require 'cl))
 
 (require 'eieio)
+(require 'eieio-base)
 
 (require 'eieio-speedbar) ;; TODO required for now
 
