@@ -4,6 +4,7 @@
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, collaboration
+;; URL: http://rudel.sourceforge.net/
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -21,16 +22,19 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with rudel. If not, see <http://www.gnu.org/licenses>.
 
+
 ;;; Commentary:
 ;;
 ;; Rudel is a framework for collaborative editing in Emacs.  Its
 ;; architecture allows communication with arbitrary collaborative
 ;; editors.
 
+
 ;;; History:
 ;;
 ;; 0.1 - Initial revision.
 
+
 ;;; Code:
 ;;
 
@@ -62,7 +66,7 @@
 nil if there is no active session.")
 
 (defvar rudel-buffer-document nil
-  "Buffer-local variable which holds the rudel document associated with the buffer.")
+  "Buffer-local variable which holds the Rudel document associated with the buffer.")
 (make-variable-buffer-local 'rudel-buffer-document)
 (put 'rudel-buffer-document 'permanent-local t)
 
