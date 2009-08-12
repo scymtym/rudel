@@ -58,6 +58,31 @@ string."
      (t backend-name)))
   )
 
+(defun rudel-read-session (sessions &optional prompt return)
+  "Read a session name from SESSIONS and return that name or the session info depending on RETURN.
+If PROMPT is non-nil use as prompt string.
+If RETURN is 'object, return the session object; Otherwise return
+the name as string."
+  (unless prompt
+    (setq prompt "Session: "))
+  ;; For presentation and identification of sessions, use the :name
+  ;; property.
+  (flet ((to-string (session)
+		    (if (symbolp session)
+			(symbol-name session)
+		      (plist-get session :name))))
+    ;; Read a session by name, then return that name or the
+    ;; corresponding session info.
+    (let ((session-name (completing-read prompt
+					 (mapcar #'to-string sessions)
+					 nil t)))
+      (cond
+       ((eq return 'object)
+	(find session-name sessions
+	      :key  #'to-string :test #'string=))
+       (t session-name))))
+  )
+
 (defun rudel-read-user-name ()
   "Read a username.
 The default is taken from `rudel-default-username'."
