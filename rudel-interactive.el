@@ -68,8 +68,8 @@ the name as string."
   ;; For presentation and identification of sessions, use the :name
   ;; property.
   (flet ((to-string (session)
-		    (if (symbolp session)
-			(symbol-name session)
+		    (if (rudel-backend-cons-p session)
+			(symbol-name (car session))
 		      (plist-get session :name))))
     ;; Read a session by name, then return that name or the
     ;; corresponding session info.
