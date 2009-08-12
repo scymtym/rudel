@@ -47,11 +47,13 @@
 (require 'eieio-speedbar) ;; TODO required for now
 
 (require 'rudel-backend)
+(require 'rudel-session-initiation)
 (require 'rudel-operations)
 (require 'rudel-operators)
 (require 'rudel-overlay)
 (require 'rudel-interactive) ;; for `rudel-read-backend',
-			     ;; `rudel-read-document'
+			     ;; `rudel-read-document',
+			     ;; `rudel-read-session'
 (require 'rudel-compat) ;; for `read-color' replacement
 
 
@@ -634,23 +636,38 @@ Ponce and Eric M. Ludlam."
 ;;
 
 ;;;###autoload
-(defun rudel-join-session ()
-  "Join a collaborative editing session.
-All data required to join a session will be prompted for interactively."
-  (interactive)
-  ;; First, we have to ask to user for the backend we should use
-  (let* ((backend    (rudel-backend-choose
-		      'protocol
-		      (lambda (backend)
-			(rudel-capable-of-p backend 'join))))
-	 (info       (rudel-ask-connect-info backend))
+(defun rudel-join-session (info)
+  "Join the collaborative editing session describe by INFO.
+INFO is a property list that describes the collaborative editing
+session in terms of properties like :host, :port
+and :encryption. The particular properties and their respective
+meanings depend on the used backend.
 
-	 ;; First, create the session object.
+When called interactively, all data required to join a session
+will be prompted for."
+  (interactive
+   ;; Try the discover method of session initiation backends to find
+   ;; available sessions.
+   (list
+    (let ((info)
+	  (backend))
+      (while (not info)
+	(message "Discovering Sessions ...")
+	(let* ((sessions   (rudel-session-initiation-discover backend))
+	       (maybe-info (if (= (length sessions) 1)
+				 (car sessions)
+			       (rudel-read-session
+				sessions "Choose Session: " 'object))))
+	  (if (rudel-backend-cons-p maybe-info)
+	      (setq backend (car maybe-info))
+	    (setq info maybe-info))))
+    info)))
+
+  ;; First, create the session object.
+  (let* ((backend    (cdr (plist-get info :backend)))
 	 (session    (rudel-client-session
-		      (format "%s session"
-			      (object-name-string backend))
+		      (plist-get info :name)
 		      :backend backend))
-
 	 (connection))
 
     ;; Add the session object to the connect information.
