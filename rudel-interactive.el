@@ -41,19 +41,20 @@
 ;;; Function for reading Rudel objects from the user.
 ;;
 
-(defun rudel-read-backend (&optional backends prompt return)
+(defun rudel-read-backend (backends &optional prompt return)
   "Read a backend name from BACKENDS and return that name or the actual backend depending on RETURN.
-If RETURN. is 'object, return the backend object; Otherwise
-return the name as string."
-  (unless backends
-    (setq backends rudel-backends))
+If RETURN is 'object, return the backend object which is of the
+form (NAME . CLASS-OR-OBJECT); Otherwise return the name as
+string."
   (unless prompt
     (setq prompt "Backend: "))
-  (let* ((backend-names (mapcar 'car backends))
+  (let* ((backend-names (mapcar (lambda (cell)
+				  (symbol-name (car cell)))
+				backends))
 	 (backend-name  (completing-read prompt backend-names nil t)))
     (cond
      ((eq return 'object)
-      (cdr (assoc backend-name backends)))
+       (assoc (intern backend-name) backends))
      (t backend-name)))
   )
 
@@ -83,7 +84,7 @@ the name as string."
   ;; return a user name of object.
   (let* ((user-names (mapcar 'object-name-string users))
 	 (user-name  (completing-read prompt user-names nil t)))
-    (cond 
+    (cond
      ((eq return 'object)
       (find user-name users
 	    :test 'string= :key 'object-name-string))
@@ -104,9 +105,9 @@ return the name as string."
     (setq prompt "Document: "))
   (let* ((document-names (mapcar #'rudel-unique-name documents))
 	 (document-name  (completing-read prompt document-names nil t)))
-    (cond 
-     ((eq return 'object) 
-      (find document-name documents 
+    (cond
+     ((eq return 'object)
+      (find document-name documents
 	    :test #'string= :key #'rudel-unique-name))
      (t document-name)))
   )
@@ -120,7 +121,7 @@ return the name as string."
   (let ((buffer (get-buffer name)))
     (if buffer
 	(progn
-	  (unless (yes-or-no-p (format 
+	  (unless (yes-or-no-p (format
 				"Buffer `%s' already exists; Erase contents? "
 				name))
 	    (error "Buffer `%s' already exists" name)) ;; TODO throw or signal; not error

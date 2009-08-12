@@ -196,7 +196,8 @@ Each list element is of the form (NAME . OBJECT)."
    predicate))
 
 (defun rudel-backend-choose (category &optional predicate)
-  "Choose a backend from CATEGORY satisfying PREDICATE automatically or by asking the user."
+  "Choose a backend from CATEGORY satisfying PREDICATE automatically or by asking the user.
+The returned backend is of the form (NAME . CLASS-OR-OBJECT)."
   (let ((backends (rudel-backend-suitable-backends
 		   category predicate)))
     (unless backends
@@ -205,8 +206,8 @@ Each list element is of the form (NAME . OBJECT)."
     (if (= (length backends) 1)
 	;; If there is only one backend, we can choose that one right
 	;; away displaying a message to avoid confusing the user.
-	(let ((backend (cdr (nth 0 backends))))
-	  (message "Using backend `%s'" (object-name-string backend))
+	(let ((backend (nth 0 backends)))
+	  (message "Using backend `%s'" (symbol-name (car backend)))
 	  (sit-for 0.5)
 	  backend)
 
