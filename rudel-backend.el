@@ -183,6 +183,12 @@ objects."
 ;;; High-level frontend functions
 ;;
 
+(defsubst rudel-backend-cons-p (cell)
+  "Check whether CELL is a cons of a backend name and object."
+  (and (consp cell)
+       (symbolp (car cell))
+       (eieio-object-p (cdr cell))))
+
 ;;;###autoload
 (defun rudel-backend-get-factory (category)
   "A shortcut for getting the factory object for CATEGORY."
