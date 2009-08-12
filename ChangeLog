@@ -1,4 +1,162 @@
+2009-08-13  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* ChangeLog (whole file): updated
+
+	* rudel.el (include rudel-session-initiation): required for
+	`rudel-join-session'
+	(rudel-join-session): mostly rewritten; moved user interaction to
+	`interactive' form
+	* rudel-session-initiation.el (new file): session initiation
+	backend interface and high-level programming interface
+	* Project.ede (target rudel): added rudel-session-initiation.el
+	* Makefile (rudel_LISP): added rudel-session-initiation.el
+
+	* rudel-interactive.el (rudel-read-session): discriminate sessions
+	vs. session generating objects using `rudel-backend-cons-p'
+
+	* rudel-backend.el (rudel-backend-cons-p): new function; checks
+	whether a cons consists of a backend name and object
+
+2009-08-12  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* rudel-interactive.el (rudel-read-session): new function; read
+	session by name and return it
+
+	* rudel-interactive.el (rudel-read-backend): argument backends is
+	no longer optional; always return a cons of backend name and
+	object; updated documentation string
+	(whole file): whitespace fixes
+	* rudel-backend.el (rudel-backend-choose): always return a cons of
+	backend name and object; updated documentation string
+
+2009-08-11  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* rudel.el (file header): added project URL
+	(whole file): improved some comments
+
+2009-08-10  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* rudel.el (include eieio-base): needed for eieio-named
+
+2009-08-04  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* rudel-state-machine.el (header section commentary): updated
+	(rudel-state-machine::initialize-instance): use
+	`rudel--switch-to-return-value' to allow immediate switch to
+	another state
+	(rudel-state-machine::rudel-switch): use
+	`rudel--switch-to-return-value' to switch to successor state
+	(rudel-state-machine::rudel--switch-to-return-value): new function
+	switch to successor state for different kinds of specifications of
+	the successor state
+
+2009-08-03  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* obby/rudel-obby.el (require rudel-backend): now necessary
+	(require rudel-protocol): now necessary
+	(class rudel-obby-backend): now derived from `rudel-backend';
+	autoloaded
+	(autoloading): use `rudel-add-backend'
+	* rudel.el (require rudel-backend): backends have their own file
+	(class rudel-backend): moved to rudel-backend.el
+	(rudel-load-backends): moved to rudel-backend.el
+	(rudel-suitable-backends): moved to rudel-backend.el
+	(rudel-choose-backend): moved to rudel-backend.el
+	(rudel-join-session): use `rudel-backend-choose'
+	(rudel-host-session): use `rudel-backend-choose'
+
+	* rudel-protocol.el (new file): interface for Rudel protocol
+	backends
+	* Project.ede (target rudel): added rudel-protocol.el
+	* Makefile (rudel_LISP): added rudel-protocol.el
+
+	* rudel-backend.el (rudel-backend-factory::rudel-get-backend):
+	improved documentation string
+	(rudel-backend-factory::rudel-suitable-backends): improved
+	documentation string
+	(rudel-backend-suitable-backends): improved documentation string
+	(rudel-backend-choose): When only one backend matches, do not
+	check interactivity using `interactive-p', that does not work;
+	call `sit-for' correctly
+
+2009-08-02  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* jupiter/Makefile (whole file): regenerated; reflects CEDET
+	changes
+	* rudel-backend.el (new file): generic backend management, query
+	and loading functions
+	* Project.ede (target rudel): added rudel-backend.el to sources
+	* Makefile (rudel_LISP): added rudel-backend.el
+
+	* obby/rudel-obby-server.el
+	(rudel-obby-client::rudel-obby/net6_client_login): use slot
+	:object-name instead of calling object-name-string
+	(rudel-obby-server::rudel-add-context): use slot :object-name
+	instead of calling object-name-string
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-idle::rudel-obby/obby_document/rename):
+	use slot :object-name instead of calling object-name-string
+	(rudel-obby-connection::rudel-add-context): use slot :object-name
+	instead of calling object-name-string
+	(rudel-obby-connection::rudel-publish): use slot :object-name
+	instead of calling object-name-string
+	* rudel.el (class rudel-user): added base class eieio-named for
+	virtual slot :object-name; made abstract
+	(class rudel-document): added base class eieio-named for virtual
+	slot :object-name
+	* rudel-overlay.el (rudel-make-author-overlay): use slot
+	:object-name instead of calling object-name-string
+
+	* rudel-state-machine.el
+	(rudel-state-machine::initialize-instance): use &rest slots
+	instead of just slots
+
+2009-07-15  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* rudel.el (rudel-document::rudel-detach-from-buffer): call
+	`rudel-overlays-remove-all'; remove `rudel-unpublish-buffer' hook
+	early
+	* rudel-overlay.el (rudel-overlays-remove-all): new function;
+	remove all overlays from the current buffer
+	(whole file): cosmetic changes; typo fixes; whitespace fixes
+
+	* obby/rudel-obby.el (rudel-obby-document::rudel-unique-name):
+	Check `next-method-p' before calling the next method
+	* obby/rudel-obby-client.el
+	(rudel-obby-connection::initialize-instance): Check
+	`next-method-p' before calling the next method
+	(rudel-obby-connection::rudel-register-state): Check
+	`next-method-p' before calling the next method
+	(rudel-obby-connection::rudel-disconnect): Check
+	`next-method-p' before calling the next method
+	* rudel.el (rudel-client-session::rudel-end): Check
+	`next-method-p' before calling the next method
+
+2009-07-13  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* obby/rudel-obby.el (rudel-obby-backend::rudel-connect): only
+	start the network process after everything is ready; wait for the
+	connection state machine to reach a success or error state
+	(rudel-obby-backend::rudel-host): cosmetic changes
+	(class rudel-obby-user): cosmetic changes
+	* rudel.el (rudel-join-session): reversed order of creation for
+	session and connection; do not catch errors to give error messages
+	a chance
+
+	* jupiter/jupiter-insert.el (jupiter-insert::jupiter-transform):
+	cosmetic changes
+	(whole file): whitespace fixes
+
+	* rudel.el (rudel-session::rudel-find-user): added documentation
+	string; cosmetic changes
+	(rudel-session::rudel-find-document): added documentation string;
+	cosmetic changes
+	(whole file): whitespace fixes
+
 2009-07-12  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* rudel-speedbar.el (eieio-speedbar-object-buttonname): use
+	`rudel-unique-name' instead of `object-name-string'
 
 	* ChangeLog (whole file): updated
 
