@@ -82,7 +82,6 @@ symbol, that each describe one capability of the backend."))
 (defclass rudel-backend-factory ()
   ((backends  :initarg   :backends
 	      :type       hash-table
-	      :initform  (lambda () (make-hash-table :test #'eq))
 	      :documentation
 	      "Mapping of symbolic names to classes (prior to
 instantiation) or objects (after instantiation) for all backends
@@ -97,6 +96,12 @@ category. Objects manage backend implementation for one backend
 category each.")
 (oset-default rudel-backend-factory factories
 	      (make-hash-table :test #'eq))
+
+(defmethod initialize-instance ((this rudel-backend-factory) &rest slots)
+  "Initialize slots of THIS with SLOTS."
+  (when (next-method-p)
+    (call-next-method))
+  (oset this :backends (make-hash-table :test #'eq)))
 
 ;;;###autoload
 (defmethod rudel-get-factory :static ((this rudel-backend-factory)
@@ -187,7 +192,7 @@ objects."
   "Check whether CELL is a cons of a backend name and object."
   (and (consp cell)
        (symbolp (car cell))
-       (eieio-object-p (cdr cell))))
+       (object-p (cdr cell))))
 
 ;;;###autoload
 (defun rudel-backend-get-factory (category)
@@ -245,12 +250,18 @@ available information available for the backends"
 
        ;; Insert header for this category.
        (insert (propertize
-		(format "Factory %s\n" category)
+		(format "Category %s\n" category)
 		'face 'bold))
+       (insert (apply #'format
+		      "  %-20s %-6s %-7s %s\n"
+		      (mapcar
+		       (lambda (header)
+			 (propertize header 'face 'italic))
+		       '("name" "loaded" "version" "capabilities"))))
 
        ;; Insert all backends provided by this factory.
        (dolist (backend (rudel-all-backends factory))
-	 (insert (format "  %-20s %-3s %-5s (%s)\n"
+	 (insert (format "  %-20s %-6s %-7s (%s)\n"
 			 (propertize
 			  (symbol-name (car backend))
 			  'face 'font-lock-type-face)
