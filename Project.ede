@@ -4,12 +4,12 @@
   :name "rudel"
   :version "0.2"
   :file "Project.ede"
-  :targets (list 
+  :targets (list
    (ede-proj-target-elisp-autoloads "autoloads"
     :name "autoloads"
     :path ""
     :autoload-file "rudel-loaddefs.el"
-    :autoload-dirs '("." "jupiter" "obby")
+    :autoload-dirs '("." "jupiter" "obby" "zeroconf")
     )
    (ede-proj-target-elisp "compile"
     :name "rudel"

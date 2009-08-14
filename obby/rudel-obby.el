@@ -85,18 +85,27 @@ connections and creates obby servers.")
 
   (oset this :version rudel-obby-version))
 
-(defmethod rudel-ask-connect-info ((this rudel-obby-backend))
+(defmethod rudel-ask-connect-info ((this rudel-obby-backend) &optional info)
   "Ask user for the information required to connect to an obby server."
   ;; Read server host and port.
-  (let ((host     (read-string "Server: "))
-	(port     (read-number "Port: " 6522))
+  (let ((host       (or (and info (plist-get info :host))
+			(read-string "Server: ")))
+	(port       (or (and info (plist-get info :port))
+			(read-number "Port: " 6522)))
 	;; Read desired username and color
-	(username   (read-string "Username: " user-login-name))
-	(color      (read-color  "Color: " t))
-	(encryption (y-or-n-p "Use encryption? ")))
-    (list :host       host     :port port
-	  :username   username :color color
-	  :encryption encryption))
+	(username   (or (and info (plist-get info :username))
+			(read-string "Username: " user-login-name)))
+	(color      (or (and info (plist-get info :color))
+			(read-color  "Color: " t)))
+	(encryption (if (and info (member :encryption info))
+			(plist-get info :encryption)
+		      (y-or-n-p "Use encryption? "))))
+    (append (list :host       host
+		  :port       port
+		  :username   username
+		  :color      color
+		  :encryption encryption)
+	    info))
   )
 
 (defmethod rudel-connect ((this rudel-obby-backend) info)
@@ -405,6 +414,10 @@ calling this function."
 ;;;###autoload
 (rudel-add-backend (rudel-backend-get-factory 'protocol)
 		   'obby 'rudel-obby-backend)
+
+;;;###autoload
+(eval-after-load 'rudel-zeroconf
+  '(rudel-zeroconf-register-service "_lobby._tcp" 'obby))
 
 (provide 'rudel-obby)
 ;;; rudel-obby.el ends here

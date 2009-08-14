@@ -669,6 +669,11 @@ will be prompted for."
 		      (plist-get info :name)
 		      :backend backend))
 	 (connection))
+    ;; Give the backend a chance to collect remaining connect
+    ;; info. For session initiation methods like Zeroconf, we have the
+    ;; _connection_ info, but are still missing the username and
+    ;; stuff.
+    (setq info (rudel-ask-connect-info backend info))
 
     ;; Add the session object to the connect information.
     (plist-put info :session session)

@@ -35,6 +35,7 @@
   : (add-to-list 'load-path "SOMEDIR/rudel/")
   : (add-to-list 'load-path "SOMEDIR/rudel/jupiter/")
   : (add-to-list 'load-path "SOMEDIR/rudel/obby/")
+  : (add-to-list 'load-path "SOMEDIR/rudel/zeroconf/")
 
   This will allow Emacs to load Rudel code, but will not actually load
   Rudel. To avoid loading all the Rudel code in every Emacs session, I
@@ -56,7 +57,7 @@
   In order to achieve better performance, Emacs can byte-compiled the
   Rudel code. This can be done by executing
 
-  : make rudel obby jupiter
+  : make rudel obby jupiter zeroconf
 
   or just (which will also generate auto loading information)
 
