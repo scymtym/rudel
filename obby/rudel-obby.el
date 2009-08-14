@@ -25,12 +25,14 @@
 ;;; Commentary:
 ;;
 ;; This file contains a Rudel protocol backend, which implements the
-;; obby protocol (used by the Gobby collaborative editor).
+;; obby protocol (used by the Gobby collaborative editor until version
+;; 0.5).
 
 
 ;;; History:
 ;;
 ;; 0.1 - Initial revision.
+;; 0.2 - Refactored client and server to employ state machine.
 
 
 ;;; Code:
@@ -51,7 +53,7 @@
 ;;; Constants
 ;;
 
-(defconst rudel-obby-version 0.1
+(defconst rudel-obby-version '(0 2)
   "Version of the obby backend for Rudel.")
 
 (defconst rudel-obby-protocol-version 8
@@ -75,6 +77,13 @@ multiple chunks.")
 			     track-subscriptions)))
   "Main class of the Rudel obby backend. Creates obby client
 connections and creates obby servers.")
+
+(defmethod initialize-instance ((this rudel-obby-backend) &rest slots)
+  "Initialize slots of THIS with SLOTS."
+  (when (next-method-p)
+    (call-next-method))
+
+  (oset this :version rudel-obby-version))
 
 (defmethod rudel-ask-connect-info ((this rudel-obby-backend))
   "Ask user for the information required to connect to an obby server."
