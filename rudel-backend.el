@@ -126,13 +126,17 @@ same name."
 
 (defmethod rudel-get-backend ((this rudel-backend-factory) name)
   "Return backend object for name NAME or nil if there is none.
+The returned backend is of the form (NAME . OBJECT).
+
 Backends are loaded, if necessary."
   ;; Load all available backends
   (rudel-load-backends this)
 
   ;; Find the backend and return it.
   (with-slots (backends) this
-    (gethash name backends))
+    (let ((backend (gethash name backends)))
+      (when backend
+	(cons name backend))))
   )
 
 (defmethod rudel-all-backends ((this rudel-backend-factory))
@@ -193,6 +197,12 @@ objects."
   (and (consp cell)
        (symbolp (car cell))
        (object-p (cdr cell))))
+
+;;;###autoload
+(defun rudel-backend-get (category name)
+  "A shortcut for getting backend NAME of category CATEGORY.
+The returned backend is of the form (NAME . OBJECT)."
+  (rudel-get-backend (rudel-backend-get-factory category) name))
 
 ;;;###autoload
 (defun rudel-backend-get-factory (category)
