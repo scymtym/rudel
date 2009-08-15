@@ -21,18 +21,21 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with Rudel. If not, see <http://www.gnu.org/licenses>.
 
+
 ;;; Commentary:
 ;;
 ;; This file contains the following global and buffer-local Rudel
 ;; minor modes:
 ;; - global-rudel-minor-mode: Installs a keymap and a `Rudel' menu
 
+
 ;;; History:
 ;;
 ;; 0.1 - Initial revision.
 ;;
 ;; 0.2 - Use define-minor-mode
 
+
 ;;; Code:
 ;;
 

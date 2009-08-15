@@ -2,7 +2,7 @@
 ;;
 ;; Copyright (C) 2009 Jan Moringen
 ;;
-;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, obby, state machine
 ;; X-RCS: $Id:$
 ;;
@@ -60,8 +60,7 @@
   nil)
 
 (defmethod rudel-leave ((this rudel-obby-state))
-  "Default behavior is doing nothing when leaving a state."
-  )
+  "Default behavior is doing nothing when leaving a state.")
 
 (defmethod rudel-accept ((this rudel-obby-state) message)
   "Dispatch to appropriate handler based on MESSAGE.
@@ -86,7 +85,7 @@ Display a warning if no such handler is found."
 (defmethod rudel-send ((this rudel-obby-state) &rest args)
   "Send ARGS through the connection associated with THIS."
   (with-slots (connection) this
-      (apply #'rudel-send connection args)))
+    (apply #'rudel-send connection args)))
 
 
 ;;; Class rudel-obby-client-connection-state

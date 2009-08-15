@@ -21,11 +21,16 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with rudel. If not, see <http://www.gnu.org/licenses>.
 
+
 ;;; Commentary:
 ;;
-;; 
+;; This file contains a Rudel backend which realizes session
+;; initiation and transport of Rudel data through freedesktop's
+;; Telepathy framework.
 
-;;; Code:
+
+;;; Code
+;;
 
 (require 'eieio)
 

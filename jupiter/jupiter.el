@@ -21,6 +21,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with Rudel. If not, see <http://www.gnu.org/licenses>.
 
+
 ;;; Commentary:
 ;;
 ;; This file contains an implementation of the jupiter algorithm,
@@ -31,10 +32,12 @@
 ;; the obby library <http://gobby.0x539.de/trac/>. Note, however, that
 ;; the details of the implementations differ.
 
+
 ;;; History:
 ;;
 ;; 0.1 - Initial revision.
 
+
 ;;; Code:
 ;;
 
@@ -81,7 +84,7 @@ jupiter algorithm.")
     (incf local-revision)))
 
 (defmethod jupiter-remote-operation ((this jupiter-context)
-				     local-revision remote-revision 
+				     local-revision remote-revision
 				     operation)
   "Transform OPERATION with revisions LOCAL-REVISION and REMOTE-REVISION using the local operations stored in THIS.
 LOCAL-REVISION is the local revision of THIS context, the remote
@@ -109,7 +112,7 @@ site is referring to."
 	 ;; Transform the stored operation using the already
 	 ;; transformed remote operation.
 	 (setf (cdr log-operation)
-	       (jupiter-transform transformed-operation 
+	       (jupiter-transform transformed-operation
 				  (cdr log-operation))))
        (reverse local-log))
 

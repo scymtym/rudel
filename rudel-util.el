@@ -21,14 +21,17 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with Rudel. If not, see <http://www.gnu.org/licenses>.
 
+
 ;;; Commentary:
 ;;
 ;; This file contains miscellaneous functions for Rudel.
 
+
 ;;; History:
 ;;
 ;; 0.1 - Initial revision.
 
+
 ;;; Code:
 ;;
 

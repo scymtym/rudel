@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Rudel, errorss, conditions
+;; Keywords: Rudel, errors, conditions
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -34,7 +34,7 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision 
+;; 0.1 - Initial revision
 
 
 ;;; Code:
@@ -45,10 +45,10 @@
 (intern "rudel-join-error")
 
 (put 'rudel-join-error 'error-conditions
-     '(error 
+     '(error
        rudel-error rudel-join-error))
 
-(put 'rudel-join-error 'error-message 
+(put 'rudel-join-error 'error-message
      "Could not join session")
 
 ;; rudel-host-error
@@ -56,10 +56,10 @@
 (intern "rudel-host-error")
 
 (put 'rudel-host-error 'error-conditions
-     '(error 
+     '(error
        rudel-error rudel-host-error))
 
-(put 'rudel-host-error 'error-message 
+(put 'rudel-host-error 'error-message
      "Could not host session")
 
 (provide 'rudel-errors)
