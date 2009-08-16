@@ -738,11 +738,18 @@ Not all backends support this operation."
       (error "Backend `%s' cannot change colors"
 	     (object-name-string backend)))
 
-    ;; Ask the user for a new color, tell the connection to announce
-    ;; the change and change it in our user object.
-    (with-slots (color) self
+    (with-slots ((name :object-name) color) self
+      ;; Ask the user for a new color.
       (setq color (read-color "New Color: " t))
-      (rudel-change-color- connection color)))
+
+      ;; Tell the connection to announce the change and change it in
+      ;; our user object.
+      (rudel-change-color- connection color)
+
+      ;; Update overlay color.
+      (rudel-overlay-set-face-attributes
+       (rudel-overlay-make-face-symbol 'author name)
+       color)))
   )
 
 ;;;###autoload

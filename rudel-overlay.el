@@ -254,10 +254,14 @@ latter case, FACE is returned unmodified."
   (unless (facep face)
     (make-face face)
     (copy-face template face)
-    (dolist (property '(:foreground :background :underline :overline))
-      (unless (eq (face-attribute face property) 'unspecified)
-	(set-face-attribute face nil property color))))
+    (rudel-overlay-set-face-attributes face color))
   face)
+
+(defun rudel-overlay-set-face-attributes (face color)
+  "Set color-related attributes of FACE with respect to COLOR."
+  (dolist (property '(:foreground :background :underline :overline))
+    (unless (eq (face-attribute face property) 'unspecified)
+      (set-face-attribute face nil property color))))
 
 (defun rudel-overlay-options-changed ()
   "Update Rudel overlays after a change of customization options."

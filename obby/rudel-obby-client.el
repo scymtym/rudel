@@ -246,8 +246,14 @@
       (with-slots (session) connection
 	(let ((user (rudel-find-user session user-id
 				     #'= #'rudel-id)))
-	  (with-slots ((color1 :color)) user
-	    (setq color1 color))))))
+	  (with-slots ((name :object-name) (color1 :color)) user
+	    ;; Set color in user object.
+	    (setq color1 color)
+
+	    ;; Update overlays.
+	    (rudel-overlay-set-face-attributes
+	     (rudel-overlay-make-face-symbol 'author name)
+	     color1))))))
   nil)
 
 (defmethod rudel-obby/obby_document_create
