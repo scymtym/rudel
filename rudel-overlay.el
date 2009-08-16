@@ -158,10 +158,8 @@ AUTHOR has to be an object of type rudel-user-child."
     (overlay-put overlay :user      author)
     (overlay-put overlay 'face      (when rudel-overlay-author-display
 				      (rudel-overlay-make-face
-				       (intern
-					(format
-					 "rudel-author-overlay-%s-face"
-					 name))
+				       (rudel-overlay-make-face-symbol
+					'author name)
 				       'rudel-author-overlay-face
 				       color)))
     (overlay-put overlay 'help-echo (when rudel-overlay-author-display
@@ -240,6 +238,14 @@ AUTHOR has to be an object of type rudel-author-child."
 
 ;;; Miscellaneous functions
 ;;
+
+(defun rudel-overlay-make-face-symbol (category name)
+  "Allocate a symbol for a face for CATEGORY and NAME."
+  (intern (format "rudel-%s-overlay-%s-face"
+		  (if (stringp category)
+		      category
+		    (symbol-name category))
+		  name)))
 
 (defun rudel-overlay-make-face (face template color)
   "Copy TEMPLATE to FACE and replace color attributes with COLOR.
