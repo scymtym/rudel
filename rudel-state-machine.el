@@ -43,6 +43,7 @@
   (require 'cl))
 
 (require 'eieio)
+(require 'working)
 
 (require 'rudel-errors)
 
