@@ -29,9 +29,9 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
-;;
 ;; 0.2 - State machine.
+;;
+;; 0.1 - Initial revision.
 
 
 ;;; Code:
@@ -626,7 +626,7 @@
 (defmethod object-print ((this rudel-obby-client-state-document-synching)
 			 &rest strings)
   "Append number of remaining items to string representation."
-  (with-slots (remaining-items) this
+  (with-slots (remaining-bytes) this
     (call-next-method this (format " remaining: %d" remaining-bytes))))
 
 
