@@ -26,14 +26,15 @@
 ;;
 ;; This file contains the following global and buffer-local Rudel
 ;; minor modes:
-;; - global-rudel-minor-mode: Installs a keymap and a `Rudel' menu
+;;
+;; + global-rudel-minor-mode: Installs a keymap and a Rudel menu
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.2 - Use define-minor-mode.
 ;;
-;; 0.2 - Use define-minor-mode
+;; 0.1 - Initial revision.
 
 
 ;;; Code:
@@ -96,7 +97,15 @@
       [ "Rudel Overview"           rudel-speedbar
 	                           t ]
       "---"
-      ( "Options")
+      ( "Options"
+	[ "Highlight Contributions in Authors' Colors"
+	  (lambda ()
+	    (interactive)
+	    (setq rudel-overlay-author-display
+		  (not rudel-overlay-author-display))
+	    (rudel-overlay-options-changed))
+	  :style    toggle
+	  :selected rudel-overlay-author-display ] )
       ))
   )
 

@@ -43,6 +43,16 @@
 ;;; Rudel overlay faces
 ;;
 
+(defcustom rudel-overlay-author-display t
+  "Indicate authorship by setting text color to user color."
+  :group   'rudel
+  :type    'boolean
+  :set     (lambda (symbol value)
+	     (set-default symbol value)
+	     (when (featurep 'rudel-overlay)
+	       (rudel-overlay-options-changed)))
+  :safe    t)
+
 (defface rudel-author-overlay-face
   '((default (:background "black")))
   "*Face used to highlight contributions according to their authors.
@@ -136,20 +146,32 @@ Otherwise all Rudel-related overlays are returned."
 (defun rudel-make-author-overlay (buffer from to author)
   "Make and return an overlay for the range FROM to TO in BUFFER suitable for contributions by AUTHOR.
 AUTHOR has to be an object of type rudel-user-child."
+  (let ((overlay (make-overlay from to buffer t)))
+    (rudel-overlay-author-set-properties overlay author)
+    overlay))
+
+(defun rudel-overlay-author-set-properties (overlay author)
+  "Set properties of OVERLAY according to slots of AUTHOR.
+AUTHOR has to be an object of type rudel-user-child."
   (with-slots ((name :object-name) color) author
-    (let ((overlay (make-overlay from to buffer t)))
-      (overlay-put overlay :rudel     'author)
-      (overlay-put overlay :user      author)
-      (overlay-put overlay 'face      (rudel-overlay-make-face
+    (overlay-put overlay :rudel     'author)
+    (overlay-put overlay :user      author)
+    (overlay-put overlay 'face      (when rudel-overlay-author-display
+				      (rudel-overlay-make-face
 				       (intern
 					(format
 					 "rudel-author-overlay-%s-face"
 					 name))
 				       'rudel-author-overlay-face
-				       color))
-      (overlay-put overlay 'help-echo (format "Written by %s" name))
-      overlay))
+				       color)))
+    (overlay-put overlay 'help-echo (when rudel-overlay-author-display
+				      (format "Written by %s" name))))
   )
+
+(defun rudel-overlay-author-update (overlay)
+  "Update properties of OVERLAY from its attached user object."
+  (let ((author (rudel-overlay-user overlay)))
+    (rudel-overlay-author-set-properties overlay author)))
 
 
 ;;; Update functions for author overlays
@@ -230,6 +252,12 @@ latter case, FACE is returned unmodified."
       (unless (eq (face-attribute face property) 'unspecified)
 	(set-face-attribute face nil property color))))
   face)
+
+(defun rudel-overlay-options-changed ()
+  "Update Rudel overlays after a change of customization options."
+  (dolist (buffer (buffer-list))
+    (with-current-buffer buffer
+      (mapc #'rudel-overlay-author-update (rudel-overlays)))))
 
 (provide 'rudel-overlay)
 ;;; rudel-overlay.el ends here
