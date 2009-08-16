@@ -76,9 +76,9 @@ Display a warning if no such handler is found."
       ;; in this case, so we remain in the current state.
       (rudel-dispatch-error
        (progn
-	 (warn "%s: no method (%s: %s): `%s:%s'; arguments: %s"
+	 (warn "%s: no method (%s: %s): `%s/%s'; arguments: %s"
 	       (object-print this) (car error) (cdr error)
-	       "rudel-obby/" name arguments)
+	       "rudel-obby" name arguments)
 	 nil))))
   )
 
