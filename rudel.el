@@ -695,10 +695,10 @@ All data required to host a session will be prompted for
 interactively."
   (interactive)
   ;; If necessary, ask the user for the backend we should use.
-  (let* ((backend (rudel-backend-choose
-		   'protocol
-		   (lambda (backend)
-		     (rudel-capable-of-p backend 'host))))
+  (let* ((backend (cdr (rudel-backend-choose
+			'protocol
+			(lambda (backend)
+			  (rudel-capable-of-p backend 'host)))))
 	 (info    (rudel-ask-host-info backend))
 	 (server))
 
