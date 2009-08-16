@@ -141,7 +141,7 @@ AUTHOR has to be an object of type rudel-user-child."
       (overlay-put overlay :rudel     'author)
       (overlay-put overlay :user      author)
       (overlay-put overlay 'face      (rudel-overlay-make-face
-				       (make-symbol
+				       (intern
 					(format
 					 "rudel-author-overlay-%s-face"
 					 name))
@@ -224,6 +224,7 @@ AUTHOR has to be an object of type rudel-author-child."
 TEMPLATE has to be a face. FACE can be nil or a face. In the
 latter case, FACE is returned unmodified."
   (unless (facep face)
+    (make-face face)
     (copy-face template face)
     (dolist (property '(:foreground :background :underline :overline))
       (unless (eq (face-attribute face property) 'unspecified)
