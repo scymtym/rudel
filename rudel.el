@@ -650,16 +650,17 @@ will be prompted for."
    ;; available sessions.
    (list
     (let ((info)
-	  (backend))
+	  (session-initiation-backend))
       (while (not info)
 	(message "Discovering Sessions ...")
-	(let* ((sessions   (rudel-session-initiation-discover backend))
+	(let* ((sessions   (rudel-session-initiation-discover
+			    session-initiation-backend))
 	       (maybe-info (if (= (length sessions) 1)
 				 (car sessions)
 			       (rudel-read-session
 				sessions "Choose Session: " 'object))))
 	  (if (rudel-backend-cons-p maybe-info)
-	      (setq backend (car maybe-info))
+	      (setq session-initiation-backend (car maybe-info))
 	    (setq info maybe-info))))
     info)))
 
