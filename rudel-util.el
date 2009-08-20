@@ -58,6 +58,44 @@
      "Could not dispatch message to handler")
 
 
+;;; Class rudel-hook-object
+;;
+
+(defclass rudel-hook-object ()
+  ()
+  "Mixin for classes that offer one or more hooks for each of
+their objects.
+
+This idiom is usually called something like signal/slot or
+event/subscription, but for Emacs, the notion of hooks seems more
+appropriate."
+  :abstract t)
+
+(defmethod object-add-hook ((this rudel-hook-object)
+			    hook function &optional append)
+  "Add FUNCTION to HOOK for THIS.
+If APPEND is non-nil FUNCTION becomes the last element in the
+list of hooks."
+  (let ((value (slot-value this hook)))
+    (unless (member function value)
+      (set-slot-value this hook
+		      (if append (append value (list function))
+			(cons function value)))))
+  )
+
+(defmethod object-remove-hook ((this rudel-hook-object)
+			       hook function)
+  "Remove FUNCTION from HOOK for THIS."
+  (set-slot-value this hook
+		  (remove function (slot-value this hook))))
+
+(defmethod object-run-hook-with-args ((this rudel-hook-object)
+				      hook &rest arguments)
+  "Run HOOK of THIS with arguments ARGUMENTS."
+  (let ((hook (slot-value this hook)))
+    (apply #'run-hook-with-args 'hook this arguments)))
+
+
 ;;; Class rudel-socket-owner
 ;;
 
