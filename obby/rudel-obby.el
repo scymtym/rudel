@@ -31,8 +31,9 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
 ;; 0.2 - Refactored client and server to employ state machine.
+;;
+;; 0.1 - Initial revision.
 
 
 ;;; Code:
@@ -47,6 +48,7 @@
 (require 'rudel-backend)
 (require 'rudel-protocol)
 (require 'rudel-util)
+(require 'rudel-icons)
 (require 'rudel-compat) ;; for `read-color' replacement
 
 
@@ -265,13 +267,49 @@ otherwise.")
 
 (defmethod eieio-speedbar-object-buttonname ((this rudel-obby-user))
   "Return a string to use as a speedbar button for THIS."
-  (let ((connected  (oref this :connected))
-	(encryption (if (slot-boundp this :encryption)
-			(oref this :encryption)
-		      nil)))
-    (format "%-12s %s%s" (object-name-string this)
-	    (if connected  "c" "-")
-	    (if encryption "e" "-")))
+  (rudel-displau-string this))
+
+(defmethod rudel-display-string ((this rudel-obby-user)
+				 &optional use-images align)
+  "Return a textual representation of THIS for user interface stuff."
+  (with-slots (connected color) this
+    (let ((encryption  (and (slot-boundp this :encryption)
+			    (oref this :encryption)))
+	  (name-string (call-next-method)))
+      (concat
+       ;; Name bit
+       (cond
+	((numberp align) (format (format "%-%ds" align) name-string))
+	((eq align t)    (format "%-12s" name-string))
+	(t		name-string))
+
+       ;; Connection status bit
+       (apply
+	#'propertize
+	(if connected "c" "-")
+	'help-echo (format (if connected
+			       "%s is connected"
+			     "%s is not connected")
+			   name-string)
+	'face      (list :background color)
+	(when use-images
+	  (list 'display (if connected
+			     rudel-icon-connected
+			   rudel-icon-disconnected))))
+
+       ;; Encryption bit
+       (apply
+	#'propertize
+	(if encryption "e" "-")
+	'help-echo (format (if encryption
+			       "%s's connection is encrypted"
+			     "%s's connection is not encrypted")
+			   name-string)
+	'face      (list :background color)
+	(when use-images
+	  (list 'display (if encryption
+			     rudel-icon-encrypted
+			   rudel-icon-plaintext)))))))
   )
 
 
@@ -385,7 +423,7 @@ whose cdr is the replacement for the pattern."
 
 The terminating `\n' should be removed from MESSAGE before
 calling this function."
-  (mapcar 'rudel-obby-unescape-string (split-string message ":")))
+  (mapcar #'rudel-obby-unescape-string (split-string message ":")))
 
 (defun rudel-obby-send (socket name arguments)
   "Send an obby message NAME with arguments ARGUMENTS through SOCKET."

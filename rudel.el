@@ -54,6 +54,7 @@
 (require 'rudel-interactive) ;; for `rudel-read-backend',
 			     ;; `rudel-read-document',
 			     ;; `rudel-read-session'
+(require 'rudel-icons)
 (require 'rudel-compat) ;; for `read-color' replacement
 
 
@@ -279,6 +280,18 @@ itself."))
 collaborative editing session. Note that a participating user
 does not have to be connected to the session at any given time."
   :abstract t)
+
+(defmethod rudel-display-string ((this rudel-user)
+				 &optional use-images align)
+  "Return a textual representation of THIS for user interface stuff."
+  (with-slots ((name :object-name) color) this
+    (propertize
+     (concat
+      (when use-images
+	(propertize "*" 'display rudel-icon-person))
+      name)
+     'face (list :background color)))
+  )
 
 
 ;;; Class rudel-document
