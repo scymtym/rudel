@@ -298,21 +298,35 @@ does not have to be connected to the session at any given time."
 ;;
 
 (defclass rudel-document (eieio-named
-			  eieio-speedbar-file-button)
-  ((session    :initarg  :session
-	       :type     rudel-session
-	       :documentation
-	       "")
-   (buffer     :initarg  :buffer
-	       :type     (or null buffer)
-	       :initform nil
-	       :documentation
-	       "")
-   (subscribed :initarg  :subscribed
-	       :type     list
-	       :initform nil
-	       :documentation
-	       ""))
+			  eieio-speedbar-file-button
+			  rudel-hook-object)
+  ((session          :initarg  :session
+		     :type     rudel-session
+		     :documentation
+		     "")
+   (buffer           :initarg  :buffer
+		     :type     (or null buffer)
+		     :initform nil
+		     :documentation
+		     "")
+   (subscribed       :initarg  :subscribed
+		     :type     list
+		     :initform nil
+		     :documentation
+		     "")
+   ;; Hooks
+   (subscribe-hook   :initarg  :subscribe-hook
+		     :type     list
+		     :initform nil
+		     :documentation
+		     "This hook is run when a user subscribes to
+this document object.")
+   (unsubscribe-hook :initarg  :subscribe-hook
+		     :type     list
+		     :initform nil
+		     :documentation
+		     "This hook is run when a user unsubscribes
+from this document object."))
   "This class represents a document, which participants of a
 collaborative editing session can subscribe to."
   :abstract t)
@@ -397,6 +411,24 @@ Do nothing, if THIS is not attached to any buffer."
       (rudel-set-buffer-document nil buffer)
       (setq buffer nil)))
   )
+
+(defmethod rudel-add-user ((this rudel-document) user)
+  "Add USER to the list of subscribed users of THIS.
+Runs `rudel-subscribe-hook' with arguments THIS and USER."
+  ;; Add USER to list.
+  (object-add-to-list this :subscribed user)
+
+  ;; Run the hook.
+  (object-run-hook-with-args this 'subscribe-hook user))
+
+(defmethod rudel-remove-user ((this rudel-document) user)
+  "Remove USER from the list of subscribed users of THIS.
+Runs `rudel-unsubscribe-hook' with arguments THIS and USER."
+  ;; Remove USER from list.
+  (object-remove-from-list document :subscribed user)
+
+  ;; Run the hook.
+  (object-run-hook-with-args this 'unsubscribe-hook user))
 
 (defmethod rudel-insert ((this rudel-document) position data)
   "Insert DATA at POSITION into the buffer attached to THIS.

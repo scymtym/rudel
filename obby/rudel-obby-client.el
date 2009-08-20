@@ -303,7 +303,7 @@
       (with-slots (session) connection
 	(let ((user (rudel-find-user session user-id
 				     #'= #'rudel-id)))
-	  (object-add-to-list document :subscribed user)))))
+	  (rudel-add-user document user)))))
   nil)
 
 (defmethod rudel-obby/obby_document/unsubscribe
@@ -315,7 +315,7 @@
       (with-slots (session) connection
 	(let ((user (rudel-find-user session user-id
 				     #'= #'rudel-id)))
-	  (object-remove-from-list document :subscribed user)))))
+	  (rudel-remove-user document user)))))
   nil)
 
 (defmethod rudel-obby/obby_document/record
