@@ -326,7 +326,19 @@ this document object.")
 		     :initform nil
 		     :documentation
 		     "This hook is run when a user unsubscribes
-from this document object."))
+from this document object.")
+   (attach-hook      :initarg  :attach-hook
+		     :type     list
+		     :initform nil
+		     :documentation
+		     "This hook is run when a buffer is attached
+to this document object.")
+   (detach-hook      :initarg  :detach-hook
+		     :type     list
+		     :initform nil
+		     :documentation
+		     "This hook is run when the attached buffer
+is detached from this document object."))
   "This class represents a document, which participants of a
 collaborative editing session can subscribe to."
   :abstract t)
@@ -370,51 +382,61 @@ collaborative editing session can subscribe to."
       ;;
       (add-hook 'change-major-mode-hook
 		#'rudel-handle-major-mode-change
-		nil t)))
+		nil t))
+
+    ;; Run the hook.
+    (object-run-hook-with-args this 'attach-hook doc-buffer))
   )
 
 (defmethod rudel-detach-from-buffer ((this rudel-document))
   "Detach document THIS from its buffer.
 Do nothing, if THIS is not attached to any buffer."
   (with-slots (buffer) this
-    ;; Only try to detach from BUFFER, if it is non-nil. BUFFER can be
-    ;; nil, if the user did not subscribe to the document, or
-    ;; unsubscribed after subscribing.
-    (when buffer
+    (let ((buffer-save buffer))
 
-      (with-current-buffer buffer
-	;; Remove our handler function from the kill-buffer hook.
-	(remove-hook 'kill-buffer-hook
-		     #'rudel-unpublish-buffer
-		     t)
+      ;; Only try to detach from BUFFER, if it is non-nil. BUFFER can
+      ;; be nil, if the user did not subscribe to the document, or
+      ;; unsubscribed after subscribing.
+      (when buffer
 
-	;; Remove our handler function from the after-change hook.
-	(remove-hook 'after-change-functions
-		     #'rudel-handle-buffer-change
-		     t)
+	(with-current-buffer buffer
+	  ;; Remove our handler function from the kill-buffer hook.
+	  (remove-hook 'kill-buffer-hook
+		       #'rudel-unpublish-buffer
+		       t)
 
-	;; Remove our handler function from the before-change hook.
-	(remove-hook 'before-change-functions
-		     #'rudel-buffer-change-workaround
-		     t)
+	  ;; Remove our handler function from the after-change hook.
+	  (remove-hook 'after-change-functions
+		       #'rudel-handle-buffer-change
+		       t)
 
-	;; Remove all overlays.
-	(rudel-overlays-remove-all)
+	  ;; Remove our handler function from the before-change hook.
+	  (remove-hook 'before-change-functions
+		       #'rudel-buffer-change-workaround
+		       t)
 
-	;; Remove the major mode change handler.
-	(remove-hook 'change-major-mode-hook
-		     #'rudel-handle-major-mode-change
-		     t))
+	  ;; Remove all overlays.
+	  (rudel-overlays-remove-all)
 
-      ;; Unset buffer slot of THIS and delete association of THIS with
-      ;; BUFFER.
-      (rudel-set-buffer-document nil buffer)
-      (setq buffer nil)))
+	  ;; Remove the major mode change handler.
+	  (remove-hook 'change-major-mode-hook
+		       #'rudel-handle-major-mode-change
+		       t))
+
+	;; Unset buffer slot of THIS and delete association of THIS with
+	;; BUFFER.
+	(rudel-set-buffer-document nil buffer)
+	(setq buffer nil))
+
+      ;; Run the hook.
+      (object-run-hook-with-args this 'detach-hook buffer-save)))
   )
 
 (defmethod rudel-add-user ((this rudel-document) user)
   "Add USER to the list of subscribed users of THIS.
-Runs `rudel-subscribe-hook' with arguments THIS and USER."
+
+Runs object hook (see `rudel-hook-object') `subscribe-hook' with
+arguments THIS and USER."
   ;; Add USER to list.
   (object-add-to-list this :subscribed user)
 
@@ -423,7 +445,9 @@ Runs `rudel-subscribe-hook' with arguments THIS and USER."
 
 (defmethod rudel-remove-user ((this rudel-document) user)
   "Remove USER from the list of subscribed users of THIS.
-Runs `rudel-unsubscribe-hook' with arguments THIS and USER."
+
+Runs object hook (see `rudel-hook-object') `unsubscribe-hook'
+with arguments THIS and USER."
   ;; Remove USER from list.
   (object-remove-from-list document :subscribed user)
 
