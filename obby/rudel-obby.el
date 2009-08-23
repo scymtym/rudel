@@ -267,7 +267,7 @@ otherwise.")
 
 (defmethod eieio-speedbar-object-buttonname ((this rudel-obby-user))
   "Return a string to use as a speedbar button for THIS."
-  (rudel-displau-string this))
+  (rudel-display-string this))
 
 (defmethod rudel-display-string ((this rudel-obby-user)
 				 &optional use-images align)
