@@ -217,12 +217,13 @@ failed encryption negotiation.")
 This method is called when the connected user requests a change
 of her color to COLOR."
   (with-parsed-arguments ((color- color))
-    (with-slots (color (user-id :user-id)) (oref this :user)
-      (setq color color-)
-      (rudel-broadcast this (list 'exclude this)
-		       "obby_user_colour"
-		       (format "%x" user-id)
-		       (rudel-obby-format-color color))))
+    (with-slots (user) this
+      (with-slots (color (user-id :user-id)) user
+	(setq color color-)
+	(rudel-broadcast this (list 'exclude this)
+			 "obby_user_colour"
+			 (format "%x" user-id)
+			 (rudel-obby-format-color color)))))
   )
 
 (defmethod rudel-obby/obby_document_create ((this rudel-obby-client)
@@ -311,7 +312,7 @@ of her color to COLOR."
 	(when (memq user subscribed)
 	  (error "User `%s' already subscribed to document `%s'"
 		 (object-name user) (object-name document)))
-	(push user subscribed)
+	(rudel-add-user document user)
 
 	;; Synchronize the buffer content to the client.
 	(with-current-buffer buffer
@@ -361,7 +362,7 @@ of her color to COLOR."
 	(unless (memq user subscribed)
 	  (error "User `%s' not subscribed to document `%s'"
 		 (object-name user) (object-name document)))
-	(setq subscribed (delq user subscribed))
+	(rudel-remove-user document user)
 
 	;; Notify clients of the canceled subscription (including our
 	;; own client, who requested being unsubscribed).
@@ -614,10 +615,12 @@ user. COLOR has to be sufficiently different from used colors."
    ;; The empty user name is not allowed
    ((string= username "")
     rudel-obby-error-username-invalid)
+
    ;; Make sure the user name is not already in use.
    ((rudel-find-user this username
 		     #'string= #'object-name-string)
     rudel-obby-error-username-in-use)
+
    ;; Make sure the color is not already in use.
    ((rudel-find-user this color
 		     (lambda (left right)
