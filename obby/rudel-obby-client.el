@@ -230,8 +230,12 @@
 				     #'eql #'rudel-client-id)))
 	  (if user
 	      (with-slots (client-id connected) user
+		;; Set slot values.
 		(setq client-id nil
-		      connected nil))
+		      connected nil)
+
+		;; Run the change hook of the user object.
+		(object-run-hook-with-args user 'change-hook))
 	    (warn "Cannot find user for client id: %d"
 		  client-id))))))
   nil)
@@ -249,6 +253,9 @@
 	  (with-slots ((name :object-name) (color1 :color)) user
 	    ;; Set color in user object.
 	    (setq color1 color)
+
+	    ;; Run the change hook of the user object.
+	    (object-run-hook-with-args user 'change-hook)
 
 	    ;; Update overlays.
 	    (rudel-overlay-set-face-attributes

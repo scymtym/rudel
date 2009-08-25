@@ -219,7 +219,12 @@ of her color to COLOR."
   (with-parsed-arguments ((color- color))
     (with-slots (user) this
       (with-slots (color (user-id :user-id)) user
+	;; Set color slot value.
 	(setq color color-)
+
+	;; Run change hook.
+	(object-run-hook-with-args user 'change-hook)
+
 	(rudel-broadcast this (list 'exclude this)
 			 "obby_user_colour"
 			 (format "%x" user-id)
@@ -654,8 +659,12 @@ user. COLOR has to be sufficiently different from used colors."
     ;; If the client has an associated user object, set the status of
     ;; the user object to offline.
     (when user
+      ;; Set slot value.
       (with-slots (connected) user
-	(setq connected nil))))
+	(setq connected nil))
+
+      ;; Run change hook.
+      (object-run-hook-with-args user 'change-hook)))
 
   (object-remove-from-list this :clients client)
   )

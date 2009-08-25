@@ -269,13 +269,20 @@ client protocols have to obey."
 ;;
 
 (defclass rudel-user (eieio-named
-		      eieio-speedbar-file-button)
-  ((color :initarg  :color
-	  :accessor rudel-color
-	  :documentation
-	  "Color used to indicate ownership or authorship by the
-user. Examples includes text written by the user or the user name
-itself."))
+		      eieio-speedbar-file-button
+		      rudel-hook-object)
+  ((color       :initarg  :color
+		:accessor rudel-color
+		:documentation
+		"Color used to indicate ownership or authorship
+by the user. Examples includes text written by the user or the
+user name itself.")
+   (change-hook :initarg  :change-hook
+		:type     list
+		:initform nil
+		:documentation
+		"This hook is run when this user object
+changes."))
   "Objects of this class represent users participating in
 collaborative editing session. Note that a participating user
 does not have to be connected to the session at any given time."
