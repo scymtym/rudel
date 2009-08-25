@@ -15,8 +15,8 @@
    object-oriented implementation. Cedet can be obtained from
    http://cedet.sourceforge.net/
 
-   IMPORTANT: It is necessary to use the latest CVS version of CEDET
-   since it fixes a serious problem in the object system Eieio.
+   IMPORTANT: It is necessary to use at least the 1.0pre6 version of
+   CEDET since it fixes a serious problem in the object system Eieio.
 
 ** GnuTLS (optional)
    Encrypted connections to Gobby servers require the gnutls-cli
