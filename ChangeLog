@@ -1,3 +1,233 @@
+2009-08-26  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* ChangeLog (whole file): updated
+
+	* rudel.el (rudel-session-start-hook): new variable; session start
+	hook function list
+	(rudel-session-end-hook): new variable; session end hook function
+	list
+	(rudel-join-session): run session start hook
+	(rudel-end-session): run session end hook
+
+	* obby/rudel-obby-server.el
+	(rudel-obby-client::rudel-obby/obby_document_create): call
+	`generate-new-buffer-name' on complete buffer name; not just name
+	part
+
+	* obby/rudel-obby-server.el
+	(rudel-obby-client::rudel-obby/obby_document/subscribe): send
+	number of bytes instead of number of characters
+
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-document-synching::remaining-bytes):
+	fixed initarg num-bytes -> remaining-bytes
+
+	* rudel.el (rudel-session::add-document-hook): new slot; run when
+	a document gets added to the session
+	(rudel-session::remove-document-hook): new slot; run when a
+	document gets removed from the session
+	(rudel-session::rudel-add-document): run add document hook
+	(rudel-session::rudel-remove-document): run remove document hook
+	(rudel-document::unsubscribe-hook): fixed initarg subscribe-hook
+	-> unsubscribe-hook
+
+2009-08-25  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* www/index.html (Download): link to http://bazaar-vcs.org;
+	improved wording
+
+	* www/index.html (Download): changed link to source; add browse
+	source link for bzr
+
+	* INSTALL (REQUIREMENTS): precise CEDET release version
+
+	* obby/rudel-obby-server.el
+	(rudel-obby-client::rudel-obby/obby_user_colour): run change hook
+	after setting slot
+	(rudel-obby-server::rudel-remove-client): run change hook after
+	setting slot
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-idle::rudel-obby/net6_client_part): run
+	change hook after setting slots
+	(rudel-obby-client-state-idle::rudel-obby/obby_user_colour): run
+	change hook after setting slot
+	* rudel.el (class rudel-user): derive from `rudel-hook-object'
+	(rudel-user::change-hook): new slot; stores change hook functions
+
+	* obby/rudel-obby-server.el
+	(rudel-obby-client::rudel-obby/obby_user_colour): cosmetic changes
+	(rudel-obby-client::rudel-obby/obby_document/subscribe): use
+	`rudel-add-user'
+	(rudel-obby-client::rudel-obby/obby_document/unsubscribe): use
+	`rudel-remove-user'
+	(rudel-obby-server::rudel-check-username-and-color): whitespace
+	fixes
+
+2009-08-23  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* rudel.el (rudel-document::attach-hook): new slot; attach hook
+	function list
+	(rudel-document::detach-hook): new slot; detach hook function list
+	(rudel-document::rudel-attach-to-buffer): run hook `attach-hook'
+	(rudel-document::rudel-detach-from-buffer): run hook `detach-hook'
+	(rudel-document::rudel-add-user): improved documentation string
+	(rudel-document::rudel-remove-user): improved documentation string
+
+	* obby/rudel-obby.el
+	(rudel-obby-user::eieio-speedbar-object-buttonname): fixed typo
+
+2009-08-21  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-idle::rudel-obby/obby_document/subscribe):
+	call `rudel-add-user'
+	(rudel-obby-client-state-idle::rudel-obby/obby_document/unsubscribe):
+	call `rudel-remove-user'
+	* rudel.el (class rudel-document): mixin rudel-hook-object
+	(rudel-document::subscribe-hook): new slot; subscribe-hook
+	function list
+	(rudel-document::unsubscribe-hook): new slot; unsubscribe-hook
+	function list
+	(rudel-document::rudel-add-user): new method; add user to list of
+	subscribed users and run subscribe-hook
+	(rudel-document::rudel-remove-user): new method; remove user from
+	list of subscribed users and run unsubscribe-hook
+
+	* obby/rudel-obby.el (header): cosmetic changes
+	(include rudel-icons): `rudel-display-string' uses icons
+	(rudel-obby-user::eieio-speedbar-object-buttonname): use
+	`rudel-display-string'
+	(rudel-obby-user::rudel-display-string): new method; textual
+	representation of user object
+	(rudel-obby-parse-message): cosmetic changes
+	* rudel.el (include rudel-icons): `rudel-display-string' uses
+	icons
+	(rudel-user::rudel-display-string): new method; textual
+	representation of user object
+
+	* rudel-util.el (rudel-hook-object): new class; abstract mixin for
+	classes that offer hooks
+	(rudel-hook-object::object-add-hook): new method; add function to
+	hook list
+	(rudel-hook-object::object-remove-hook): new method; remove
+	function from hook list
+	(rudel-hook-object::object-run-hook-with-args): new method; run
+	hook functions
+
+2009-08-20  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* icons/plaintext.svg (new file): plaintext icon
+	* icons/person.svg (new file): person icon
+	* icons/encrypted.svg (new file): encrypted icon
+	* icons/document.svg (new file): document icon
+	* icons/disconnected.svg (new file): disconnected icon
+	* icons/connected.svg (new file): connected icon
+	* rudel-icons.el (new file): loading icons
+	* Project.ede (target rudel): added rudel-icons.el
+
+2009-08-19  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* rudel.el (rudel-join-session): renamed local variable backend to
+	session-initiation-backend
+
+2009-08-17  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* obby/rudel-obby-state.el (rudel-obby-state::rudel-accept): fixed
+	format of warning message
+
+	* rudel-state-machine.el (require working): needed by
+	`rudel-state-wait'
+
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-idle::rudel-obby/obby_user_colour): set
+	face attributes
+	* rudel.el (rudel-change-color): set face attributes
+	* rudel-overlay.el (rudel-overlay-make-face): use
+	`rudel-overlay-set-face-attributes'
+	(rudel-overlay-set-face-attributes): new function; set face
+	attributes
+
+	* rudel-overlay.el (rudel-overlay-author-set-properties): call
+	`rudel-overlay-make-face-symbol'
+	(rudel-overlay-make-face-symbol): new function; return face symbol
+
+2009-08-16  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* rudel-overlay.el (rudel-overlay-author-display): option that
+	controls display of author overlays
+	(rudel-make-author-overlay): call
+	`rudel-overlay-author-set-properties' to set the overlay
+	properties
+	(rudel-overlay-author-set-properties): new function; set overlay
+	properties; respects rudel-overlay-author-display
+	(rudel-overlay-author-update): new function; update overlay
+	properties based on associated user object
+	(rudel-overlay-options-changed): new function; call
+	`rudel-overlay-author-update' on all Rudel overlays in all buffers
+	* rudel-mode.el (header): cosmetic changes
+	(rudel-minor-menu): added menu entry to toggle display of author
+	overlays
+
+	* rudel-overlay.el (rudel-make-author-overlay): use `intern'
+	instead of `make-symbol' when allocating the face name; this way,
+	faces can actually be created lazily
+	(rudel-overlay-make-face): call `make-face' for the new face
+
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-document-synching::object-print): fixed
+	slot name remaining-bytes
+
+	* rudel.el (rudel-host-session): the backend object is the cdr of
+	the result of `rudel-backend-choose'
+
+2009-08-15  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* telepathy/rudel-telepathy.el (header): added file comment
+	* obby/rudel-obby-state.el (header): fixed email address
+	(whole file): whitespace fixes
+	* jupiter/jupiter.el (header): cosmetic changes
+	(whole file): whitespace fixes
+	* rudel-util.el (header): cosmetic changes
+	* rudel-mode.el (header): cosmetic changes
+	* rudel-errors.el (header): fixed type
+	(whole file): whitespace fixes
+
+	* obby/rudel-obby.el (rudel-ask-connect-info): added optional
+	argument info; do not ask for things that are already specified in
+	info
+	(autoload): register obby service with the Zeroconf backend
+	* zeroconf/rudel-zeroconf.el (new file): Zeroconf session
+	initiation for Rudel
+	* zeroconf/Project.ede (new file): subproject zeroconf
+	* rudel.el (rudel-join-session): call `rudel-ask-info' to augment
+	connect info
+	* Project.ede (target autoloads): added directory zeroconf
+	* INSTALL (INSTALLING): mention zeroconf subdirectory
+	(COMPILING): mention zeroconf target
+
+	* rudel-backend.el (rudel-backend-factory::rudel-get-backend):
+	return backend as a cons
+	(rudel-backend-get): new function; convenience function for
+	getting backends
+
+	* obby/rudel-obby.el (header): extended commentary and history
+	(rudel-obby-version): bumped to 0.2
+	(rudel-obby-backend::initialize-instance): set :version slot in
+	constructor instead of using obsolete lambda expression in
+	initform
+
+2009-08-14  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* Project.ede (project rudel): bumped version to 0.2; added
+	mailing list and path to web files
+
+	* rudel-backend.el (rudel-backend-factory): do not initialize
+	backends with lambda expression
+	(rudel-backend-factory::initialize-instance): new method;
+	initialize backends
+	(rudel-backend-cons-p): use `object-p' instead of `eieio-object-p'
+	(rudel-backend-dump): changed format slightly
+
 2009-08-13  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
 
 	* ChangeLog (whole file): updated
@@ -1463,7 +1693,7 @@
 	patterns in a string
 	(rudel-obby-escape-string): new function; replace obby control
 	characters with their escape sequences
-	(rudel-obby-unescape-string): new function; invers of
+	(rudel-obby-unescape-string): new function; inverse of
 	`rudel-obby-escape-string'
 	(rudel-obby-parse-color): added documentation
 	(rudel-obby-format-color): added documentation
