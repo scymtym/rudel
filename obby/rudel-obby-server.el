@@ -238,32 +238,32 @@ of her color to COLOR."
 			  (encoding coding-system))
     (with-slots (user server) this
       (with-slots ((user-id :user-id)) user
-  	;; Create a (hidden) buffer for the new document
+	;; Create a (hidden) buffer for the new document.
         (let* ((buffer   (get-buffer-create
-  			  (concat
-  			   " *" (generate-new-buffer-name name) "*")))
-  	       ;; Create the new document object
-  	       (document (rudel-obby-document
-  			  name
-  			  :buffer     buffer
-  			  :subscribed (list user)
-  			  :id         doc-id
-  			  :owner-id   user-id
-  			  :suffix     1)))
+			  (generate-new-buffer-name
+			   (concat " *" name "*"))))
+	       ;; Create the new document object
+	       (document (rudel-obby-document
+			  name
+			  :buffer     buffer
+			  :subscribed (list user)
+			  :id         doc-id
+			  :owner-id   user-id
+			  :suffix     1)))
 
-  	  ;; Initialize the buffer's content
-  	  (with-current-buffer buffer
-  	    (insert content))
+	  ;; Initialize the buffer's content
+	  (with-current-buffer buffer
+	    (insert content))
 
-  	  (with-slots (suffix) document
-  	    ;; Determine an appropriate suffix to provide an unique
-  	    ;; name for the new document.
-  	    (while (rudel-find-document server
-  	    				(if (= suffix 1)
-  	    				    name
-  	    				  (format "%s<%d>" name suffix))
-  	    				#'string= #'rudel-unique-name)
-  	      (incf suffix))
+	  (with-slots (suffix) document
+	    ;; Determine an appropriate suffix to provide an unique
+	    ;; name for the new document.
+	    (while (rudel-find-document server
+					(if (= suffix 1)
+					    name
+					  (format "%s<%d>" name suffix))
+					#'string= #'rudel-unique-name)
+	      (incf suffix))
 
 	    ;; Add the document to the server's document list
 	    (rudel-add-document server document)
