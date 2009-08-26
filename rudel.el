@@ -107,21 +107,36 @@ It would be nice to find another way to do this.")
 ;;; Class rudel-session
 ;;
 
-(defclass rudel-session ()
-  ((backend   :initarg  :backend
-	      :type     rudel-backend-child
-	      :documentation
-	      "The backend used by this session.")
-   (users     :initarg  :users
-	      :type     list
-	      :initform nil
-	      :documentation
-	      "The list of users participating in this session.")
-   (documents :initarg  :documents
-	      :type     list
-	      :initform nil
-	      :documentation
-	      "This list of documents available in this session."))
+(defclass rudel-session (rudel-hook-object)
+  ((backend              :initarg  :backend
+			 :type     rudel-backend-child
+			 :documentation
+			 "The backend used by this session.")
+   (users                :initarg  :users
+			 :type     list
+			 :initform nil
+			 :documentation
+			 "The list of users participating in this
+session.")
+   (documents            :initarg  :documents
+			 :type     list
+			 :initform nil
+			 :documentation
+			 "This list of documents available in
+this session.")
+   ;; Hooks
+   (add-document-hook    :initarg  :add-document-hook
+			 :type     list
+			 :initform nil
+			 :documentation
+			 "This hook is run when a document gets
+added to the session.")
+   (remove-document-hook :initarg  :remove-document-hook
+			 :type     list
+			 :initform nil
+			 :documentation
+			 "This hook is run when a document gets
+removed from the session."))
   "This class serves as a base class for rudel-client-session and
 rudel-server-session. Consequently, it consists of slots common
 to client and server sessions."
@@ -155,11 +170,19 @@ WHICH is compared to the result of KEY using TEST."
   (unless (slot-boundp document :session)
     (oset document :session this))
 
-  (object-add-to-list this :documents document))
+  ;; Add DOCUMENT to the list of documents in THIS session.
+  (object-add-to-list this :documents document)
+
+  ;; Run the hook.
+  (object-run-hook-with-args this 'add-document-hook document))
 
 (defmethod rudel-remove-document ((this rudel-session) document)
   ""
-  (object-remove-from-list this :documents document))
+  ;; Remove DOCUMENT from the list of documents in THIS session.
+  (object-remove-from-list this :documents document)
+
+  ;; Run the hook.
+  (object-run-hook-with-args this 'remove-document-hook document))
 
 (defmethod rudel-find-document ((this rudel-session)
 				which &optional test key)
@@ -328,7 +351,7 @@ does not have to be connected to the session at any given time."
 		     :documentation
 		     "This hook is run when a user subscribes to
 this document object.")
-   (unsubscribe-hook :initarg  :subscribe-hook
+   (unsubscribe-hook :initarg  :unsubscribe-hook
 		     :type     list
 		     :initform nil
 		     :documentation
