@@ -104,6 +104,18 @@ It would be nice to find another way to do this.")
   :type  '(string))
 
 
+;;; Hook variables
+;;
+
+(defvar rudel-session-start-hook nil
+  "This hook is run when a new session is started.
+The only argument is the session object.")
+
+(defvar rudel-session-end-hook nil
+  "This hook is run when a session ends.
+The only argument is the session object.")
+
+
 ;;; Class rudel-session
 ;;
 
@@ -736,7 +748,7 @@ Ponce and Eric M. Ludlam."
 
 ;;;###autoload
 (defun rudel-join-session (info)
-  "Join the collaborative editing session describe by INFO.
+  "Join the collaborative editing session described by INFO.
 INFO is a property list that describes the collaborative editing
 session in terms of properties like :host, :port
 and :encryption. The particular properties and their respective
@@ -785,7 +797,10 @@ will be prompted for."
     ;; Set the connection slot of the session object and store it
     ;; globally.
     (oset session :connection connection)
-    (setq rudel-current-session session))
+    (setq rudel-current-session session)
+
+    ;; Run the hook.
+    (run-hook-with-args 'rudel-session-start-hook session))
   )
 
 ;;;###autoload
@@ -819,6 +834,10 @@ interactively."
   (unless rudel-current-session
     (error "No active Rudel session"))
 
+  ;; Run the hook.
+  (run-hook-with-args 'rudel-session-end-hook rudel-current-session)
+
+  ;; Actually end the session.
   (rudel-end rudel-current-session)
   (setq rudel-current-session nil)
   )
