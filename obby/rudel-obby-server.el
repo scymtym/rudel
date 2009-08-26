@@ -278,17 +278,17 @@ of her color to COLOR."
 			  name
 			  (format "%x" suffix)))
 
-  	    ;; Notify other clients of the new document
-  	    (rudel-broadcast this (list 'exclude this)
-  			     "obby_document_create"
-  			     (format "%x" user-id)
-  			     (format "%x" doc-id)
-  			     name
-  			     (format "%x" suffix)
-  			     (upcase (symbol-name encoding))))
+	    ;; Notify other clients of the new document
+	    (rudel-broadcast this (list 'exclude this)
+			     "obby_document_create"
+			     (format "%x" user-id)
+			     (format "%x" doc-id)
+			     name
+			     (format "%x" suffix)
+			     (upcase (symbol-name encoding))))
 
-  	  ;; Add a jupiter context for (THIS DOCUMENT).
-  	  (rudel-add-context server this document)))))
+	  ;; Add a jupiter context for (THIS DOCUMENT).
+	  (rudel-add-context server this document)))))
   )
 
 (defmethod rudel-obby/obby_document ((this rudel-obby-client)
@@ -313,7 +313,7 @@ of her color to COLOR."
 				    #'= #'rudel-id))))
       (with-slots (owner-id (doc-id :id) subscribed buffer) document
 
-	;; Track subscription, handle duplicate subscription requests
+	;; Track subscription, handle duplicate subscription requests.
 	(when (memq user subscribed)
 	  (error "User `%s' already subscribed to document `%s'"
 		 (object-name user) (object-name document)))
@@ -326,7 +326,7 @@ of her color to COLOR."
 		      "obby_document"
 		      (format "%x %x" owner-id doc-id)
 		      "sync_init"
-		      (format "%x" (- (point-max) 1)))
+		      (format "%x" (1- (position-bytes (point-max)))))
 	  ;; Send buffer chunks with author ids
 	  (dolist (chunk (rudel-chunks document))
 	    (multiple-value-bind (from to author) chunk
