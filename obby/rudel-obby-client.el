@@ -599,7 +599,7 @@
 		    :type     (integer 0)
 		    :documentation
 		    "")
-   (remaining-bytes :initarg  :num-bytes
+   (remaining-bytes :initarg  :remaining-bytes
 		    :type     (integer 0)
 		    :documentation
 		    ""))
