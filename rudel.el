@@ -137,18 +137,34 @@ session.")
 			 "This list of documents available in
 this session.")
    ;; Hooks
+   (add-user-hook        :initarg  :add-user-hook
+			 :type     list
+			 :initform nil
+			 :documentation
+			 "This hook is run when a user gets added
+to the session.
+The arguments are the session and the user object.")
+   (remove-user-hook     :initarg  :remove-user-hook
+			 :type     list
+			 :initform nil
+			 :documentation
+			 "This hook is run when a user gets
+removed from the session.
+The arguments are the session and the user object.")
    (add-document-hook    :initarg  :add-document-hook
 			 :type     list
 			 :initform nil
 			 :documentation
 			 "This hook is run when a document gets
-added to the session.")
+added to the session.
+The arguments are the session and the document object.")
    (remove-document-hook :initarg  :remove-document-hook
 			 :type     list
 			 :initform nil
 			 :documentation
 			 "This hook is run when a document gets
-removed from the session."))
+removed from the session.
+The arguments are the session and the document object."))
   "This class serves as a base class for rudel-client-session and
 rudel-server-session. Consequently, it consists of slots common
 to client and server sessions."
@@ -158,12 +174,26 @@ to client and server sessions."
   "Terminate THIS session performing all necessary cleanup.")
 
 (defmethod rudel-add-user ((this rudel-session) user)
-  "Add USER to the user list of THIS session."
-  (object-add-to-list this :users user))
+  "Add USER to the user list of THIS session.
+
+Runs object hook (see `rudel-hook-object') `add-user-hook' with
+arguments THIS and USER."
+  ;; Add USER to list.
+  (object-add-to-list this :users user)
+
+  ;; Run the hook.
+  (object-run-hook-with-args this 'add-user-hook user))
 
 (defmethod rudel-remove-user ((this rudel-session) user)
-  "Remove USER from the user list of THIS session."
-  (object-remove-from-list this :users user))
+  "Remove USER from the user list of THIS session.
+
+Runs object hook (see `rudel-hook-object') `remove-user-hook'
+with arguments THIS and USER."
+  ;; Remove USER from list.
+  (object-remove-from-list this :users user)
+
+  ;; Run the hook.
+  (object-run-hook-with-args this 'remove-user-hook user))
 
 (defmethod rudel-find-user ((this rudel-session)
 			    which &optional test key)
