@@ -259,9 +259,10 @@ latter case, FACE is returned unmodified."
 
 (defun rudel-overlay-set-face-attributes (face color)
   "Set color-related attributes of FACE with respect to COLOR."
-  (dolist (property '(:foreground :background :underline :overline))
-    (unless (eq (face-attribute face property) 'unspecified)
-      (set-face-attribute face nil property color))))
+  (when (facep face)
+    (dolist (property '(:foreground :background :underline :overline))
+      (unless (eq (face-attribute face property) 'unspecified)
+	(set-face-attribute face nil property color)))))
 
 (defun rudel-overlay-options-changed ()
   "Update Rudel overlays after a change of customization options."
