@@ -895,6 +895,9 @@ Not all backends support this operation."
       ;; our user object.
       (rudel-change-color- connection color)
 
+      ;; Run the change hook.
+      (object-run-hook-with-args self 'change-hook)
+
       ;; Update overlay color.
       (rudel-overlay-set-face-attributes
        (rudel-overlay-make-face-symbol 'author name)
