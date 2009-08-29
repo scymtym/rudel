@@ -9,7 +9,7 @@
     :name "autoloads"
     :path ""
     :autoload-file "rudel-loaddefs.el"
-    :autoload-dirs '("." "jupiter" "obby" "zeroconf")
+    :autoload-dirs '("." "jupiter" "obby" "wave" "zeroconf")
     )
    (ede-proj-target-elisp "compile"
     :name "rudel"

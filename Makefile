@@ -12,15 +12,16 @@ ede_FILES=Project.ede Makefile
 EMACS=emacs
 LOADPATH= ../../opt/emacs/share/emacs/site-lisp/cedet/common/
 LOADDEFS=rudel-loaddefs.el
-LOADDIRS=. jupiter obby
-rudel_LISP=rudel.el rudel-util.el rudel-mode.el rudel-interactive.el rudel-overlay.el rudel-speedbar.el rudel-operators.el rudel-operations.el rudel-compat.el rudel-tls.el rudel-errors.el rudel-state-machine.el rudel-backend.el rudel-protocol.el rudel-session-initiation.el
+LOADDIRS=. jupiter obby wave zeroconf
+rudel_LISP=rudel.el rudel-util.el rudel-mode.el rudel-interactive.el rudel-overlay.el rudel-speedbar.el rudel-operators.el rudel-operations.el rudel-compat.el rudel-tls.el rudel-errors.el rudel-state-machine.el rudel-backend.el rudel-protocol.el rudel-session-initiation.el rudel-icons.el
+EMACS=emacs
 EMACSFLAGS=-batch --no-site-file
-VERSION=0.1
+VERSION=0.2
 DISTDIR=$(top)rudel-$(VERSION)
 
 
 
-all: autoloads rudel obby jupiter
+all: autoloads rudel zeroconf wave obby jupiter
 
 .PHONY: autoloads
 autoloads:
@@ -40,6 +41,14 @@ rudel: $(rudel_LISP)
 	@echo "(setq debug-on-error t)" >> $@-compile-script
 	"$(EMACS)" $(EMACSFLAGS) -l $@-compile-script -f batch-byte-compile $^
 
+.PHONY:zeroconf
+zeroconf:
+	$(MAKE) -C zeroconf
+
+.PHONY:wave
+wave:
+	$(MAKE) -C wave
+
 .PHONY:obby
 obby:
 	$(MAKE) -C obby
@@ -49,6 +58,8 @@ jupiter:
 	$(MAKE) -C jupiter
 
 tags:
+	$(MAKE) -C zeroconf/ $(MFLAGS) $@
+	$(MAKE) -C wave/ $(MFLAGS) $@
 	$(MAKE) -C obby/ $(MFLAGS) $@
 	$(MAKE) -C jupiter/ $(MFLAGS) $@
 
@@ -62,6 +73,8 @@ dist: autoloads
 	rm -rf $(DISTDIR)
 	mkdir $(DISTDIR)
 	cp rudel-loaddefs.el $(rudel_LISP) $(ede_FILES) $(DISTDIR)
+	$(MAKE) -C zeroconf $(MFLAGS) DISTDIR=$(DISTDIR)/zeroconf dist
+	$(MAKE) -C wave $(MFLAGS) DISTDIR=$(DISTDIR)/wave dist
 	$(MAKE) -C obby $(MFLAGS) DISTDIR=$(DISTDIR)/obby dist
 	$(MAKE) -C jupiter $(MFLAGS) DISTDIR=$(DISTDIR)/jupiter dist
 	tar -cvzf $(DISTDIR).tar.gz $(DISTDIR)
