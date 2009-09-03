@@ -147,8 +147,8 @@ session, additional information like connection status,
 encryption or activity indication may be displayed with each
 user.
 
-If ARG is null, toggle global Rudel header subscriptions mode.
-If ARG is a number greater than zero, turn on global Rudel header
+If ARG is null, toggle Rudel header subscriptions mode.
+If ARG is a number greater than zero, turn on Rudel header
 subscriptions mode; otherwise, turn it off."
   :init-value nil
   :group      'rudel
