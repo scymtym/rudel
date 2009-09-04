@@ -51,6 +51,7 @@
 (require 'rudel-operations)
 (require 'rudel-operators)
 (require 'rudel-overlay)
+(require 'rudel-hooks)
 (require 'rudel-interactive) ;; for `rudel-read-backend',
 			     ;; `rudel-read-document',
 			     ;; `rudel-read-session'
@@ -102,18 +103,6 @@ It would be nice to find another way to do this.")
   "*"
   :group 'rudel
   :type  '(string))
-
-
-;;; Hook variables
-;;
-
-(defvar rudel-session-start-hook nil
-  "This hook is run when a new session is started.
-The only argument is the session object.")
-
-(defvar rudel-session-end-hook nil
-  "This hook is run when a session ends.
-The only argument is the session object.")
 
 
 ;;; Class rudel-session
