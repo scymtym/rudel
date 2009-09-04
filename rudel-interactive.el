@@ -128,6 +128,9 @@ return the name as string."
     (error "No documents")) ; TODO error is a bit harsh
   (unless prompt
     (setq prompt "Document: "))
+
+  ;; Construct list of names, read one name and return that name or
+  ;; the named object.
   (let* ((document-names (mapcar #'rudel-unique-name documents))
 	 (document-name  (completing-read prompt document-names nil t)))
     (cond
@@ -146,10 +149,24 @@ return the name as string."
   (let ((buffer (get-buffer name)))
     (if buffer
 	(progn
+	  ;; Ask the user whether it is OK to erase the contents of
+	  ;; the buffer.
 	  (unless (yes-or-no-p (format
 				"Buffer `%s' already exists; Erase contents? "
 				name))
 	    (error "Buffer `%s' already exists" name)) ;; TODO throw or signal; not error
+	  ;; When the buffer is attached to a different document, ask
+	  ;; whether it is OK to detach the buffer.
+	  (let ((document (rudel-buffer-document buffer)))
+	    (unless (or (not document)
+			(yes-or-no-p (format
+				      "Buffer `%s' is attached to the document `%s'; Detach?"
+				      name
+				      (rudel-unique-name document))))
+	      (error "Buffer `%s' already attached to a document" name)))
+	  ;; Delete buffer contents; maybe detach buffer first.
+	  (when (rudel-buffer-has-document-p buffer)
+	    (rudel-unpublish-buffer buffer))
 	  (with-current-buffer buffer
 	    (erase-buffer)))
       (setq buffer (get-buffer-create name)))
