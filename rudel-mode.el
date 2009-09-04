@@ -27,12 +27,18 @@
 ;; This file contains the following global and buffer-local Rudel
 ;; minor modes:
 ;;
-;; + global-rudel-minor-mode: Installs a keymap and a Rudel menu
+;; + `rudel-header-subscriptions-minor-mode': Display subscribed users
+;;   and their respective status in the header line
+;; + `rudel-mode-line-publish-state-minor-mode': Display publication
+;;   state of buffers in their mode lines
+;; + `global-rudel-minor-mode': Installs a keymap and a Rudel menu
 
 
 ;;; History:
 ;;
-;; 0.3 - Display subscriptions in header-line.
+;; 0.4 - Display buffer publication state in mode line.
+;;
+;; 0.3 - Display subscriptions in header line.
 ;;
 ;; 0.2 - Use define-minor-mode.
 ;;
@@ -46,6 +52,7 @@
 (require 'easymenu)
 
 (require 'rudel)
+(require 'rudel-hooks)
 
 
 ;;; Customization Options
@@ -306,6 +313,157 @@ subscriptions mode; otherwise, turn it off."
   )
 
 
+;;; Mode line indication of buffer state
+;;
+
+(defvar rudel-mode-line-publish-state-string
+  (propertize
+   "-"
+   'mouse-face 'mode-line-highlight
+   'help-echo  "Buffer is not published")
+  "Contains a mode line fragment indicating the publication state
+of the buffer.")
+(make-variable-buffer-local 'rudel-mode-line-publish-state-string)
+(put 'rudel-mode-line-publish-state-string 'risky-local-variable t)
+
+(defun rudel-mode-line-publish-state--add-indicator-to-mode-line ()
+  "Add Rudel publish state indicator to mode line."
+  (let* ((new-format      (copy-list mode-line-format))
+	 (format-rest     (nthcdr
+			   (position 'mode-line-remote mode-line-format)
+			   new-format))
+	 (format-rest-cdr (cdr format-rest)))
+    (setcdr format-rest (cons 'rudel-mode-line-publish-state-string
+			      format-rest-cdr))
+    (setq mode-line-format new-format))
+  (force-mode-line-update))
+
+(defun rudel-mode-line-publish-state--remove-indicator-from-mode-line ()
+  "Remove Rudel publish state indicator from mode line."
+  (let ((format-rest (nthcdr
+		      (position 'mode-line-remote mode-line-format)
+		      mode-line-format)))
+    ;; Only change the mode line if our indicator is present.
+    (when (eq (second format-rest) 'rudel-mode-line-publish-state-string)
+      (setcdr format-rest (cddr format-rest))
+      (force-mode-line-update))))
+
+(defun rudel-mode-line-publish-state--update-string ()
+  "Update variable `rudel-mode-line-publish-state-string'."
+  ;; Update `rudel-mode-line-publish-state-string' with appropriate
+  ;; propertized indicator string.
+  (setq rudel-mode-line-publish-state-string
+	(cond
+	 ((rudel-buffer-document)
+	  (propertize
+	   "P"
+	   'mouse-face 'mode-line-highlight
+	   'help-echo  "Buffer is published"))
+	 (t
+	  (propertize
+	   "-"
+	   'mouse-face 'mode-line-highlight
+	   'help-echo  "Buffer is not published"))))
+
+  ;; Update the mode line.
+  (force-mode-line-update)
+  )
+
+(defun rudel-mode-line-publish-state--document-attach (document buffer)
+  "Handle attaching of DOCUMENT to BUFFER.
+When `rudel-mode-line-publish-state-minor-mode' is enabled in
+BUFFER, update the state string."
+  ;; Only act when BUFFER has the minor mode enabled.
+  (with-current-buffer buffer
+    (when rudel-mode-line-publish-state-minor-mode
+      ;; Update the mode line.
+      (rudel-mode-line-publish-state--update-string)
+
+      ;; Watch for detaching of DOCUMENT from BUFFER.
+      (object-add-hook
+       document 'detach-hook
+       #'rudel-mode-line-publish-state--document-detach)))
+  )
+
+(defun rudel-mode-line-publish-state--document-detach (document buffer)
+  "Handle detaching of DOCUMENT from BUFFER."
+  ;; Update the mode line of BUFFER.
+  (with-current-buffer buffer
+    (rudel-mode-line-publish-state--update-string))
+
+  ;; Stop watching for detaching of DOCUMENT from BUFFER. It (or a
+  ;; different document) has to attach again first, before the next
+  ;; detaching can occur.
+  (object-remove-hook
+   document 'detach-hook
+   #'rudel-mode-line-publish-state--document-detach)
+  )
+
+;;;###autoload
+(define-minor-mode rudel-mode-line-publish-state-minor-mode
+  "Toggle Rudel mode line publish state minor mode.
+
+This mode displays an indicator of the buffer's state with
+respect to an associated Rudel document in the mode line. If the
+buffer has an attached document, the string \"P\" is displayed
+after the remote file indicator. Otherwise, the string \"-\" is
+displayed.
+
+If ARG is null, toggle Rudel mode line publish state minor mode.
+If ARG is a number greater than zero, turn on Rudel minor mode
+line publish state mode; otherwise, turn it off."
+  :init-value nil
+  :group      'rudel
+  (cond
+   ;; Emacs session is not interactive
+   (noninteractive
+    (setq rudel-mode-line-publish-state-minor-mode nil))
+
+   ;; Mode is enabled
+   (rudel-mode-line-publish-state-minor-mode
+    ;; Extend and update the mode line, no matter whether the buffer
+    ;; has a document or not.
+    (rudel-mode-line-publish-state--add-indicator-to-mode-line)
+    (rudel-mode-line-publish-state--update-string)
+
+    ;; Watch document, if available or attach events, when a document
+    ;; is not available.
+    (let ((document (rudel-buffer-document)))
+      (if document
+	  ;; Handle detaching of the document from the buffer.
+	  (object-add-hook
+	   document 'detach-hook
+	   #'rudel-mode-line-publish-state--document-detach)
+	;; Handle attaching of documents to buffers. We use the global
+	;; hook here, installing the handler twice is prevented by
+	;; `add-hook'.
+	(add-hook 'rudel-document-attach-hook
+		  #'rudel-mode-line-publish-state--document-attach))))
+
+   ;; Mode is disabled
+   (t
+    ;; Maybe stop watching for the document detaching from the buffer.
+    (let ((document (rudel-buffer-document)))
+      (when document
+	(object-remove-hook
+	 document 'detach-hook
+	 #'rudel-mode-line-publish-state--document-detach)))
+
+    ;; Remove the indicator from the mode line.
+    (rudel-mode-line-publish-state--remove-indicator-from-mode-line)))
+  )
+
+
+;;; Global mode line publish state mode
+;;
+
+;;;###autoload
+(define-globalized-minor-mode global-rudel-mode-line-publish-state-mode
+  rudel-mode-line-publish-state-minor-mode
+  rudel-mode-line-publish-state-minor-mode
+  :group 'rudel)
+
+
 ;;; Global Rudel mode, menu and keymap
 ;;
 
@@ -374,7 +532,16 @@ subscriptions mode; otherwise, turn it off."
 	  [ "Globally"
 	    global-rudel-header-subscriptions-mode
 	    :style    toggle
-	    :selected global-rudel-header-subscriptions-mode ] ) ) )
+	    :selected global-rudel-header-subscriptions-mode ] )
+	( "Show Status in mode line"
+	  [ "In this Buffer"
+	    rudel-mode-line-publish-state-minor-mode
+	    :style    toggle
+	    :selected rudel-mode-line-publish-state-minor-mode ]
+	  [ "Globally"
+	    global-rudel-mode-line-publish-state-mode
+	    :style    toggle
+	    :selected global-rudel-mode-line-publish-state-mode ] ) ) )
     )
   )
 
