@@ -46,6 +46,7 @@
 
 (require 'eieio-speedbar) ;; TODO required for now
 
+(require 'rudel-util)
 (require 'rudel-backend)
 (require 'rudel-session-initiation)
 (require 'rudel-operations)
