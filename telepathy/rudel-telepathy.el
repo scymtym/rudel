@@ -29,28 +29,48 @@
 ;; Telepathy framework.
 
 
-;;; Code
+;;; History:
+;;
+;; 0.1 - Initial revision.
+
+
+;;; Code:
 ;;
 
 (require 'eieio)
 
-(require 'rudel)
+(require 'rudel-backend)
+(require 'rudel-transport)
+
+
+;;; Constants
+;;
+
+(defconst rudel-telepathy-version '(0 1)
+  "Version of the telepathy backend for Rudel.")
 
 
 ;;;  Class rudel-telepathy-backend
 ;;
 
-(defclass rudel-telepathy-backend (rudel-backend)
-  ((capabilities :initform '(join)))
+(defclass rudel-telepathy-backend (rudel-transport-backend)
+  ((capabilities :initform '()))
   "Class rudel-telepathy-backend ")
+
+(defmethod initialize-instance ((this rudel-telepathy-backend) &rest slots)
+  "Initialize slots of THIS according to SLOTS."
+  (when (next-method-p)
+    (call-next-method))
+
+  (oset this :version rudel-telepathy-version))
 
 
 ;;; Autoloading
 ;;
 
 ;;;###autoload
-(add-to-list 'rudel-backends
-	     (cons "telepathy" 'rudel-telepathy-backend))
+(rudel-add-backend (rudel-backend-get-factory 'transport)
+		   'telepathy 'rudel-telepathy-backend)
 
 (provide 'rudel-telepathy)
 ;;; rudel-telepathy.el ends here
