@@ -22,6 +22,13 @@
    Encrypted connections to Gobby servers require the gnutls-cli
    program.
 
+** Avahi (optional)
+   The Avahi daemon (http://avahi.org) is required for automatic
+   session discovery and advertising.
+
+   A version of GNU Emacs with Zeroconf support (GNU Emacs 23 or
+   above) is required to talk to the Avahi daemon.
+
 * INSTALLING
 
   To install Rudel, download a releases version or the current
