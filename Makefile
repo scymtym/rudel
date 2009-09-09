@@ -21,7 +21,7 @@ DISTDIR=$(top)rudel-$(VERSION)
 
 
 
-all: autoloads rudel zeroconf wave obby jupiter
+all: autoloads rudel zeroconf wave obby jupiter doc
 
 .PHONY: autoloads
 autoloads:
@@ -57,11 +57,16 @@ obby:
 jupiter:
 	$(MAKE) -C jupiter
 
+.PHONY:doc
+doc:
+	$(MAKE) -C doc
+
 tags:
 	$(MAKE) -C zeroconf/ $(MFLAGS) $@
 	$(MAKE) -C wave/ $(MFLAGS) $@
 	$(MAKE) -C obby/ $(MFLAGS) $@
 	$(MAKE) -C jupiter/ $(MFLAGS) $@
+	$(MAKE) -C doc/ $(MFLAGS) $@
 
 
 clean:
@@ -77,6 +82,7 @@ dist: autoloads
 	$(MAKE) -C wave $(MFLAGS) DISTDIR=$(DISTDIR)/wave dist
 	$(MAKE) -C obby $(MFLAGS) DISTDIR=$(DISTDIR)/obby dist
 	$(MAKE) -C jupiter $(MFLAGS) DISTDIR=$(DISTDIR)/jupiter dist
+	$(MAKE) -C doc $(MFLAGS) DISTDIR=$(DISTDIR)/doc dist
 	tar -cvzf $(DISTDIR).tar.gz $(DISTDIR)
 	rm -rf $(DISTDIR)
 
