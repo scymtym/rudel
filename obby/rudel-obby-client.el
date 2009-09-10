@@ -207,15 +207,31 @@
 			  (color     color))
     (with-slots (connection) this
       (with-slots (session) connection
-	(let ((user (rudel-obby-user
-		     name
-		     :client-id  client-id
-		     :user-id    user-id
-		     :connected  t
-		     :encryption (string= encryption "1")
-		     :color      color)))
-	  (rudel-add-user session user))))
-      (message "Client joined: %s %s" name color))
+	(let ((user (rudel-find-user session user-id
+				     #'eq #'rudel-id)))
+	  (if user
+	      ;; If we have such a user object, update its state.
+	      (with-slots ((client-id1  client-id)
+			   (color1      color)
+			   connected
+			   (encryption1 encryption)) user
+		(setq client-id1  client-id
+		      color1      color
+		      connected   t
+		      encryption1 (string= encryption "1"))
+
+		;; Run the change hook of the user object.
+		(object-run-hook-with-args user 'change-hook))
+	    ;; Otherwise, create a new user object.
+	    (let ((user (rudel-obby-user
+			 name
+			 :client-id  client-id
+			 :user-id    user-id
+			 :connected  t
+			 :encryption (string= encryption "1")
+			 :color      color)))
+	      (rudel-add-user session user))))))
+    (message "Client joined: %s %s" name color))
   nil)
 
 (defmethod rudel-obby/net6_client_part
