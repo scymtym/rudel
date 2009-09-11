@@ -301,10 +301,17 @@
   nil)
 
 (defmethod rudel-obby/obby_document_remove
-  ((this rudel-obby-client-state-idle) doc-id)
+  ((this rudel-obby-client-state-idle) owner-id doc-id)
   "Handle obby 'document_remove' message."
-  (with-parsed-arguments ((doc-id number))
-    (message "Document removed %d" doc-id))
+  (with-parsed-arguments ((owner-id number)
+			  (doc-id   number))
+    (with-slots (connection) this
+      (with-slots (session) connection
+	(let ((document (rudel-find-document
+			 session (list owner-id doc-id)
+			 #'equal #'rudel-both-ids)))
+	  (rudel-remove-document session document)
+	  (message "Document removed %d" doc-id)))))
   nil)
 
 (defmethod rudel-obby/obby_document/rename
