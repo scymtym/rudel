@@ -117,14 +117,16 @@
     (when buffer
       (with-current-buffer buffer
 	(setq header-line-format
-	      (rudel-header-subscriptions--make-format document))))))
+	      (rudel-header-subscriptions--make-format document))
+	(force-mode-line-update)))))
 
 (defun rudel-header-subscriptions--update-from-buffer ()
   "Update header-line of the current buffer from associated document."
   (setq header-line-format
 	(when (rudel-buffer-document)
 	  (rudel-header-subscriptions--make-format
-	   (rudel-buffer-document)))))
+	   (rudel-buffer-document))))
+  (force-mode-line-update))
 
 (defun rudel-header-subscriptions--options-changed ()
   "Update headers in buffers that have header subscriptions mode enabled."
@@ -228,7 +230,8 @@ subscriptions mode; otherwise, turn it off."
 			  #'rudel-header-subscriptions--remove-user))
 
     ;; Reset header line to default format.
-    (setq header-line-format default-header-line-format))) ;; TODO remove all handlers
+    (setq header-line-format default-header-line-format) ;; TODO remove all handlers
+    (force-mode-line-update)))
   )
 
 
