@@ -126,9 +126,15 @@ MESSAGE is the message emitted when the state transition
 occurred."
   (with-slots (socket) this
     (case state
+      ;; Nothing to do here.
+      (run
+       nil)
+
       ;; Dispatch events which indicate the termination of the
       ;; connection to `rudel-close'.
-      ((closed failed) (rudel-close this)))))
+      ((closed failed exit)
+       (rudel-close this))))
+  )
 
 (defmethod rudel-close ((this rudel-socket-owner))
   "Called when the connection associated to THIS is closed.")
