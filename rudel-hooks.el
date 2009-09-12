@@ -89,6 +89,10 @@ The arguments are the document and the buffer.")
   ;; Install handlers for the hooks of the session.
   (with-slots (users documents) session
 
+    ;; Watch for session end.
+    (object-add-hook session 'end-hook
+		     #'rudel-hooks--session-end)
+
     ;; Watch all users in the session.
     (dolist (user users)
       (rudel-hooks--session-add-user session user))
@@ -119,6 +123,10 @@ The arguments are the document and the buffer.")
   ;; Remove handlers from the session.
   (with-slots (users documents) session
 
+    ;; Stop watching for session end.
+    (object-remove-hook session 'end-hook
+			#'rudel-hooks--session-end)
+
     ;; Stop watching all users in the session.
     (dolist (user users)
       (rudel-hooks--session-remove-user session user))
@@ -142,6 +150,9 @@ The arguments are the document and the buffer.")
     (object-remove-hook
      session 'remove-document-hook
      #'rudel-hooks--session-remove-document))
+
+  ;; Run the hook.
+  (run-hook-with-args 'rudel-session-end-hook session)
   )
 
 (defun rudel-hooks--session-add-user (session user)
@@ -219,8 +230,6 @@ The arguments are the document and the buffer.")
   ;; Watch for session start/end.
   (add-hook 'rudel-session-start-hook
 	    #'rudel-hooks--session-start)
-  (add-hook 'rudel-session-end-hook
-	    #'rudel-hooks--session-end)
   )
 
 (defun rudel-hooks--uninstall-handlers ()
@@ -228,8 +237,6 @@ The arguments are the document and the buffer.")
   ;; Stop watching session start/end.
   (remove-hook 'rudel-session-start-hook
 	       #'rudel-hooks--session-start)
-  (remove-hook 'rudel-session-end-hook
-	       #'rudel-hooks--session-end)
 
   ;; Uninstall handlers for already started sessions.
   (when (boundp 'rudel-current-session)

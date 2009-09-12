@@ -127,6 +127,11 @@ session.")
 			 "This list of documents available in
 this session.")
    ;; Hooks
+   (end-hook             :initarg  :end-hook
+			 :type     list
+			 :initform nil
+			 :documentation
+			 "")
    (add-user-hook        :initarg  :add-user-hook
 			 :type     list
 			 :initform nil
@@ -161,7 +166,9 @@ to client and server sessions."
   :abstract t)
 
 (defmethod rudel-end ((this rudel-session))
-  "Terminate THIS session performing all necessary cleanup.")
+  "Terminate THIS session performing all necessary cleanup."
+  ;; Run the hook.
+  (object-run-hook-with-args this 'end-hook))
 
 (defmethod rudel-add-user ((this rudel-session) user)
   "Add USER to the user list of THIS session.
@@ -819,6 +826,11 @@ will be prompted for."
     (oset session :connection connection)
     (setq rudel-current-session session)
 
+    ;; Reset the global session variable when the session ends.
+    (object-add-hook session 'end-hook
+		     (lambda (session)
+		       (setq rudel-current-session nil)))
+
     ;; Run the hook.
     (run-hook-with-args 'rudel-session-start-hook session))
   )
@@ -854,12 +866,8 @@ interactively."
   (unless rudel-current-session
     (error "No active Rudel session"))
 
-  ;; Run the hook.
-  (run-hook-with-args 'rudel-session-end-hook rudel-current-session)
-
   ;; Actually end the session.
   (rudel-end rudel-current-session)
-  (setq rudel-current-session nil)
   )
 
 ;;;###autoload
