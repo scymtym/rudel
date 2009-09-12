@@ -78,6 +78,26 @@
 	     (rudel-header-subscriptions--options-changed)))
   :safe  t)
 
+(defcustom rudel-mode-line-publish-state-unpublished-string "-"
+  "String used to indicate not published state in the mode line."
+  :group 'rudel
+  :type  'string
+  :set   (lambda (symbol value)
+	   (set-default symbol value)
+	   (when (featurep 'rudel-mode)
+	     (rudel-mode-line-publish-state--options-changed)))
+  :safe  t)
+
+(defcustom rudel-mode-line-publish-state-published-string "P"
+  "String used to indicate published state in the mode line."
+  :group 'rudel
+  :type  'string
+  :set   (lambda (symbol value)
+	   (set-default symbol value)
+	   (when (featurep 'rudel-mode)
+	     (rudel-mode-line-publish-state--options-changed)))
+  :safe  t)
+
 
 ;;; Header line subscriptions helper functions
 ;;
@@ -356,12 +376,12 @@ of the buffer.")
 	(cond
 	 ((rudel-buffer-document)
 	  (propertize
-	   "P"
+	   rudel-mode-line-publish-state-published-string
 	   'mouse-face 'mode-line-highlight
 	   'help-echo  "Buffer is published"))
 	 (t
 	  (propertize
-	   "-"
+	   rudel-mode-line-publish-state-unpublished-string
 	   'mouse-face 'mode-line-highlight
 	   'help-echo  "Buffer is not published"))))
 
