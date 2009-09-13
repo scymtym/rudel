@@ -186,21 +186,16 @@ subscriptions mode; otherwise, turn it off."
    (noninteractive
     (setq rudel-header-subscriptions-minor-mode nil))
 
-   ;; Buffer has to have am attached document.
-   ((not (rudel-buffer-document))
-    (setq rudel-header-subscriptions-minor-mode nil))
-
-   ;; Mode is enabled
-   (rudel-header-subscriptions-minor-mode
+   ;; Mode is being enabled and the buffer has an attached document.
+   ((and rudel-header-subscriptions-minor-mode
+	 (rudel-buffer-document))
     (let ((document (rudel-buffer-document)))
 
       ;; Monitor all users that already are subscribed to the
       ;; document.
       (with-slots (subscribed) document
-	(mapc
-	 (lambda (user)
-	   (rudel-header-subscriptions--add-user document user))
-	 subscribed))
+	(dolist (user subscribed)
+	  (rudel-header-subscriptions--add-user document user)))
 
       ;; Monitor future (un)subscribe events.
       (object-add-hook document 'subscribe-hook
@@ -211,17 +206,16 @@ subscriptions mode; otherwise, turn it off."
     ;; Update header line.
     (rudel-header-subscriptions--update-from-buffer))
 
-   ;; Mode is disabled
-   (t
+   ;; Mode is being disabled, but the buffer has an attached document.
+   ((and (not rudel-header-subscriptions-minor-mode)
+	 (rudel-buffer-document))
     (let ((document (rudel-buffer-document)))
 
       ;; Stop monitoring all users that are subscribed to the
       ;; document.
       (with-slots (subscribed) document
-	(mapc
-	 (lambda (user)
-	   (rudel-header-subscriptions--remove-user document user))
-	 subscribed))
+	(dolist (user subscribed)
+	  (rudel-header-subscriptions--remove-user document user)))
 
       ;; Stop monitoring (un)subscribe events.
       (object-remove-hook document 'subscribe-hook
@@ -230,7 +224,16 @@ subscriptions mode; otherwise, turn it off."
 			  #'rudel-header-subscriptions--remove-user))
 
     ;; Reset header line to default format.
-    (setq header-line-format default-header-line-format) ;; TODO remove all handlers
+    (setq header-line-format default-header-line-format)
+    (force-mode-line-update)) ;; TODO remove all handlers
+
+   ;; No buffer document
+   (t
+    ;; Ensure the mode is disabled.
+    (setq rudel-header-subscriptions-minor-mode nil)
+
+    ;; Reset header line to default format.
+    (setq header-line-format default-header-line-format)
     (force-mode-line-update)))
   )
 
@@ -252,6 +255,12 @@ subscriptions mode; otherwise, turn it off."
 
 (defun rudel-header-subscriptions--add-document (session document)
   "Watch DOCUMENT for attach/detach events."
+  ;; When document is attached to a buffer, turn the mode on.
+  (with-slots (buffer) document
+    (when buffer
+      (rudel-header-subscriptions--attach document buffer)))
+
+  ;; Watch document for attaching and detaching.
   (object-add-hook
    document 'attach-hook #'rudel-header-subscriptions--attach)
   (object-add-hook
@@ -259,6 +268,12 @@ subscriptions mode; otherwise, turn it off."
 
 (defun rudel-header-subscriptions--remove-document (session document)
   "Stop watching DOCUMENT for attach/detach events."
+  ;; When document is attached to a buffer, turn the mode off.
+  (with-slots (buffer) document
+    (when buffer
+      (rudel-header-subscriptions--detach document buffer)))
+
+  ;; Stop watching document for attaching and detaching.
   (object-remove-hook
    document 'attach-hook #'rudel-header-subscriptions--attach)
   (object-remove-hook
@@ -421,6 +436,13 @@ BUFFER, update the state string."
    document 'detach-hook
    #'rudel-mode-line-publish-state--document-detach)
   )
+
+(defun rudel-mode-line-publish-state--options-changed ()
+  "Update mode lines in buffers that have mode line publish state mode enabled."
+  (dolist (buffer (buffer-list))
+    (with-current-buffer buffer
+      (when rudel-mode-line-publish-state-minor-mode
+	(rudel-mode-line-publish-state--update-string)))))
 
 ;;;###autoload
 (define-minor-mode rudel-mode-line-publish-state-minor-mode
