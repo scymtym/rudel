@@ -106,7 +106,7 @@ nothing else."
 			    receivers name &rest arguments)
   "Broadcast message NAME with arguments ARGUMENTS to RECEIVERS."
   (with-slots (server) this
-    (apply 'rudel-broadcast server receivers name arguments)))
+    (apply #'rudel-broadcast server receivers name arguments)))
 
 (defmethod rudel-obby/net6_encryption_ok ((this rudel-obby-client))
   "Handle 'net6_encryption_ok' message.
@@ -158,8 +158,9 @@ failed encryption negotiation.")
 	  ;;   - connected users
 	  ;;   - disconnected users
 	  ;; - transmit document list
-	  (with-slots (users clients documents) (oref this :server)
-	    ;; Send number of synchronization items.
+	  (with-slots (users clients documents) server
+	    ;; Send number of synchronization items: sum of numbers of
+	    ;; offline users and documents.
 	    (let ((number-of-items (+ (length users) (length documents))))
 	      (rudel-send this
 			  "obby_sync_init"
@@ -168,7 +169,7 @@ failed encryption negotiation.")
 	    ;; Transmit list of connected users.
 	    (dolist (client clients)
 	      (with-slots ((client-id :id) user) client
-		(with-slots ((name :object-name)
+		(with-slots ((name    :object-name)
 			     color
 			     (user-id :user-id)) user
 		  (rudel-send this
@@ -180,7 +181,7 @@ failed encryption negotiation.")
 			      (rudel-obby-format-color color)))))
 
 	    ;; Transmit list of disconnected users.
-	    (let ((offline-users (remove-if 'rudel-connected users)))
+	    (let ((offline-users (remove-if #'rudel-connected users)))
 	      (dolist (user offline-users)
 		(with-slots ((name :object-name) user-id color) user
 		  (rudel-send this
@@ -294,12 +295,12 @@ of her color to COLOR."
 
 (defmethod rudel-obby/obby_document ((this rudel-obby-client)
 				     doc-id action &rest arguments)
-  "Handle 'obby_document' messages."
+  "Handle obby 'document' messages."
   (with-parsed-arguments ((doc-id document-id))
     ;; Locate the document based on owner id and document id
-    (let* ((document (with-slots (server) this
-		       (rudel-find-document server doc-id
-					    #'equal #'rudel-both-ids))))
+    (let ((document (with-slots (server) this
+		      (rudel-find-document server doc-id
+					   #'equal #'rudel-both-ids))))
       (rudel-obby-dispatch this action
 			   (append (list document) arguments)
 			   "rudel-obby/obby_document/")))
@@ -393,6 +394,7 @@ of her color to COLOR."
   "Handle 'record' submessages of 'obby_document' message."
   (with-parsed-arguments ((local-revision  number)
 			  (remote-revision number))
+    ;; Dispatch to specialized operation handlers.
     (rudel-obby-dispatch
      this action
      (append (list document local-revision remote-revision)
@@ -449,7 +451,7 @@ of her color to COLOR."
 	   (receivers   (rudel-subscribed-clients-not-self
 			 this document)))
 
-      ;; Incorporate change into DOCUMENT (server-side document).
+      ;; Incorporate change into DOCUMENT (the server-side document).
       ;; TODO byte/char conversion is required here
       (rudel-remote-operation document user transformed)
 
@@ -457,8 +459,9 @@ of her color to COLOR."
       (with-slots (user-id) user
 	(with-slots (owner-id (doc-id :id)) document
 	  ;; Construct and send messages to all receivers individually
-	  ;; since the contents of the messages depend on the state of
-	  ;; the jupiter context associated the respective receiver.
+	  ;; since the contents of the messages depends on the state
+	  ;; of the jupiter context associated the respective
+	  ;; receiver.
 	  (dolist (receiver receivers)
 
 	    ;; Find the jupiter context for RECEIVER and use its
