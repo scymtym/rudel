@@ -24,6 +24,7 @@
 
 ;;; Commentary:
 ;;
+;; This file contains the server part of the obby backend for Rudel.
 
 
 ;;; History:
@@ -233,7 +234,7 @@ of her color to COLOR."
 
 (defmethod rudel-obby/obby_document_create ((this rudel-obby-client)
 					    doc-id name encoding content)
-  "Handle 'obby_document_create' message."
+  "Handle obby 'document_create' message."
   (with-parsed-arguments ((doc-id   number)
 			  (encoding coding-system))
     (with-slots (user server) this
@@ -306,11 +307,11 @@ of her color to COLOR."
 
 (defmethod rudel-obby/obby_document/subscribe ((this rudel-obby-client)
 					       document user-id)
-  "Handle 'subscribe' submessage of 'obby_document' message."
+  "Handle 'subscribe' submessage of obby 'document' message."
   (with-parsed-arguments ((user-id number))
-    (let* ((user (with-slots (server) this
-		   (rudel-find-user server user-id
-				    #'= #'rudel-id))))
+    (let ((user (with-slots (server) this
+		  (rudel-find-user server user-id
+				   #'= #'rudel-id))))
       (with-slots (owner-id (doc-id :id) subscribed buffer) document
 
 	;; Track subscription, handle duplicate subscription requests.
@@ -327,6 +328,7 @@ of her color to COLOR."
 		      (format "%x %x" owner-id doc-id)
 		      "sync_init"
 		      (format "%x" (1- (position-bytes (point-max)))))
+
 	  ;; Send buffer chunks with author ids
 	  (dolist (chunk (rudel-chunks document))
 	    (multiple-value-bind (from to author) chunk
@@ -348,11 +350,11 @@ of her color to COLOR."
 			   "obby_document"
 			   (format "%x %x" owner-id doc-id)
 			   "subscribe"
-			   (format "%x" user-id))))
+			   (format "%x" user-id)))))
 
-      ;; Add a jupiter context for (THIS document).
-      (with-slots (server) this
-	(rudel-add-context server this document))))
+    ;; Add a jupiter context for (THIS document).
+    (with-slots (server) this
+      (rudel-add-context server this document)))
   )
 
 (defmethod rudel-obby/obby_document/unsubscribe ((this rudel-obby-client)
@@ -363,6 +365,7 @@ of her color to COLOR."
 		  (rudel-find-user server user-id
 				   #'= #'rudel-id))))
       (with-slots (owner-id (doc-id :id) subscribed) document
+
 	;; Track subscription, handle invalid unsubscribe requests
 	(unless (memq user subscribed)
 	  (error "User `%s' not subscribed to document `%s'"
@@ -517,8 +520,11 @@ of her color to COLOR."
 		   ""))
   "Class rudel-obby-server ")
 
-(defmethod initialize-instance :after ((this rudel-obby-server) &rest slots)
+(defmethod initialize-instance ((this rudel-obby-server) &rest slots)
   ""
+  (when (next-method-p)
+    (call-next-method))
+
   (with-slots (contexts) this
     (setq contexts (make-hash-table :test 'equal))))
 
@@ -556,11 +562,11 @@ such objects derived from rudel-obby-client."
 	  ((rudel-obby-client-child-p receivers)
 	   (list receivers))
 	  ;;
-	  (t (error "Wrong argument type")))))
+	  (t (signal 'wrong-type-argument (type-of receivers))))))
 
     ;; Send message to receivers.
     (dolist (receiver receiver-list)
-      (apply 'rudel-send receiver name arguments)))
+      (apply #'rudel-send receiver name arguments)))
   )
 
 (defmethod rudel-make-user ((this rudel-obby-server)
@@ -592,7 +598,8 @@ user. COLOR has to be sufficiently different from used colors."
 		     #'string= #'object-name-string)
     rudel-obby-error-username-in-use)
 
-   ;; Make sure the color is not already in use.
+   ;; Make sure the color is sufficiently dissimilar to all used
+   ;; colors.
    ((rudel-find-user this color
 		     (lambda (left right)
 		       (< (color-distance left right) 20000)) ;; TODO constant
@@ -663,6 +670,16 @@ user. COLOR has to be sufficiently different from used colors."
   (with-slots ((client-id :id)) client
     (with-slots ((doc-id :id)) document
       (list client-id doc-id))))
+
+(defmethod object-print ((this rudel-obby-server) &rest strings)
+  "Print THIS with number of clients."
+  (with-slots (clients) this
+    (apply #'call-next-method
+	   this
+	   (format " clients: %d"
+		   (length clients))
+	   strings))
+  )
 
 (provide 'rudel-obby-server)
 ;;; rudel-obby-server.el ends here
