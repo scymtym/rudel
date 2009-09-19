@@ -506,7 +506,7 @@ of her color to COLOR."
 		 context
 		 (jupiter-delete
 		  (format "delete-%d-%d"
-			  remote-revision local-revision)
+			  local-revision remote-revision)
 		  :from position
 		  :to   (+ position length))))))))))
   )
