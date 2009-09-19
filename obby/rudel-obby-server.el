@@ -451,11 +451,9 @@ of her color to COLOR."
 	   (receivers   (rudel-subscribed-clients-not-self
 			 this document)))
 
-      ;; Incorporate change into DOCUMENT (the server-side document).
-      ;; TODO byte/char conversion is required here
-      (rudel-remote-operation document user transformed)
-
-      ;; Relay change notification to other clients.
+      ;; Relay change notification to other clients. We use
+      ;; TRANSFORMED before the byte -> char conversion which is what
+      ;; the receivers expect.
       (with-slots (user-id) user
 	(with-slots (owner-id (doc-id :id)) document
 	  ;; Construct and send messages to all receivers individually
@@ -480,7 +478,15 @@ of her color to COLOR."
 		       (rudel-operation->message transformed)))
 
 	      ;; Submit the operation to the jupiter context.
-	      (jupiter-local-operation context transformed)))))))
+	      (jupiter-local-operation context transformed)))))
+
+      ;; Incorporate change into DOCUMENT (the server-side
+      ;; document). We have to convert bytes -> chars before we can do
+      ;; this.
+      (with-slots (buffer) document
+	(rudel-obby-byte->char transformed buffer))
+
+      (rudel-remote-operation document user transformed)))
   )
 
 (defmethod rudel-subscribed-clients-not-self ((this rudel-obby-client)
