@@ -403,53 +403,14 @@ of her color to COLOR."
 						position data)
   "Handle 'ins' submessage of 'record' submessages of 'obby_document' message."
   (with-parsed-arguments ((position number))
-    (with-slots (server user) this
-      ;; Transform the operation.
-      (let* ((context     (rudel-find-context server this document))
-	     (transformed (jupiter-remote-operation
-			   context
-			   remote-revision local-revision
-			   (jupiter-insert
-			    (format "insert-%d-%d"
-				    remote-revision local-revision)
-			    :from position :data data))))
-
-	;; Incorporate change into DOCUMENT.
-	(rudel-remote-operation document user transformed)
-
-	(with-slots ((position :from) data) transformed
-
-	  ;; Relay change notification to other clients.
-	  (let ((receivers (rudel-subscribed-clients-not-self
-			    this document)))
-	    ;; Construct and send messages to all receivers
-	    ;; individually since the contents of the messages depends
-	    ;; on the state of the respective jupiter context.
-	    (dolist (receiver receivers)
-	      ;; Find the context for the current receiver and
-	      ;; transform the operation appropriately.
-	      (let* ((context (rudel-find-context server receiver document)))
-
-		(with-slots (user-id) user
-		  (with-slots (owner-id (doc-id :id)) document
-		    (with-slots (local-revision remote-revision) context
-		      (rudel-send receiver
-				  "obby_document"
-				  (format "%x %x" owner-id doc-id)
-				  "record"
-				  (format "%x" user-id)
-				  (format "%x" local-revision)
-				  (format "%x" remote-revision)
-				  "ins"
-				  (format "%x" position)
-				  data))))
-
-		(jupiter-local-operation
-		 context
-		 (jupiter-insert
-		  (format "insert-%d-%d"
-			  local-revision remote-revision)
-		  :from position :data data)))))))))
+    ;; Construct the operation object and process it.
+    (rudel-remote-operation this document
+     remote-revision local-revision
+     (jupiter-insert
+      (format "insert-%d-%d"
+	      remote-revision local-revision)
+      :from position
+      :data data)))
   )
 
 (defmethod rudel-obby/obby_document/record/del ((this rudel-obby-client)
@@ -459,56 +420,61 @@ of her color to COLOR."
   "Handle 'del' submessage of 'record' submessages of 'obby_document' message."
   (with-parsed-arguments ((position number)
 			  (length   number))
-    (with-slots (server user) this
+    ;; Construct the operation object and process it.
+    (rudel-remote-operation this document
+     remote-revision local-revision
+     (jupiter-delete
+      (format "delete-%d-%d"
+	      remote-revision local-revision)
+      :from position
+      :to   (+ position length))))
+  )
 
-      ;; Transform the operation.
-      (let* ((context     (rudel-find-context server this document))
-	     (transformed (jupiter-remote-operation
-			   context
-			   remote-revision local-revision
-			   (jupiter-delete
-			    (format "delete-%d-%d"
-				    remote-revision local-revision)
-			    :from position
-			    :to   (+ position length)))))
+(defmethod rudel-remote-operation ((this rudel-obby-client)
+				   document
+				   local-revision remote-revision
+				   operation)
+  "Execute and relay OPERATION on DOCUMENT."
+  (with-slots (server user) this
+    ;; Transform OPERATION and find clients that need to receive
+    ;; notifications.
+    (let* ((context     (rudel-find-context server this document))
+	   (transformed (jupiter-remote-operation
+			 context
+			 local-revision remote-revision
+			 operation))
+	   (receivers   (rudel-subscribed-clients-not-self
+			 this document)))
 
-	;; Incorporate change into DOCUMENT.
-	(rudel-remote-operation document user transformed)
+      ;; Incorporate change into DOCUMENT (server-side document).
+      ;; TODO byte/char conversion is required here
+      (rudel-remote-operation document user transformed)
 
-	(with-slots ((position :from) length) transformed
+      ;; Relay change notification to other clients.
+      (with-slots (user-id) user
+	(with-slots (owner-id (doc-id :id)) document
+	  ;; Construct and send messages to all receivers individually
+	  ;; since the contents of the messages depend on the state of
+	  ;; the jupiter context associated the respective receiver.
+	  (dolist (receiver receivers)
 
-	  ;; Relay change notification to other clients.
-	  (let ((receivers (rudel-subscribed-clients-not-self
-			    this document)))
-	    ;; Construct and send messages to all receivers
-	    ;; individually since the contents of the messages depends
-	    ;; on the state of the respective jupiter context.
-	    (dolist (receiver receivers)
-	      ;; Find the context for the current receiver and
-	      ;; transform the operation appropriately.
-	      (let* ((context (rudel-find-context server receiver document)))
+	    ;; Find the jupiter context for RECEIVER and use its
+	    ;; revision information.
+	    (let ((context (rudel-find-context server receiver document)))
+	      ;; Construct and send one message.
+	      (with-slots (local-revision remote-revision) context
+		(apply #'rudel-send
+		       receiver
+		       "obby_document"
+		       (format "%x %x" owner-id doc-id)
+		       "record"
+		       (format "%x" user-id)
+		       (format "%x" local-revision)
+		       (format "%x" remote-revision)
+		       (rudel-operation->message transformed)))
 
-		(with-slots (user-id) user
-		  (with-slots (owner-id (doc-id :id)) document
-		    (with-slots (local-revision remote-revision) context
-		      (rudel-send receiver
-				  "obby_document"
-				  (format "%x %x" owner-id doc-id)
-				  "record"
-				  (format "%x" user-id)
-				  (format "%x" local-revision)
-				  (format "%x" remote-revision)
-				  "del"
-				  (format "%x" position)
-				  (format "%x" length)))))
-
-		(jupiter-local-operation
-		 context
-		 (jupiter-delete
-		  (format "delete-%d-%d"
-			  local-revision remote-revision)
-		  :from position
-		  :to   (+ position length))))))))))
+	      ;; Submit the operation to the jupiter context.
+	      (jupiter-local-operation context transformed)))))))
   )
 
 (defmethod rudel-subscribed-clients-not-self ((this rudel-obby-client)
@@ -584,7 +550,7 @@ such objects derived from rudel-obby-client."
 		(eq (car receivers) 'exclude))
 	   (with-slots (clients) this
 	     (set-difference clients (cdr receivers)
-			     :key 'rudel-id)))
+			     :key #'rudel-id)))
 	  ;; If RECEIVERS is a single rudel-obby-client (or derived)
 	  ;; object, send the message to that client.
 	  ((rudel-obby-client-child-p receivers)
