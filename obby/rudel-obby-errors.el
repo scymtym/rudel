@@ -49,16 +49,16 @@
 (defconst rudel-obby-error-color-in-use #x0100
   "Error code for color already in use.")
 
-(defconst rudel-obby-error-wrong-global-password #x0102
+(defconst rudel-obby-error-wrong-global-password #x0101
   "Error code for wrong global password.")
 
-(defconst rudel-obby-error-wrong-user-password #x0103
+(defconst rudel-obby-error-wrong-user-password #x0102
   "Error code for wrong user password.")
 
-(defconst rudel-obby-error-protocol-version-mismatch #x0104
+(defconst rudel-obby-error-protocol-version-mismatch #x0103
   "Error code for protocol version mismatch.")
 
-(defconst rudel-obby-error-not-encrypted  #x0105
+(defconst rudel-obby-error-not-encrypted  #x0104
   "Error code for not encrypted.")
 
 (provide 'rudel-obby-errors)
