@@ -124,11 +124,18 @@
   ;; (resulting in response 'net6_login_failed') if the username or
   ;; color is already taken.
   (with-slots (info) (oref this connection)
-    (let ((username (plist-get info :username))
-	  (color    (plist-get info :color)))
-      (rudel-send this
-		  "net6_client_login"
-		  username (rudel-obby-format-color color))))
+    (let ((username        (plist-get info :username))
+	  (color           (plist-get info :color))
+	  (global-password (plist-get info :global-password))
+	  (user-password   (plist-get info :user-password)))
+      (apply #'rudel-send
+	     this
+	     "net6_client_login"
+	     username (rudel-obby-format-color color)
+	     (append (when global-password
+		       (list global-password))
+		     (when (and global-password user-password)
+		       (list user-password))))))
   nil)
 
 (defmethod rudel-obby/obby_sync_init

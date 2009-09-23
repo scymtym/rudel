@@ -90,23 +90,29 @@ connections and creates obby servers.")
 (defmethod rudel-ask-connect-info ((this rudel-obby-backend) &optional info)
   "Ask user for the information required to connect to an obby server."
   ;; Read server host and port.
-  (let ((host       (or (and info (plist-get info :host))
-			(read-string "Server: ")))
-	(port       (or (and info (plist-get info :port))
-			(read-number "Port: " 6522)))
+  (let ((host            (or (and info (plist-get info :host))
+			     (read-string "Server: ")))
+	(port            (or (and info (plist-get info :port))
+			     (read-number "Port: " 6522)))
 	;; Read desired username and color
-	(username   (or (and info (plist-get info :username))
-			(read-string "Username: " user-login-name)))
-	(color      (or (and info (plist-get info :color))
-			(read-color  "Color: " t)))
-	(encryption (if (and info (member :encryption info))
-			(plist-get info :encryption)
-		      (y-or-n-p "Use encryption? "))))
-    (append (list :host       host
-		  :port       port
-		  :username   username
-		  :color      color
-		  :encryption encryption)
+	(username        (or (and info (plist-get info :username))
+			     (read-string "Username: " user-login-name)))
+	(color           (or (and info (plist-get info :color))
+			     (read-color  "Color: " t)))
+	(encryption      (if (and info (member :encryption info))
+			     (plist-get info :encryption)
+			   (y-or-n-p "Use encryption? ")))
+	(global-password (or (and info (plist-get info :global-password))
+			     (read-string  "Global password: " "")))
+	(user-password   (or (and info (plist-get info :user-password))
+			     (read-string  "User password: " ""))))
+    (append (list :host            host
+		  :port            port
+		  :username        username
+		  :color           color
+		  :encryption      encryption
+		  :global-password global-password
+		  :user-password   user-password)
 	    info))
   )
 
