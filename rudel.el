@@ -252,9 +252,11 @@ WHICH is compared to the result of KEY using TEST."
 ;;
 (defclass rudel-client-session (rudel-session)
   ((connection :initarg  :connection
-	       :type     rudel-connection-child
+	       :type     (or null rudel-connection-child)
+	       :initform nil
 	       :documentation
-	       "")
+	       "The connection used for communication by this
+session.")
    (self       :initarg  :self
 	       :type     rudel-user-child
 	       :documentation
@@ -267,10 +269,13 @@ client perspective.")
   ;; Clean everything up
   (with-slots (connection users documents) this
     ;; Detach all documents from their buffers
-    (mapc 'rudel-detach-from-buffer documents)
+    (mapc #'rudel-detach-from-buffer documents)
 
     ;; Terminate the connection
-    (rudel-disconnect connection))
+    (when connection
+      (condition-case nil
+	  (rudel-disconnect connection)
+	(error nil))))
 
   ;;
   (when (next-method-p)
