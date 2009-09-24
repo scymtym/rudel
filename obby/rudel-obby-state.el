@@ -98,7 +98,8 @@ Display a warning if no such handler is found."
 
 (defmethod rudel-obby/net6_ping ((this rudel-obby-client-connection-state))
   "Handle net6 'ping' message."
-  (rudel-send this "net6_pong"))
+  (rudel-send this "net6_pong")
+  nil)
 
 
 ;;; Class rudel-obby-document-handler
