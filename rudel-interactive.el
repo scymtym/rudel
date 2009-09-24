@@ -160,7 +160,7 @@ return the name as string."
 	  (let ((document (rudel-buffer-document buffer)))
 	    (unless (or (not document)
 			(yes-or-no-p (format
-				      "Buffer `%s' is attached to the document `%s'; Detach?"
+				      "Buffer `%s' is attached to the document `%s'; Detach? "
 				      name
 				      (rudel-unique-name document))))
 	      (error "Buffer `%s' already attached to a document" name)))
