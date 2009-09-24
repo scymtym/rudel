@@ -94,11 +94,11 @@
   ((this rudel-obby-client-state-encryption-start))
   "Handle net6 'encryption_begin' message."
   ;; Start TLS encryption for the connection.
-  (require 'rudel-tls)
   (with-slots (connection) this
     (with-slots (socket) connection
-      (rudel-tls-start-tls socket)
-      (sit-for 1)))
+      (when (rudel-process-object socket :supports-tls)
+	(rudel-tls-start-tls socket)
+	(sit-for 1))))
 
   ;; The connection is now established
   'joining)

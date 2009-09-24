@@ -95,6 +95,9 @@ for the network connection."
     (when sentinel
       (set-process-sentinel process sentinel))
 
+    ;; Mark the process as supporting TLS encryption
+    (rudel-set-process-object process t :supports-tls)
+
     process)
   )
 
