@@ -160,13 +160,15 @@ Return the connection object."
     ;; join-failed.
     (condition-case error
 	(rudel-state-wait connection
-			  '(idle) '(join-failed)
+			  '(idle) '(join-failed they-finalized)
 			  "Joining")
       (rudel-entered-error-state
        (destructuring-bind (symbol . state) (cdr error)
-	 (with-slots (error-symbol error-data) state
-	   (signal 'rudel-join-error
-		   (append (list error-symbol) error-data))))))
+	 (if (eq (rudel-find-state connection 'join-failed) state)
+	     (with-slots (error-symbol error-data) state
+	       (signal 'rudel-join-error
+		       (append (list error-symbol) error-data)))
+	   (signal 'rudel-join-error nil)))))
 
     ;; The connection is now usable; return it.
     connection)

@@ -185,12 +185,12 @@
 		 :type    symbol
 		 :documentation
 		 "Error symbol describing the reason for the
-		 login failure.")
+login failure.")
    (error-data   :initarg :error-data
 		 :type    list
 		 :documentation
 		 "Additional error data describing the login
-		 failure."))
+failure."))
   "State for failed login attempts.")
 
 (defmethod rudel-enter ((this rudel-obby-client-state-join-failed)
@@ -679,6 +679,15 @@
     (call-next-method this (format " remaining: %d" remaining-bytes))))
 
 
+;;; Class rudel-obby-client-state-they-finalized
+;;
+
+(defclass rudel-obby-client-state-they-finalized
+  (rudel-obby-client-connection-state)
+  ()
+  "State used to indicate that the connection was closed by the peer.")
+
+
 ;;; Client connection states.
 ;;
 
@@ -691,7 +700,8 @@
     (idle                 . rudel-obby-client-state-idle)
     (session-synching     . rudel-obby-client-state-session-synching)
     (subscribing          . rudel-obby-client-state-subscribing)
-    (document-synching    . rudel-obby-client-state-document-synching))
+    (document-synching    . rudel-obby-client-state-document-synching)
+    (they-finalized       . rudel-obby-client-state-they-finalized))
   "Name symbols and classes of connection states.")
 
 
@@ -744,6 +754,10 @@ documents."))
 
 (defmethod rudel-close ((this rudel-obby-connection))
   ""
+  ;; Move the state machine into an error state.
+  (rudel-switch this 'they-finalized)
+
+  ;; Terminate the session.
   (with-slots (session) this
     (rudel-end session)))
 
@@ -803,7 +817,7 @@ nothing else."
   (with-slots (session) this
     (with-slots (self) session
       (rudel-switch this 'subscribing self document)))
-  (rudel-state-wait this '(idle) nil "Subscribing")
+  (rudel-state-wait this '(idle) '(they-finalized) "Subscribing")
 
   ;; We receive a notification of our own subscription from the
   ;; server. Consequently we do not add SELF to the list of subscribed
