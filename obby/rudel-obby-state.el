@@ -102,6 +102,21 @@ Display a warning if no such handler is found."
   nil)
 
 
+;;; Class rudel-obby-server-connection-state
+;;
+
+(defclass rudel-obby-server-connection-state (rudel-obby-state)
+  ()
+  "Base class for server connection states."
+  :abstract t)
+
+(defmethod rudel-broadcast ((this rudel-obby-server-connection-state)
+			    receivers name &rest arguments)
+  "Broadcast message NAME with arguments ARGUMENTS to RECEIVERS."
+  (with-slots (connection) this
+    (apply #'rudel-broadcast connection receivers name arguments)))
+
+
 ;;; Class rudel-obby-document-handler
 ;;
 
