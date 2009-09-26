@@ -268,8 +268,11 @@ When PREFIX is not specified, \"rudel-obby/\" is used."
 		    (if (eq method (cadr error))
 			nil
 		      (signal (car error) (cdr error))))))
-      (warn "%s: in context `%s': no method: `%s'; arguments: %s"
-	    (object-name-string object) prefix name arguments)))
+      (display-warning
+       '(rudel obby)
+       (format "%s: in context `%s': no method: `%s'; arguments: %s"
+	       (object-name-string object) prefix name arguments)
+       :debug)))
   )
 
 (defmacro with-parsed-arguments (specs &rest forms)

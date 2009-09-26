@@ -76,9 +76,12 @@ Display a warning if no such handler is found."
       ;; in this case, so we remain in the current state.
       (rudel-dispatch-error
        (progn
-	 (warn "%s: no method (%s: %s): `%s/%s'; arguments: %s"
-	       (object-print this) (car error) (cdr error)
-	       "rudel-obby" name arguments)
+	 (display-warning
+	  '(rudel obby)
+	  (format "%s: no method (%s: %s): `%s/%s'; arguments: %s"
+		  (object-print this) (car error) (cdr error)
+		  "rudel-obby" name arguments)
+	  :debug)
 	 nil))))
   )
 
@@ -146,13 +149,19 @@ Display a warning if no such handler is found."
 	    ;; current state.
 	    (rudel-dispatch-error
 	     (progn
-	       (warn "%s: no method (%s: %s): `%s:%s'; arguments: %s"
-		     (object-print this) (car error) (cdr error)
-		     "rudel-obby/obby_document/" action arguments)
+	       (display-warning
+		'(rudel obby)
+		(format "%s: no method (%s: %s): `%s:%s'; arguments: %s"
+			(object-print this) (car error) (cdr error)
+			"rudel-obby/obby_document/" action arguments)
+		:debug)
 	       nil)))
 	;; If we did not find the document, warn.
 	(progn
-	  (warn "Document not found: %s" doc-id)
+	  (display-warning
+	   '(rudel obby)
+	   (format "Document not found: %s" doc-id)
+	   :debug)
 	  nil))))
   )
 

@@ -266,8 +266,11 @@ failure."))
 
 		;; Run the change hook of the user object.
 		(object-run-hook-with-args user 'change-hook))
-	    (warn "Cannot find user for client id: %d"
-		  client-id))))))
+	    (display-warning
+	     '(rudel obby)
+	     (format "Cannot find user for client id: %d"
+		     client-id)
+	     :debug))))))
   nil)
 
 (defmethod rudel-obby/obby_user_colour
@@ -387,13 +390,19 @@ failure."))
 	    ;; current state.
 	    (rudel-dispatch-error
 	     (progn
-	       (warn "%s: no method (%s: %s): `%s:%s'; arguments: %s"
-		     (object-print this) (car error) (cdr error)
-		     "rudel-obby/obby_document/record/" action arguments)
-	       nil)))
+	       (display-warning
+		'(rudel obby)
+		(format "%s: no method (%s: %s): `%s:%s'; arguments: %s"
+			(object-print this) (car error) (cdr error)
+			"rudel-obby/obby_document/record/" action arguments)
+		:debug)
+		nil)))
 	;; If we did not find the user, warn.
 	(progn
-	  (warn "User not found: %d" user-id)
+	  (display-warning
+	   '(rudel obby)
+	   (format "User not found: %d" user-id)
+	   :debug)
 	  nil))))
   )
 

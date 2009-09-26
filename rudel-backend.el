@@ -182,9 +182,12 @@ objects."
 	 (condition-case error
 	     (puthash name (make-instance
 			    class (symbol-name name)) backends)
-	   (error (warn "Could not load backend `%s': %s"
-			name
-			(error-message-string error))))))
+	   (error (display-warning
+		   '(rudel backend)
+		   (format "Could not load backend `%s': %s"
+			   name
+			   (error-message-string error))
+		   :warning)))))
 	 backends))
   )
 
