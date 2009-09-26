@@ -2,22 +2,24 @@
 ;;
 ;; Copyright (C) 2009 Jan Moringen
 ;;
-;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;; Author: Jan Moringen <scymtym@users.sourceforge.net>
+;; Keywords: Rudel, debugging
+;; X-RCS: $Id:$
 ;;
-;;  is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or (at
-;; your option) any later version.
+;; This file is part of Rudel.
 ;;
-;;  is distributed in the hope that it will be useful, but
+;; Rudel is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; Rudel is distributed in the hope that it will be useful, but
 ;; WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 ;; General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with ; see the file COPYING. If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-;; Boston, MA 02110-1301, USA, or see <http://www.gnu.org/licenses>.
+;; along with rudel. If not, see <http://www.gnu.org/licenses>.
 
 
 ;;; Commentary:
@@ -48,27 +50,27 @@
 
 (defface rudel-debug-sent-data-face
   '((default (:background "orange")))
-  "TODO"
+  "Face used for sent data."
   :group 'rudel-debug)
 
 (defface rudel-debug-received-data-face
   '((default (:background "light sky blue")))
-  "TODO"
+  "Face used for received (but not yet processed) data."
   :group 'rudel-debug)
 
 (defface rudel-debug-received-processed-data-face
   '((default (:background "DeepSkyBlue1")))
-  "TODO"
+  "Face used for received data after processing."
   :group 'rudel-debug)
 
 (defface rudel-debug-state-face
   '((default (:background "light gray")))
-  "TODO"
+  "Face used when indicating state changes."
   :group 'rudel-debug)
 
 (defface rudel-debug-special-face
   '((default (:background "light sea green")))
-  "TODO"
+  "Face used for additional information."
   :group 'rudel-debug)
 
 (defvar rudel-debug-tag-faces
@@ -120,7 +122,7 @@
 ;;
 
 (defun rudel-suspend-session-socket ()
-  "TODO"
+  "Suspend the socket associated to the current session."
   (interactive)
 
   ;; Make sure we have a session.
@@ -132,7 +134,7 @@
       (stop-process socket))))
 
 (defun rudel-resume-session-socket ()
-  "TODO"
+  "Resume the socket associated to the current session."
   (interactive)
 
   ;; Make sure we have a session.
@@ -163,7 +165,7 @@
   (setq rudel-current-session nil))
 
 
-;;;
+;;; Socket debugging
 ;;
 
 (defmethod rudel-state-change :before ((this rudel-socket-owner)
