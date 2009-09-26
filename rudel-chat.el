@@ -53,6 +53,14 @@
   )
 
 
+;;; Variables and constants
+;;
+
+(defconst rudel-chat-buffer-name "*rudel-chat-log*"
+  "Name of the buffer into which received chat message should be
+inserted.")
+
+
 ;;; Interface functions
 ;;
 
@@ -72,11 +80,14 @@
 
 (defun rudel-chat-handle-buffer (sender text)
   "Insert SENDER and MESSAGE in a buffer."
-  (with-current-buffer (get-buffer-create "*rudel-chat-log*")
-    (goto-char (point-min))
-    (insert (format "%s: %s\n"
-		    (rudel-chat-format-sender sender)
-		    text))))
+  (let ((buffer (or (get-buffer rudel-chat-buffer-name)
+		    (pop-to-buffer rudel-chat-buffer-name))))
+    (with-current-buffer buffer
+      (goto-char (point-min))
+      (insert (format "%s: %s\n"
+		      (rudel-chat-format-sender sender)
+		      text))))
+  )
 
 
 ;;; Miscellaneous functions
