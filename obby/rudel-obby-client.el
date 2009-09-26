@@ -43,6 +43,7 @@
 
 (require 'rudel-state-machine)
 (require 'rudel-operations)
+(require 'rudel-chat)
 
 (require 'rudel-obby-errors)
 (require 'rudel-obby-util)
@@ -460,6 +461,15 @@ failure."))
 			      document user
 			      remote-revision local-revision
 			      operation)))
+  nil)
+
+(defmethod rudel-obby/obby_message ((this rudel-obby-client-state-idle)
+				    sender text)
+  "Handle obby 'message' message"
+  (with-parsed-arguments ((sender number))
+    (with-slots (session) (oref this :connection)
+      (let ((sender (rudel-find-user session sender #'eq #'rudel-id)))
+	(rudel-chat-dispatch-message sender text))))
   nil)
 
 
@@ -904,7 +914,7 @@ nothing else."
     ;; since the obby protocol works with byte positions, but Emacs
     ;; uses character positions.
     (with-slots (buffer) document
-      (rudel-obby-byte->char transformed buffer))
+      (rudel-obby-byte->char transformed buffer))  ;; TODO operation's responsibility?
 
     ;; Apply the transformed operation to the document.
     (rudel-remote-operation document user transformed))
