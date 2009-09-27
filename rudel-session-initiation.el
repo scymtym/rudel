@@ -267,39 +267,46 @@ configured using customization.")
   "\"Discover\" sessions the has configured."
   ;; Iterate over all configured sessions in order to make
   ;; adjustments.
-  (mapcar
-   ;; Transform one session.
-   (lambda (session)
-     (let ((info)
-	   (key   (car  session))
-	   (value (cadr session))
-	   (rest  session))
-       (while rest
-	 (setq rest (cddr rest))
-	 (cond
-	  ;; Resolve backend arguments.
-	  ((eq key :backend)
-	   (let ((backend (rudel-backend-get 'protocol
-					     (if (stringp value)
-						 (intern value)
-					       value))))
-	     (push backend info)
-	     (push key     info)))
-	  ;; Keep other arguments unmodified.
-	  (t
-	   (push value info)
-	   (push key   info)))
-	 ;; Advance to next key value pair.
-	 (setq key   (car  rest)
-	       value (cadr rest)))
-       ;; Return the transformed session information.
-       info))
-   rudel-configured-sessions)
-  )
+  (mapcar #'rudel-session-initiation-adjust-info
+	  rudel-configured-sessions))
 
 ;;;###autoload
 (rudel-add-backend (rudel-backend-get-factory 'session-initiation)
 		   'configured-sessions 'rudel-configured-sessions-backend)
+
+
+;;; Miscellaneous functions
+;;
+
+(defun rudel-session-initiation-adjust-info (info)
+  "Resolve arguments that need resolving in INFO."
+  ;; Start with a new, empty property list.
+  (let ((adjusted-info)
+	(key   (car  info))
+	(value (cadr info))
+	(rest  info))
+    ;; Iterate over all properties in INFO.
+    (while rest
+      (setq rest (cddr rest))
+      (cond
+       ;; Resolve backend arguments.
+       ((eq key :backend)
+	(let ((backend (rudel-backend-get 'protocol
+					  (if (stringp value)
+					      (intern value)
+					    value))))
+	  (push backend adjusted-info)
+	  (push key     adjusted-info)))
+       ;; Keep other arguments unmodified.
+       (t
+	(push value adjusted-info)
+	(push key   adjusted-info)))
+      ;; Advance to next key value pair.
+      (setq key   (car  rest)
+	    value (cadr rest)))
+    ;; Return the transformed session information.
+    adjusted-info)
+  )
 
 (provide 'rudel-session-initiation)
 ;;; rudel-session-initiation.el ends here
