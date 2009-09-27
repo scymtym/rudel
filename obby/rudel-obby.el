@@ -102,17 +102,21 @@ connections and creates obby servers.")
 	(encryption      (if (and info (member :encryption info))
 			     (plist-get info :encryption)
 			   (y-or-n-p "Use encryption? ")))
-	(global-password (or (and info (plist-get info :global-password))
-			     (read-string  "Global password: " "")))
-	(user-password   (or (and info (plist-get info :user-password))
-			     (read-string  "User password: " ""))))
+	(global-password (if (and info (member :global-password info))
+			     (plist-get info :global-password)
+			   (read-string "Global password: " "")))
+	(user-password   (if (and info (member :user-password info))
+			     (plist-get info :user-password)
+			   (read-string "User password: " ""))))
     (append (list :host            host
 		  :port            port
 		  :username        username
 		  :color           color
 		  :encryption      encryption
-		  :global-password global-password
-		  :user-password   user-password)
+		  :global-password (unless (string= global-password "")
+				     global-password)
+		  :user-password   (unless (string= user-password "")
+				     user-password))
 	    info))
   )
 
@@ -156,8 +160,8 @@ Return the connection object."
     ;; complete.
     (continue-process socket)
 
-    ;; Wait for the connection to reach one of the states idle and
-    ;; join-failed.
+    ;; Wait for the connection to reach one of the states idle,
+    ;; join-failed and they-finalized.
     (condition-case error
 	(rudel-state-wait connection
 			  '(idle) '(join-failed they-finalized)
