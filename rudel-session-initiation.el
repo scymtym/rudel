@@ -268,8 +268,9 @@ configured using customization.")
      (let ((info)
 	   (key   (car  session))
 	   (value (cadr session))
-	   (rest  (cddr session)))
+	   (rest  session))
        (while rest
+	 (setq rest (cddr rest))
 	 (cond
 	  ;; Resolve backend arguments.
 	  ((eq key :backend)
@@ -285,8 +286,7 @@ configured using customization.")
 	   (push key   info)))
 	 ;; Advance to next key value pair.
 	 (setq key   (car  rest)
-	       value (cadr rest))
-	 (setq rest  (cddr rest)))
+	       value (cadr rest)))
        ;; Return the transformed session information.
        info))
    rudel-configured-sessions)
