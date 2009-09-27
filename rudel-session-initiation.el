@@ -78,7 +78,12 @@ The values of the :name property have to be distinct for all
 configured sessions."
   :group 'rudel
   :type  '(repeat :tag "Connections"
-		  (plist :tag "Connection")))
+		  (plist :tag "Connection"
+			 :options ((:name     string)
+				   (:backend  symbol)
+				   (:username string)
+				   (:color    color))))
+  )
 
 
 ;;; Variables and constants
