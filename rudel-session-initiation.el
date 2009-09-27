@@ -60,7 +60,28 @@
 (require 'rudel-backend)
 
 
-;;; Variables and customization options
+;;; Customization options
+;;
+
+(defcustom rudel-configured-sessions nil
+  "List of configured sessions.
+
+Each session is a plist (a list of keys and values). Keys are
+specified using keywords and look like this :username. Values are
+mostly strings, but numbers are possible as well.
+
+The following keys are required for any session
+* :name    (string)
+* :backend (string or symbol)
+
+The values of the :name property have to be distinct for all
+configured sessions."
+  :group 'rudel
+  :type  '(repeat :tag "Connections"
+		  (plist :tag "Connection")))
+
+
+;;; Variables and constants
 ;;
 
 (defvar rudel-session-discovered-hook nil
@@ -194,6 +215,9 @@ required by the chosen backend.")
 (defmethod initialize-instance ((this rudel-ask-protocol-backend)
 				&rest slots)
   "Set backend version."
+  (when (next-method-p)
+    (call-next-method))
+
   (oset this :version rudel-ask-protocol-version))
 
 (defmethod rudel-discover ((this rudel-ask-protocol-backend))
@@ -210,6 +234,67 @@ required by the chosen backend.")
 ;;;###autoload
 (rudel-add-backend (rudel-backend-get-factory 'session-initiation)
 		   'ask-protocol 'rudel-ask-protocol-backend)
+
+
+;;; Class rudel-configured-sessions-backend
+;;
+
+(defconst rudel-configured-sessions-version '(0 1)
+  "Version of the configured-sessions backend for Rudel.")
+
+;;;###autoload
+(defclass rudel-configured-sessions-backend
+  (rudel-session-initiation-backend)
+  ((capabilities :initform (discover))
+   (priority     :initform primary))
+  "This fallback backend can \"discover\" sessions the user has
+configured using customization.")
+
+(defmethod initialize-instance ((this rudel-configured-sessions-backend)
+				&rest slots)
+  "Set backend version."
+  (when (next-method-p)
+    (call-next-method))
+
+  (oset this :version rudel-configured-sessions-version))
+
+(defmethod rudel-discover ((this rudel-configured-sessions-backend))
+  "\"Discover\" sessions the has configured."
+  ;; Iterate over all configured sessions in order to make
+  ;; adjustments.
+  (mapcar
+   ;; Transform one session.
+   (lambda (session)
+     (let ((info)
+	   (key   (car  session))
+	   (value (cadr session))
+	   (rest  (cddr session)))
+       (while rest
+	 (cond
+	  ;; Resolve backend arguments.
+	  ((eq key :backend)
+	   (let ((backend (rudel-backend-get 'protocol
+					     (if (stringp value)
+						 (intern value)
+					       value))))
+	     (push backend info)
+	     (push key     info)))
+	  ;; Keep other arguments unmodified.
+	  (t
+	   (push value info)
+	   (push key   info)))
+	 ;; Advance to next key value pair.
+	 (setq key   (car  rest)
+	       value (cadr rest))
+	 (setq rest  (cddr rest)))
+       ;; Return the transformed session information.
+       info))
+   rudel-configured-sessions)
+  )
+
+;;;###autoload
+(rudel-add-backend (rudel-backend-get-factory 'session-initiation)
+		   'configured-sessions 'rudel-configured-sessions-backend)
 
 (provide 'rudel-session-initiation)
 ;;; rudel-session-initiation.el ends here
