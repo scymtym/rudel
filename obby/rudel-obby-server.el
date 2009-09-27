@@ -25,11 +25,22 @@
 ;;; Commentary:
 ;;
 ;; This file contains the server part of the obby backend for Rudel.
+;;
+;; It is implemented using one state machine (class
+;; `rudel-obby-client') for each client connection. These state
+;; machines have the following states:
+;;
+;; + new                  `rudel-obby-server-state-new'
+;; + encryption-negotiate `rudel-obby-server-state-encryption-negotiate'
+;; + before-join          `rudel-obby-server-state-before-join'
+;; + idle                 `rudel-obby-server-state-idle'
 
 
 ;;; History:
 ;;
-;; 0.1 - initial revision.
+;; 0.2 - State machine.
+;;
+;; 0.1 - Initial revision.
 
 
 ;;; Code:
@@ -42,110 +53,101 @@
 
 (require 'jupiter)
 
+(require 'rudel-state-machine)
+
 (require 'rudel-obby-errors)
 (require 'rudel-obby-util)
+(require 'rudel-obby-state)
 
 
-;;; Class rudel-obby-client
+;;; Class rudel-obby-server-state-new
 ;;
 
-(defclass rudel-obby-client (rudel-obby-socket-owner)
-  ((server     :initarg  :server
-	       :type     rudel-obby-server
-	       :documentation
-	       "")
-   (id         :initarg  :id
-	       :type     integer
-	       :accessor rudel-id
-	       :documentation
-	       "")
-   (user       :initarg  :user
-	       :type     (or rudel-obby-user null)
-	       :initform nil
-	       :documentation
-	       "")
-   (encryption :initarg  :encryption
-	       :type     boolean
-	       :documentation
-	       ""))
-  "Each object of this class represents one client, that is
-connected to the server. This object handles all direct
-communication with the client, while broadcast messages are
-handled by the server.")
+(defclass rudel-obby-server-state-new
+  (rudel-obby-server-connection-state)
+  ()
+  "State in which new connections start out.")
 
-(defmethod initialize-instance :after ((this rudel-obby-client) &rest slots)
+(defmethod rudel-enter ((this rudel-obby-server-state-new))
   "Sends welcome messages to the client and starts the session
 timeout timer."
   ;; Send greeting sequence to the client.
-  (with-slots (socket) this
-    (rudel-send this
-		"obby_welcome"
-		(number-to-string rudel-obby-protocol-version))
-    (rudel-send this "net6_encryption" "0"))
-  )
+  (rudel-send this
+	      "obby_welcome"
+	      (number-to-string rudel-obby-protocol-version))
 
-(defmethod rudel-end ((this rudel-obby-client))
-  ""
-  (rudel-disconnect this))
+  ;; Switch to encryption negotiation state.
+  'encryption-negotiate)
 
-(defmethod rudel-close ((this rudel-obby-client))
-  ""
-  (with-slots (server) this
-    (rudel-remove-client server this)))
+
+;;; Class rudel-obby-server-state-encryption-negotiate
+;;
 
-(defmethod rudel-message ((this rudel-obby-client) message)
-  "Dispatch MESSAGE to appropriate handler method of THIS object.
-If there is no suitable method, generate a warning, but do
-nothing else."
-  ;; Dispatch message to handler
-  (let ((name      (car message))
-	(arguments (cdr message)))
-    (rudel-obby-dispatch this name arguments)))
+(defclass rudel-obby-server-state-encryption-negotiate
+  (rudel-obby-server-connection-state)
+  ()
+  "Encryption negotiation state.")
 
-(defmethod rudel-broadcast ((this rudel-obby-client)
-			    receivers name &rest arguments)
-  "Broadcast message NAME with arguments ARGUMENTS to RECEIVERS."
-  (with-slots (server) this
-    (apply #'rudel-broadcast server receivers name arguments)))
+(defmethod rudel-enter ((this rudel-obby-server-state-encryption-negotiate))
+  "Send net6 'encryption' message requesting to not enable encryption."
+  (rudel-send this "net6_encryption" "0")
+  nil)
 
-(defmethod rudel-obby/net6_encryption_ok ((this rudel-obby-client))
-  "Handle 'net6_encryption_ok' message.
+(defmethod rudel-obby/net6_encryption_ok
+  ((this rudel-obby-server-state-encryption-negotiate))
+  "Handle net6 'encryption_ok' message.
 Even if the client requests an encrypted connection, we cancel
 the negotiation."
-  (rudel-send this "net6_encryption_failed"))
+  (rudel-send this "net6_encryption_failed")
+  'before-join)
 
-(defmethod rudel-obby/net6_encryption_failed ((this rudel-obby-client))
-  "Handle 'net6_encryption_failed' message.
+(defmethod rudel-obby/net6_encryption_failed
+  ((this rudel-obby-server-state-encryption-negotiate))
+  "Handle net6 'encryption_failed' message.
 No action has to be taken, since the client simply proceeds after
-failed encryption negotiation.")
+failed encryption negotiation."
+  'before-join)
 
-(defmethod rudel-obby/net6_client_login ((this rudel-obby-client)
-					 username color)
-  "Handle 'net6_client_login' message."
+
+;;; Class rudel-obby-server-state-before-join
+;;
+
+(defclass rudel-obby-server-state-before-join
+  (rudel-obby-server-connection-state)
+  ()
+  "Waiting for client request joining the session.")
+
+(defmethod rudel-obby/net6_client_login
+  ((this rudel-obby-server-state-before-join) username color)
+  "Handle net6 'client_login' message."
   (with-parsed-arguments ((color color))
-    (with-slots (server (client-id :id) user encryption) this
+    (with-slots (server
+		 (client-id :id)
+		 user
+		 encryption) (oref this :connection)
       ;; Make sure USERNAME and COLOR are valid.
       (let ((error (rudel-check-username-and-color
 		    server username color)))
 	(if error
 	    ;; If USERNAME or COLOR are invalid, send the error code
-	    ;; to the client.
-	    (rudel-send this
-			"net6_login_failed"
-			(format "%x" error))
+	    ;; to the client and stay in the current state.
+	    (progn
+	      (rudel-send this
+			  "net6_login_failed"
+			  (format "%x" error))
+	      nil)
 
 	  ;; Create a user object for this client and add it to the
 	  ;; server.
 	  (setq user (rudel-make-user
 		      server
 		      username client-id color encryption))
-
 	  (rudel-add-user server user)
 
 	  ;; Broadcast the join event to all clients (including the
 	  ;; new one).
 	  (with-slots ((name :object-name) color (user-id :user-id)) user
-	    (rudel-broadcast this (list 'exclude this)
+	    (rudel-broadcast this (list 'exclude (oref this :connection))
 			     "net6_client_join"
 			     (format "%x" client-id)
 			     name
@@ -169,16 +171,17 @@ failed encryption negotiation.")
 	    ;; Transmit list of connected users.
 	    (dolist (client clients)
 	      (with-slots ((client-id :id) user) client
-		(with-slots ((name    :object-name)
-			     color
-			     (user-id :user-id)) user
-		  (rudel-send this
-			      "net6_client_join"
-			      (format "%x" client-id)
-			      name
-			      "0"
-			      (format "%x" user-id)
-			      (rudel-obby-format-color color)))))
+		(when user
+		  (with-slots ((name    :object-name)
+			       color
+			       (user-id :user-id)) user
+		    (rudel-send this
+				"net6_client_join"
+				(format "%x" client-id)
+				name
+				"0"
+				(format "%x" user-id)
+				(rudel-obby-format-color color))))))
 
 	    ;; Transmit list of disconnected users.
 	    (let ((offline-users (remove-if #'rudel-connected users)))
@@ -206,20 +209,37 @@ failed encryption negotiation.")
 		       (format "%x" suffix)
 		       "UTF-8"
 		       (mapcar
-			(lambda (user-) ;; TODO we could use `user' here, but there is a bug in cl
-			  (format "%x" (rudel-id user-)))
-			subscribed))))
+			(lambda (user1) ;; TODO we could use `user' here, but there is a bug in cl
+			  (format "%x" (rudel-id user1)))
+			subscribed)))))
 
-	    (rudel-send this "obby_sync_final"))))))
+	  (rudel-send this "obby_sync_final")
+	  'idle))))
   )
 
-(defmethod rudel-obby/obby_user_colour ((this rudel-obby-client)
-					color-)
-  "Handle 'obby_user_colour' message.
+
+;;; Class rudel-obby-server-state-idle
+;;
+
+(defclass rudel-obby-server-state-idle
+  (rudel-obby-server-connection-state)
+  ()
+  "Idle state of a server connection.
+
+The connection enters this state when all setup work is finished,
+the client has joined the session and no operation is in
+progress. In this state, the connection waits for new messages
+from the client that initiate operations. Simple (which means
+stateless in this case) operations are performed without leaving
+the idle state.")
+
+(defmethod rudel-obby/obby_user_colour
+  ((this rudel-obby-server-state-idle) color-)
+  "Handle obby 'user_colour' message.
 This method is called when the connected user requests a change
 of her color to COLOR."
   (with-parsed-arguments ((color- color))
-    (with-slots (user) this
+    (with-slots (user) (oref this :connection)
       (with-slots (color (user-id :user-id)) user
 	;; Set color slot value.
 	(setq color color-)
@@ -227,31 +247,32 @@ of her color to COLOR."
 	;; Run change hook.
 	(object-run-hook-with-args user 'change-hook)
 
-	(rudel-broadcast this (list 'exclude this)
+	(rudel-broadcast this (list 'exclude (oref this :connection))
 			 "obby_user_colour"
 			 (format "%x" user-id)
 			 (rudel-obby-format-color color)))))
-  )
+  nil)
 
-(defmethod rudel-obby/obby_document_create ((this rudel-obby-client)
-					    doc-id name encoding content)
+(defmethod rudel-obby/obby_document_create
+  ((this rudel-obby-server-state-idle)
+   doc-id name encoding content)
   "Handle obby 'document_create' message."
   (with-parsed-arguments ((doc-id   number)
 			  (encoding coding-system))
-    (with-slots (user server) this
+    (with-slots (user server) (oref this :connection)
       (with-slots ((user-id :user-id)) user
 	;; Create a (hidden) buffer for the new document.
-        (let* ((buffer   (get-buffer-create
-			  (generate-new-buffer-name
-			   (concat " *" name "*"))))
+	(let* ((buffer         (get-buffer-create
+				(generate-new-buffer-name
+				 (concat " *"  name "*"))))
 	       ;; Create the new document object
-	       (document (rudel-obby-document
-			  name
-			  :buffer     buffer
-			  :subscribed (list user)
-			  :id         doc-id
-			  :owner-id   user-id
-			  :suffix     1)))
+	       (document       (rudel-obby-document
+				name
+				:buffer     buffer
+				:subscribed (list user)
+				:id         doc-id
+				:owner-id   user-id
+				:suffix     1)))
 
 	  ;; Initialize the buffer's content
 	  (with-current-buffer buffer
@@ -281,7 +302,7 @@ of her color to COLOR."
 			  (format "%x" suffix)))
 
 	    ;; Notify other clients of the new document
-	    (rudel-broadcast this (list 'exclude this)
+	    (rudel-broadcast this (list 'exclude  (oref this :connection))
 			     "obby_document_create"
 			     (format "%x" user-id)
 			     (format "%x" doc-id)
@@ -290,15 +311,16 @@ of her color to COLOR."
 			     (upcase (symbol-name encoding))))
 
 	  ;; Add a jupiter context for (THIS DOCUMENT).
-	  (rudel-add-context server this document)))))
+	  (rudel-add-context server (oref this :connection) document))))
+    nil)
   )
 
-(defmethod rudel-obby/obby_document ((this rudel-obby-client)
-				     doc-id action &rest arguments)
+(defmethod rudel-obby/obby_document
+  ((this rudel-obby-server-state-idle) doc-id action &rest arguments)
   "Handle obby 'document' messages."
   (with-parsed-arguments ((doc-id document-id))
     ;; Locate the document based on owner id and document id
-    (let ((document (with-slots (server) this
+    (let ((document (with-slots (server) (oref this :connection)
 		      (rudel-find-document server doc-id
 					   #'equal #'rudel-both-ids))))
       (rudel-obby-dispatch this action
@@ -306,11 +328,11 @@ of her color to COLOR."
 			   "rudel-obby/obby_document/")))
   )
 
-(defmethod rudel-obby/obby_document/subscribe ((this rudel-obby-client)
-					       document user-id)
+(defmethod rudel-obby/obby_document/subscribe
+  ((this rudel-obby-server-state-idle) document user-id)
   "Handle 'subscribe' submessage of obby 'document' message."
   (with-parsed-arguments ((user-id number))
-    (let ((user (with-slots (server) this
+    (let ((user (with-slots (server) (oref this :connection)
 		  (rudel-find-user server user-id
 				   #'= #'rudel-id))))
       (with-slots (owner-id (doc-id :id) subscribed buffer) document
@@ -354,15 +376,16 @@ of her color to COLOR."
 			   (format "%x" user-id)))))
 
     ;; Add a jupiter context for (THIS document).
-    (with-slots (server) this
-      (rudel-add-context server this document)))
+    (with-slots (server) (oref this :connection)
+      (rudel-add-context server (oref this :connection) document))
+    nil)
   )
 
-(defmethod rudel-obby/obby_document/unsubscribe ((this rudel-obby-client)
-						 document user-id)
+(defmethod rudel-obby/obby_document/unsubscribe
+  ((this rudel-obby-server-state-idle) document user-id)
   "Handle 'unsubscribe' submessage of 'obby_document' message."
   (with-parsed-arguments ((user-id number))
-    (let ((user (with-slots (server) this
+    (let ((user (with-slots (server) (oref this :connection)
 		  (rudel-find-user server user-id
 				   #'= #'rudel-id))))
       (with-slots (owner-id (doc-id :id) subscribed) document
@@ -383,14 +406,14 @@ of her color to COLOR."
 			   (format "%x" user-id))))
 
       ;; Remove jupiter context for (THIS DOCUMENT).
-      (with-slots (server) this
-	(rudel-remove-context server this document))))
+      (with-slots (server) (oref this :connection)
+	(rudel-remove-context server (oref this :connection) document)))
+    nil)
   )
 
-(defmethod rudel-obby/obby_document/record ((this rudel-obby-client)
-					    document
-					    local-revision remote-revision
-					    action &rest arguments)
+(defmethod rudel-obby/obby_document/record
+  ((this rudel-obby-server-state-idle)
+   document local-revision remote-revision action &rest arguments)
   "Handle 'record' submessages of 'obby_document' message."
   (with-parsed-arguments ((local-revision  number)
 			  (remote-revision number))
@@ -402,38 +425,118 @@ of her color to COLOR."
      "rudel-obby/obby_document/record/"))
   )
 
-(defmethod rudel-obby/obby_document/record/ins ((this rudel-obby-client)
-						document
-						local-revision remote-revision
-						position data)
+(defmethod rudel-obby/obby_document/record/ins
+  ((this rudel-obby-server-state-idle)
+   document local-revision remote-revision position data)
   "Handle 'ins' submessage of 'record' submessages of 'obby_document' message."
   (with-parsed-arguments ((position number))
     ;; Construct the operation object and process it.
-    (rudel-remote-operation this document
+    (rudel-remote-operation
+     (oref this :connection) document
      remote-revision local-revision
      (jupiter-insert
       (format "insert-%d-%d"
 	      remote-revision local-revision)
       :from position
-      :data data)))
+      :data data))
+    nil)
   )
 
-(defmethod rudel-obby/obby_document/record/del ((this rudel-obby-client)
-						document
-						local-revision remote-revision
-						position length)
+(defmethod rudel-obby/obby_document/record/del
+  ((this rudel-obby-server-state-idle)
+   document local-revision remote-revision position length)
   "Handle 'del' submessage of 'record' submessages of 'obby_document' message."
   (with-parsed-arguments ((position number)
 			  (length   number))
     ;; Construct the operation object and process it.
-    (rudel-remote-operation this document
+    (rudel-remote-operation
+     (oref this :connection) document
      remote-revision local-revision
      (jupiter-delete
       (format "delete-%d-%d"
 	      remote-revision local-revision)
       :from position
-      :to   (+ position length))))
+      :to   (+ position length)))
+    nil)
   )
+
+
+;;; Client connection states.
+;;
+
+(defvar rudel-obby-server-connection-states
+  '((new                  . rudel-obby-server-state-new)
+    (encryption-negotiate . rudel-obby-server-state-encryption-negotiate)
+    (before-join          . rudel-obby-server-state-before-join)
+    (idle                 . rudel-obby-server-state-idle))
+  "Name symbols and classes of connection states.")
+
+
+;;; Class rudel-obby-client
+;;
+
+(defclass rudel-obby-client (rudel-obby-socket-owner
+			     rudel-state-machine)
+  ((server     :initarg  :server
+	       :type     rudel-obby-server
+	       :documentation
+	       "")
+   (id         :initarg  :id
+	       :type     integer
+	       :accessor rudel-id
+	       :documentation
+	       "")
+   (user       :initarg  :user
+	       :type     (or rudel-obby-user null)
+	       :initform nil
+	       :documentation
+	       "")
+   (encryption :initarg  :encryption
+	       :type     boolean
+	       :documentation
+	       ""))
+  "Each object of this class represents one client, that is
+connected to the server. This object handles all direct
+communication with the client, while broadcast messages are
+handled by the server.")
+
+(defmethod initialize-instance ((this rudel-obby-client) &rest slots)
+  "Initialize slots of THIS and register state machine states."
+  ;; Initialize slots of THIS
+  (when (next-method-p)
+    (call-next-method))
+
+  ;; Register states.
+  (rudel-register-states this rudel-obby-server-connection-states)
+  )
+
+(defmethod rudel-register-state ((this rudel-obby-client) symbol state)
+  "Register SYMBOL and STATE and set connection slot of STATE."
+  ;; Associate THIS connection to STATE.
+  (oset state :connection this)
+
+  ;; Register STATE.
+  (call-next-method))
+
+(defmethod rudel-end ((this rudel-obby-client))
+  ""
+  (rudel-disconnect this))
+
+(defmethod rudel-close ((this rudel-obby-client))
+  ""
+  (with-slots (server) this
+    (rudel-remove-client server this)))
+
+(defmethod rudel-message ((this rudel-obby-client) message)
+  "Dispatch MESSAGE to the active state of THIS state machine."
+  ;; Dispatch message to state
+  (rudel-accept this message))
+
+(defmethod rudel-broadcast ((this rudel-obby-client)
+			    receivers name &rest arguments)
+  "Broadcast message NAME with arguments ARGUMENTS to RECEIVERS."
+  (with-slots (server) this
+    (apply #'rudel-broadcast server receivers name arguments)))
 
 (defmethod rudel-remote-operation ((this rudel-obby-client)
 				   document
