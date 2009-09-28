@@ -19,8 +19,7 @@
    CEDET since it fixes a serious problem in the object system Eieio.
 
 ** GnuTLS (optional)
-   Encrypted connections to Gobby servers require the gnutls-cli
-   program.
+   Connections to Gobby servers require the gnutls-cli program.
 
 ** Avahi (optional)
    The Avahi daemon (http://avahi.org) is required for automatic
