@@ -1,3 +1,14 @@
+2009-09-29  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* INSTALL (REQUIREMENTS): wording
+	(INSTALLING): mention other things that cause rudel to be
+	autoloaded; minor cosmetic changes
+	(COMPILING): fixed filename compile.el -> rudel-compile.el
+
+	* rudel-compile.el (header): added copyright and meta data
+	(code): let-bind rudel-dir; call `byte-recompile-directory' just
+	once since it operates recursively
+
 2009-09-27  Phil Hagelberg <technomancy@gmail.com>
 
 	* INSTALL: Mention new install process using compile.el and

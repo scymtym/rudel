@@ -3,7 +3,7 @@
   Rudel is developed and tested only with GNU Emacs and therefore
   unlikely to run on other Emacs variants like XEmacs.
 
-  To use Rudel, the following additional software is required:
+  To use Rudel, the following software is required:
 
 ** GNU Emacs 22 or above
    Rudel should work with recent versions of GNU Emacs starting from
@@ -34,19 +34,20 @@
   development version from http://sourceforge.net/projects/rudel/ and
   place the code in any directory you like.
 
-  Once Eieio (above) is installed, add the following to your personal
-  Emacs configuration:
+  Once Eieio (see CEDET in the REQUIREMENTS section above) is
+  installed, add the following to your personal Emacs configuration:
 
-  (load-file "/path/to/rudel/rudel-loaddefs.el")
+  (load-file "/PATH/TO/RUDEL/rudel-loaddefs.el")
 
-  This will set Rudel up to be loaded on demand when the command
-  `rudel-join-session' is invoked. (Bound to C-c c j).
+  This will set Rudel up to be loaded on demand when one of the
+  commands `rudel-join-session', `rudel-host-session' or
+  `global-rudel-minor-mode' is invoked.
 
 * COMPILING
 
   In order to achieve better performance, Emacs can byte-compiled the
-  Rudel code. This can be done by opening compile.el in Emacs and
-  invoking M-x eval-buffer.
+  Rudel code. This can be done by opening rudel-compile.el in Emacs
+  and invoking M-x eval-buffer.
 
 Local variables:
 mode: org
