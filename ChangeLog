@@ -1,5 +1,10 @@
 2009-09-29  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	* rudel-session-initiation.el (rudel-configured-sessions):
+	improved documentation string
+
+2009-09-29  Jan Moringen  <scymtym@users.sourceforge.net>
+
 	* INSTALL (REQUIREMENTS): wording
 	(INSTALLING): mention other things that cause rudel to be
 	autoloaded; minor cosmetic changes

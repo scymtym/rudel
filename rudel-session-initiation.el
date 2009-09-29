@@ -66,16 +66,56 @@
 (defcustom rudel-configured-sessions nil
   "List of configured sessions.
 
-Each session is a plist (a list of keys and values). Keys are
-specified using keywords and look like this :username. Values are
-mostly strings, but numbers are possible as well.
+Each session is described as a plist (a list of keys and values
+see Info node `(elisp)Property Lists'). Keys are specified using
+keywords and look like this: :host, :username, :color. Values are
+mostly strings, but symbols and numbers are possible as well.
 
-The following keys are required for any session
+The following keys are required for any session:
+
 * :name    (string)
 * :backend (string or symbol)
 
-The values of the :name property have to be distinct for all
-configured sessions."
+Other keys are optional and depend on the selected
+backend. Required keys for which no value is specified will be
+prompted for when selecting the session. The values of the :name
+properties have to be distinct for all configured sessions.
+
+Additional keys required by most backends:
+
+* :host     (string)
+* :port     (number)
+* :username (string)
+* :color    (string)
+
+Here is a complete example of customized values for the obby
+backend:
+
+* :name            \"sonian\"
+* :backend         obby
+* :host            \"sobby\"
+* :port            6522
+* :encryption      t
+* :username        \"phil\"
+* :color           \"white\"
+* :global-password \"\"             (this means \"no password\")
+* :user-password   \"\"
+
+The programmatic equivalent looks like this:
+
+(add-to-list 
+ 'rudel-configured-sessions
+ (list :name            \"myserver\"
+       :backend         'obby
+       :host            \"my.sobby-server.net\"
+       :username        user-login-name
+       ;; Use M-x list-colors-display to see color choices.
+       :color           \"white\"
+       :encryption      t 
+       :port            6522
+       ;; empty string means no password
+       :global-password \"\"
+       :user-password   \"\"))"
   :group 'rudel
   :type  '(repeat :tag "Connections"
 		  (plist :tag "Connection"
