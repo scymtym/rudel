@@ -118,7 +118,8 @@ failed encryption negotiation."
   "Waiting for client request joining the session.")
 
 (defmethod rudel-obby/net6_client_login
-  ((this rudel-obby-server-state-before-join) username color)
+  ((this rudel-obby-server-state-before-join) username color
+   &optional global-password user-password)
   "Handle net6 'client_login' message."
   (with-parsed-arguments ((color color))
     (with-slots (server

@@ -1,5 +1,9 @@
 2009-09-29  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	* obby/rudel-obby-server.el
+	(rudel-obby-server-state-before-join::rudel-obby/net6_client_login):
+	accept two additional arguments: global-password and user-password
+
 	* rudel-session-initiation.el (rudel-configured-sessions):
 	improved documentation string
 
