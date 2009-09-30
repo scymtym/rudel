@@ -1,3 +1,11 @@
+2009-10-01  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+
+	* rudel-state-machine.el (rudel-state-wait): fixed progress range
+	[0, 100] -> [0, 1]; fixed reference to reporter object
+	* obby/rudel-obby.el (rudel-obby-send): removed remnants of calls
+	to `working-*' functions; call `progress-reporter-pulse' just
+	before `progress-reporter-done'
+
 2009-09-30  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
 
 	* rudel-compat.el: only define pulsing progress reporter when

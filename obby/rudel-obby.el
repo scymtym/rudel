@@ -448,9 +448,9 @@ calling this function."
 	(let ((total    (/ (length message)
 			   rudel-obby-long-message-chunk-size))
 	      (current  0)
-	      (reporter (make-progress-reporter "Sending data " 0.0 100.0)))
+	      (reporter (make-progress-reporter "Sending data " 0.0 1.0)))
 	  (rudel-loop-chunks message chunk rudel-obby-long-message-chunk-size
-	    (progress-reporter-update working-status (/ (float current) total))
+	    (progress-reporter-update reporter (/ (float current) total))
 	    (process-send-string socket chunk)
 	    (incf current))
 	  (progress-reporter-done reporter))
