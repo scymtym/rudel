@@ -42,5 +42,49 @@
 You have to take care to only enter valid color names."
     (read-string prompt)))
 
+
+;;; Pulsing Progress Reporter
+;;
+
+(defvar progress-pulse-values ["-" "\\" "|" "/"])
+
+(defun make-progress-reporter-pulse (&optional message)
+  "Return a pulsing progress reporter that display MESSAGE.
+MESSAGE can contain all formatting characters accepted by
+`format'. If message is nil, the string \"Working ...\" is
+displayed.
+
+Example:
+(let ((rep (make-progress-reporter-pulse \"Connecting\")))
+  (dotimes (n 3)
+    (sleep-for 0.1)
+    (progress-reporter-pulse rep \"Connecting [new]\"))
+  (dotimes (n 3)
+    (sleep-for 0.1)
+    (progress-reporter-pulse rep \"Connecting [synching]\"))
+  (dotimes (n 3)
+    (sleep-for 0.1)
+    (progress-reporter-pulse rep \"Connecting [idle]\"))
+  (progress-reporter-pulse rep \"Connecting \")
+  (progress-reporter-done rep))"
+  (cons 'dummy 
+	(vector 'dummy 0 'dummy (or message "Working ... "))))
+
+(defun progress-reporter-pulse (reporter &optional new-message)
+  "Advance indicator and display ARGS in message of REPORTER.
+The number of arguments has to match the number of formatting
+characters in the message of REPORTER."
+  (let* ((parameters (cdr reporter))
+	 (message    (or new-message
+			 (aref parameters 3)))
+	 (index      (aref parameters 1))
+	 (new-index  (mod (+ index 1) 4)))
+    (aset parameters 1 new-index)
+    (aset parameters 3 message)
+    (let ((message-log-max nil)) ;; No logging
+      (message "%s %s"
+	       (aref progress-pulse-values new-index)
+	       message))))
+
 (provide 'rudel-compat)
 ;;; rudel-compat.el ends here

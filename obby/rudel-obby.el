@@ -445,14 +445,15 @@ calling this function."
     (if (>= (length message) rudel-obby-long-message-threshold)
 	;; For huge messages, chunk the message data and transmit the
 	;; chunks
-	(let ((total   (/ (length message)
-			  rudel-obby-long-message-chunk-size ))
-	      (current 0))
-	  (working-status-forms "Sending data" "done"
-	    (rudel-loop-chunks message chunk rudel-obby-long-message-chunk-size
-	      (working-status (* 100.0 (/ (float current) total)))
-	      (process-send-string socket chunk)
-	      (incf current))))
+	(let ((total    (/ (length message)
+			   rudel-obby-long-message-chunk-size))
+	      (current  0)
+	      (reporter (make-progress-reporter "Sending data " 0.0 100.0)))
+	  (rudel-loop-chunks message chunk rudel-obby-long-message-chunk-size
+	    (progress-reporter-update working-status (/ (float current) total))
+	    (process-send-string socket chunk)
+	    (incf current))
+	  (progress-reporter-done reporter))
       ;; Send small messages in one chunk
       (process-send-string socket message)))
   )
