@@ -1,9 +1,11 @@
 ;;; rudel-compat.el --- Compatibility code for Rudel
 ;;
 ;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009 Phil Hagelberg
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Rudel, compatibility
+;;         Phil Hagelberg <phil@enigma>
+;; Keywords: rudel, compatibility
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -46,16 +48,15 @@ You have to take care to only enter valid color names."
 ;;; Pulsing Progress Reporter
 ;;
 
-(defvar progress-pulse-values ["-" "\\" "|" "/"])
+(unless (functionp 'progress-reporter-pulse)
+  (defvar progress-pulse-values ["-" "\\" "|" "/"])
 
-(defun make-progress-reporter-pulse (&optional message)
-  "Return a pulsing progress reporter that display MESSAGE.
-MESSAGE can contain all formatting characters accepted by
-`format'. If message is nil, the string \"Working ...\" is
-displayed.
+  (defun make-pulsing-progress-reporter (&optional message)
+    "Return a pulsing progress reporter that displays MESSAGE.
+If message is nil, the string \"Working ...\" is displayed.
 
 Example:
-(let ((rep (make-progress-reporter-pulse \"Connecting\")))
+(let ((rep (make-pulsing-progress-reporter \"Connecting\")))
   (dotimes (n 3)
     (sleep-for 0.1)
     (progress-reporter-pulse rep \"Connecting [new]\"))
@@ -67,13 +68,13 @@ Example:
     (progress-reporter-pulse rep \"Connecting [idle]\"))
   (progress-reporter-pulse rep \"Connecting \")
   (progress-reporter-done rep))"
-  (cons 'dummy 
-	(vector 'dummy 0 'dummy (or message "Working ... "))))
+  ;; Return a progress reporter whose structure is identical to
+  ;; the one used by `make-progress-reporter'.
+  (cons nil
+	(vector nil 0 nil (or message "Working ... "))))
 
-(defun progress-reporter-pulse (reporter &optional new-message)
-  "Advance indicator and display ARGS in message of REPORTER.
-The number of arguments has to match the number of formatting
-characters in the message of REPORTER."
+  (defun progress-reporter-pulse (reporter &optional new-message)
+  "Advance pulsing indicator of REPORTER. Display NEW-MESSAGE if given."
   (let* ((parameters (cdr reporter))
 	 (message    (or new-message
 			 (aref parameters 3)))
@@ -84,7 +85,7 @@ characters in the message of REPORTER."
     (let ((message-log-max nil)) ;; No logging
       (message "%s %s"
 	       (aref progress-pulse-values new-index)
-	       message))))
+	       message)))))
 
 (provide 'rudel-compat)
 ;;; rudel-compat.el ends here

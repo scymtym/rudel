@@ -1,11 +1,22 @@
 2009-09-30  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
 
+	* rudel-compat.el: only define pulsing progress reporter when
+	Emacs does not have one itself
+	(header): downcased keywords
+	(make-pulsing-progress-reporter): renamed
+	`make-progress-reporter-pulse' ->
+	`make-pulsing-progress-reporter'; cosmetic changes; explanatory
+	comment
+	(progress-reporter-pulse): added documentation string
+	Suggested by Phil Hagelberg
+
 	* rudel-compat.el (progress-pulse-values): new variable; indicator
 	strings used by pulsing progress reporter
 	(make-progress-reporter-pulse): new function; creates pulsing
 	progress reporter
 	(progress-reporter-pulse): new function; updates pulsing progress
 	reporter
+	Suggested by Phil Hagelberg
 
 2009-09-29  Jan Moringen  <scymtym@users.sourceforge.net>
 
