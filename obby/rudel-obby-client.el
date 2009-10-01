@@ -270,7 +270,7 @@ failure."))
 	     '(rudel obby)
 	     (format "Cannot find user for client id: %d"
 		     client-id)
-	     :debug))))))
+	     :warning))))))
   nil)
 
 (defmethod rudel-obby/obby_user_colour
@@ -318,17 +318,23 @@ failure."))
   nil)
 
 (defmethod rudel-obby/obby_document_remove
-  ((this rudel-obby-client-state-idle) owner-id doc-id)
+  ((this rudel-obby-client-state-idle) doc-id)
   "Handle obby 'document_remove' message."
-  (with-parsed-arguments ((owner-id number)
-			  (doc-id   number))
+  (with-parsed-arguments ((doc-id document-id))
     (with-slots (connection) this
       (with-slots (session) connection
 	(let ((document (rudel-find-document
-			 session (list owner-id doc-id)
+			 session doc-id
 			 #'equal #'rudel-both-ids)))
-	  (rudel-remove-document session document)
-	  (message "Document removed %d" doc-id)))))
+	  (if document
+	      (progn
+		(rudel-remove-document session document)
+		(with-slots ((name :object-name)) document
+		  (message "Document removed %s" name)))
+	    (display-warning
+	     '(rudel obby)
+	     (format "Document not found: %s" doc-id)
+	     :warning))))))
   nil)
 
 (defmethod rudel-obby/obby_document/rename
@@ -402,7 +408,7 @@ failure."))
 	  (display-warning
 	   '(rudel obby)
 	   (format "User not found: %d" user-id)
-	   :debug)
+	   :warning)
 	  nil))))
   )
 
@@ -824,6 +830,17 @@ nothing else."
 		"UTF-8"
 		(with-current-buffer buffer
 		  (buffer-string))))
+  )
+
+(defmethod rudel-unpublish ((this rudel-obby-connection) document)
+  "Remove DOCUMENT from the obby session THIS is connected to."
+  ;; Request removal of DOCUMENT.
+  (with-slots ((doc-id :id) owner-id) document
+      (rudel-send this "obby_document_remove"
+		  (format "%x %x" owner-id doc-id)))
+
+  ;; Remove the jupiter context for DOCUMENT.
+  (rudel-remove-context this document)
   )
 
 (defmethod rudel-subscribe-to ((this rudel-obby-connection) document)
