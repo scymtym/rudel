@@ -216,7 +216,11 @@ WHICH is compared to the result of KEY using TEST."
   (object-run-hook-with-args this 'add-document-hook document))
 
 (defmethod rudel-remove-document ((this rudel-session) document)
-  ""
+  "Remove DOCUMENT from THIS session, detaching it if necessary."
+  ;; Detach document from its buffer when necessary.
+  (when (rudel-attached-p document)
+    (rudel-detach-from-buffer document))
+
   ;; Remove DOCUMENT from the list of documents in THIS session.
   (object-remove-from-list this :documents document)
 
@@ -424,6 +428,10 @@ collaborative editing session can subscribe to."
 (defmethod rudel-suggested-buffer-name ((this rudel-document))
   "Returns a suggested name for the buffer attached to THIS document."
   (rudel-unique-name this))
+
+(defmethod rudel-attached-p ((this rudel-document))
+  (with-slots (buffer) this
+    buffer))
 
 (defmethod rudel-attach-to-buffer ((this rudel-document) buffer)
   "Attach THIS document to BUFFER"
