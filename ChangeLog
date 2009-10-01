@@ -1,4 +1,22 @@
-2009-10-01  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+2009-10-02  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel.el (rudel-session::rudel-remove-document): when necessary,
+	detach document first; added documentation string
+	(rudel-document::rudel-attached-p): new method; return non-nil
+	when document is attached to a buffer
+
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-idle::rudel-obby/net6_client_part):
+	promoted warning severity to :warning
+	(rudel-obby-client-state-idle::rudel-obby/obby_document_remove):
+	fixed lookup of document; added warning message in case it is not
+	found
+	(rudel-obby-client-state-idle::rudel-obby/obby_document/rename):
+	promoted warning severity to :warning
+	(rudel-obby-connection::rudel-unpublish): new method; ask server
+	to remove a document
+
+2009-10-01  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* rudel-state-machine.el (rudel-state-wait): fixed progress range
 	[0, 100] -> [0, 1]; fixed reference to reporter object
@@ -6,7 +24,7 @@
 	to `working-*' functions; call `progress-reporter-pulse' just
 	before `progress-reporter-done'
 
-2009-09-30  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
+2009-09-30  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* rudel-compat.el: only define pulsing progress reporter when
 	Emacs does not have one itself
