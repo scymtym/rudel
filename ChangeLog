@@ -1,4 +1,22 @@
+2009-10-03  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel-compat.el (make-pulsing-progress-reporter): removed;
+	`make-progress-reporter' is sufficient
+	(progress-reporter-pulse): store index in the car of the reporter;
+	set last update time of the reporter
+	* obby/rudel-obby.el (rudel-connect): use `make-progress-reporter'
+	instead of `make-pulsing-progress-reporter'
+	* obby/rudel-obby-client.el
+	(rudel-obby-connection::rudel-subscribe-to): cosmetic changes in
+	status messages
+
 2009-10-02  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-idle::rudel-obby/obby_document_create):
+	cosmetic changes of printed messages
+	(rudel-obby-client-state-idle::rudel-obby/obby_document_remove):
+	cosmetic changes of printed messages
 
 	* rudel.el (rudel-session::rudel-remove-document): when necessary,
 	detach document first; added documentation string
@@ -59,7 +77,6 @@
 	(INSTALLING): mention other things that cause rudel to be
 	autoloaded; minor cosmetic changes
 	(COMPILING): fixed filename compile.el -> rudel-compile.el
-	* ChangeLog: updated
 
 	* rudel-compile.el (header): added copyright and meta data
 	(code): let-bind rudel-dir; call `byte-recompile-directory' just
@@ -523,8 +540,6 @@
 	(rudel-session::rudel-add-user): run add user hook
 	(rudel-session::rudel-remove-user): run remove user hook
 
-	* ChangeLog (whole file): updated
-
 	* rudel.el (rudel-session-start-hook): new variable; session start
 	hook function list
 	(rudel-session-end-hook): new variable; session end hook function
@@ -753,8 +768,6 @@
 
 2009-08-13  Jan Moringen  <scymtym@users.sourceforge.net>
 
-	* ChangeLog (whole file): updated
-
 	* rudel.el (include rudel-session-initiation): required for
 	`rudel-join-session'
 	(rudel-join-session): mostly rewritten; moved user interaction to
@@ -910,8 +923,6 @@
 
 	* rudel-speedbar.el (eieio-speedbar-object-buttonname): use
 	`rudel-unique-name' instead of `object-name-string'
-
-	* ChangeLog (whole file): updated
 
 	* obby/rudel-obby-state.el (rudel-enter): return nil
 
