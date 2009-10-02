@@ -314,7 +314,7 @@ failure."))
 				       :id         doc-id
 				       :owner-id   owner-id
 				       :suffix     suffix))))
-      (message "New document %s" name)))
+      (message "New document: %s" name)))
   nil)
 
 (defmethod rudel-obby/obby_document_remove
@@ -330,7 +330,7 @@ failure."))
 	      (progn
 		(rudel-remove-document session document)
 		(with-slots ((name :object-name)) document
-		  (message "Document removed %s" name)))
+		  (message "Document removed: %s" name)))
 	    (display-warning
 	     '(rudel obby)
 	     (format "Document not found: %s" doc-id)
