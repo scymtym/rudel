@@ -163,9 +163,22 @@ Return the connection object."
     ;; Wait for the connection to reach one of the states idle,
     ;; join-failed and they-finalized.
     (condition-case error
-	(rudel-state-wait connection
-			  '(idle) '(join-failed they-finalized)
-			  "Joining")
+	(lexical-let ((reporter (make-pulsing-progress-reporter "Joining ")))
+	  (flet ((display-progress (state)
+	           (cond
+		    ;; For all states, just pulse.
+		    ((consp state)
+		     (progress-reporter-pulse reporter (format "Joining (%s)" (car state))))
+
+		    ;; Done
+		    (t
+		     (progress-reporter-pulse reporter "Joining ")
+		     (progress-reporter-done reporter)))))
+
+	    (rudel-state-wait connection
+			      '(idle) '(join-failed they-finalized)
+			      #'display-progress)))
+
       (rudel-entered-error-state
        (destructuring-bind (symbol . state) (cdr error)
 	 (if (eq (rudel-find-state connection 'join-failed) state)
