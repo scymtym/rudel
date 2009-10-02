@@ -163,7 +163,7 @@ Return the connection object."
     ;; Wait for the connection to reach one of the states idle,
     ;; join-failed and they-finalized.
     (condition-case error
-	(lexical-let ((reporter (make-pulsing-progress-reporter "Joining ")))
+	(lexical-let ((reporter (make-progress-reporter "Joining " 0.0 1.0))) ;; TODO min and max will be optional
 	  (flet ((display-progress (state)
 	           (cond
 		    ;; For all states, just pulse.

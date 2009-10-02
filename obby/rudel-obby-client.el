@@ -864,13 +864,13 @@ nothing else."
 		 (progress-reporter-force-update
 		  reporter
 		  (- 1.0 (/ (float remaining-bytes) (float all-bytes)))
-		  (format "Subscribing (%s)" (car state)))))
+		  (format "Subscribing (%s) " (car state)))))
 
 	      ;; For other states, we just pulse.
 	      ((consp state)
 	       (progress-reporter-pulse
 		reporter
-		(format "Subscribing (%s)" (car state))))
+		(format "Subscribing (%s) " (car state))))
 
 	      ;; Done
 	      (t

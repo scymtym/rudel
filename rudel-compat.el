@@ -51,36 +51,17 @@ You have to take care to only enter valid color names."
 (unless (functionp 'progress-reporter-pulse)
   (defvar progress-pulse-values ["-" "\\" "|" "/"])
 
-  (defun make-pulsing-progress-reporter (&optional message)
-    "Return a pulsing progress reporter that displays MESSAGE.
-If message is nil, the string \"Working ...\" is displayed.
-
-Example:
-(let ((rep (make-pulsing-progress-reporter \"Connecting\")))
-  (dotimes (n 3)
-    (sleep-for 0.1)
-    (progress-reporter-pulse rep \"Connecting [new]\"))
-  (dotimes (n 3)
-    (sleep-for 0.1)
-    (progress-reporter-pulse rep \"Connecting [synching]\"))
-  (dotimes (n 3)
-    (sleep-for 0.1)
-    (progress-reporter-pulse rep \"Connecting [idle]\"))
-  (progress-reporter-pulse rep \"Connecting \")
-  (progress-reporter-done rep))"
-  ;; Return a progress reporter whose structure is identical to
-  ;; the one used by `make-progress-reporter'.
-  (cons nil
-	(vector nil 0 nil (or message "Working ... "))))
-
   (defun progress-reporter-pulse (reporter &optional new-message)
   "Advance pulsing indicator of REPORTER. Display NEW-MESSAGE if given."
   (let* ((parameters (cdr reporter))
 	 (message    (or new-message
 			 (aref parameters 3)))
-	 (index      (floor (aref parameters 1)))
+	 (index      (if (< (car reporter) 0)
+                       (floor (- (car reporter)))
+                       0))
 	 (new-index  (mod (+ index 1) 4)))
-    (aset parameters 1 (float new-index))
+    (setcar reporter (float (- new-index)))
+    (aset parameters 0 (float-time))
     (aset parameters 3 message)
     (let ((message-log-max nil)) ;; No logging
       (message "%s %s"
