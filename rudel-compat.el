@@ -78,9 +78,9 @@ Example:
   (let* ((parameters (cdr reporter))
 	 (message    (or new-message
 			 (aref parameters 3)))
-	 (index      (aref parameters 1))
+	 (index      (floor (aref parameters 1)))
 	 (new-index  (mod (+ index 1) 4)))
-    (aset parameters 1 new-index)
+    (aset parameters 1 (float new-index))
     (aset parameters 3 message)
     (let ((message-log-max nil)) ;; No logging
       (message "%s %s"
