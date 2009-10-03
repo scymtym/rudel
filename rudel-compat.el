@@ -51,41 +51,95 @@ You have to take care to only enter valid color names."
 (unless (functionp 'progress-reporter-pulse)
   (defvar progress-pulse-values ["-" "\\" "|" "/"])
 
-  (defun make-pulsing-progress-reporter (&optional message)
-    "Return a pulsing progress reporter that displays MESSAGE.
-If message is nil, the string \"Working ...\" is displayed.
+  (defsubst progress-reporter-update (reporter &optional value)
+    "Report progress of an operation in the echo area.
 
-Example:
-(let ((rep (make-pulsing-progress-reporter \"Connecting\")))
-  (dotimes (n 3)
-    (sleep-for 0.1)
-    (progress-reporter-pulse rep \"Connecting [new]\"))
-  (dotimes (n 3)
-    (sleep-for 0.1)
-    (progress-reporter-pulse rep \"Connecting [synching]\"))
-  (dotimes (n 3)
-    (sleep-for 0.1)
-    (progress-reporter-pulse rep \"Connecting [idle]\"))
-  (progress-reporter-pulse rep \"Connecting \")
-  (progress-reporter-done rep))"
-  ;; Return a progress reporter whose structure is identical to
-  ;; the one used by `make-progress-reporter'.
-  (cons nil
-	(vector nil 0 nil (or message "Working ... "))))
+The first parameter, REPORTER, should be the result of a call to
+`make-progress-reporter'. For reporters for which the max value
+is known, the second argument determines the actual progress of
+operation; it must be between MIN-VALUE and MAX-VALUE as passed
+to `make-progress-reporter'.
 
-  (defun progress-reporter-pulse (reporter &optional new-message)
-  "Advance pulsing indicator of REPORTER. Display NEW-MESSAGE if given."
-  (let* ((parameters (cdr reporter))
-	 (message    (or new-message
-			 (aref parameters 3)))
-	 (index      (aref parameters 1))
-	 (new-index  (mod (+ index 1) 4)))
-    (aset parameters 1 new-index)
-    (aset parameters 3 message)
-    (let ((message-log-max nil)) ;; No logging
-      (message "%s %s"
-	       (aref progress-pulse-values new-index)
-	       message)))))
+However, if the change since last echo area update is too small
+or not enough time has passed, then do nothing (see
+`make-progress-reporter' for details).
+
+In this case, this function is very inexpensive, you need not
+care how often you call it."
+    (if (progress-reporter-pulsing-p reporter)
+        (progress-reporter-pulse reporter)
+      (when (>= value (car reporter))
+        (progress-reporter-do-update reporter value))))
+
+    (defun make-progress-reporter (message &optional min-value max-value
+                                           current-value min-change min-time)
+      "Return progress reporter object to be used with `progress-reporter-update'.
+
+MESSAGE is shown in the echo area.  When at least 1% of operation
+is complete, the exact percentage will be appended to the
+MESSAGE.  When you call `progress-reporter-done', word \"done\"
+is printed after the MESSAGE.  You can change MESSAGE of an
+existing progress reporter with `progress-reporter-force-update'.
+
+If provided, MIN-VALUE and MAX-VALUE designate starting (0%
+complete) and final (100% complete) states of operation.  The
+latter should be larger; if this is not the case, then simply
+negate all values.  Optional CURRENT-VALUE specifies the progress
+by the moment you call this function.  You should omit it or set
+it to nil in most cases since it defaults to MIN-VALUE.
+
+Optional MIN-CHANGE determines the minimal change in percents to
+report (default is 1%.)  Optional MIN-TIME specifies the minimal
+time before echo area updates (default is 0.2 seconds.)  If
+`float-time' function is not present, then time is not tracked
+at all.  If OS is not capable of measuring fractions of seconds,
+then this parameter is effectively rounded up.
+
+If MIN-VALUE and MAX-VALUE are unknown, they may be omitted to
+return a \"pulsing\" progress reporter."
+      (unless min-time
+        (setq min-time 0.2))
+      (let ((reporter
+             (cons min-value ;; Force a call to `message' now
+                   (vector (if (and (fboundp 'float-time)
+                                    (>= min-time 0.02))
+                               (float-time) nil)
+                           (or min-value 0)
+                           max-value
+                           message
+                           (if min-change (max (min min-change 50) 1) 1)
+                           min-time))))
+        (progress-reporter-update reporter (or current-value min-value))
+        reporter))
+
+      (defun progress-reporter-force-update (reporter value &optional new-message)
+        "Report progress of an operation in the echo area unconditionally.
+
+First two parameters are the same as for
+`progress-reporter-update'.  Optional NEW-MESSAGE allows you to
+change the displayed message."
+        (let ((parameters (cdr reporter)))
+          (when new-message
+            (aset parameters 3 new-message))
+          (when (aref parameters 0)
+            (aset parameters 0 (float-time)))
+          (if (progress-reporter-pulsing-p reporter)
+              (progress-reporter-pulse reporter)
+            (progress-reporter-do-update reporter value))))
+
+      (defun progress-reporter-pulsing-p (reporter)
+        "Return t if REPORTER has an unknown max value."
+        (null (aref (cdr reporter) 2)))
+
+      (defun progress-reporter-pulse (reporter)
+        "Advance pulsing indicator of REPORTER."
+        (let* ((parameters (cdr reporter))
+               (index      (+ (aref parameters 1) 1)))
+          (aset parameters 1 index)
+          (let ((message-log-max nil)) ; No logging
+            (message "%s %s"
+                     (aref progress-pulse-values (mod index 4))
+                     (aref parameters 3))))))
 
 (provide 'rudel-compat)
 ;;; rudel-compat.el ends here
