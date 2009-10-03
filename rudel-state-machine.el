@@ -296,7 +296,7 @@ when MACHINE deadlocks or cycles through states not in either
 list infinitely."
   ;; Wait until MACHINE enter a state in SUCCESS-STATES or
   ;; ERROR-STATES.
-  (let* ((reporter (make-pulsing-progress-reporter message))
+  (let* ((reporter (make-progress-reporter message))
 	 (result
 	  (catch 'state-wait
 	    (while t
@@ -309,10 +309,9 @@ list infinitely."
 		(when (memq symbol error-states)
 		  (throw 'state-wait (cons 'error   (cons symbol state))))
 		;; Update progress indicator and sleep.
-		(progress-reporter-pulse 
-		 reporter (format "%s (%s)"  message symbol))
+		(progress-reporter-force-update
+                 reporter nil (format "%s (%s) " message symbol))
 		(sleep-for 0.05))))))
-    (progress-reporter-pulse reporter (concat message " "))
     (progress-reporter-done reporter)
 
     ;; If MACHINE ended up in an error state, signal
