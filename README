@@ -55,6 +55,14 @@
      Gobby only supports encrypted connections. So the answer has to
      be `y RET' is this case.
 
+   It is possible to configure frequently used sessions using the
+   customization options `rudel-configured-sessions'. When one or more
+   sessions are configured, `rudel-join-session' will provide choices
+   like "my-configured-session", ... and "ask-protocol". Selecting
+   "ask-protocol" invokes the behavior described above. Selecting one
+   of the configured sessions connects to that session without asking
+   for all the data.
+
 ** HOSTING A SESSION
 
    : M-x rudel-host-session [ C-c c h ]
