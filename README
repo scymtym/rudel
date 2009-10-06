@@ -4,7 +4,8 @@
   purpose is to share buffers with other users in order to edit the
   contents of those buffers collaboratively. Rudel supports multiple
   backends to enable communication with other collaborative editors
-  using different protocols.
+  using different protocols, though currently Obby (for use with the
+  Gobby editor) is the only fully-functional one.
 
   Since Rudel is not an application, but an extension to Emacs, it is
   not started and used like most applications (not even Emacs
@@ -41,6 +42,8 @@
    Username: jan RET
    Color: light sky blue RET
    Use Encryption (y or n): n RET
+   Global Password: RET
+   User Password: RET
 
    IMPORTANT: For sessions using the obby backend (like in the example
    above), the following restriction has to be taken into account:
