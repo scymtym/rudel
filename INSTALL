@@ -18,6 +18,10 @@
    IMPORTANT: It is necessary to use at least the 1.0pre6 version of
    CEDET since it fixes a serious problem in the object system Eieio.
 
+   As of October 2009, Eieio is included in GNU Emacs. If you are
+   using a version built since then, you do not have to install it
+   yourself.
+
 ** GnuTLS (optional)
    Connections to Gobby servers require the gnutls-cli program.
 
@@ -45,7 +49,7 @@
 
 * COMPILING
 
-  In order to achieve better performance, Emacs can byte-compiled the
+  In order to achieve better performance, Emacs can byte-compile the
   Rudel code. This can be done by opening rudel-compile.el in Emacs
   and invoking M-x eval-buffer.
 

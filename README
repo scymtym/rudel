@@ -4,7 +4,8 @@
   purpose is to share buffers with other users in order to edit the
   contents of those buffers collaboratively. Rudel supports multiple
   backends to enable communication with other collaborative editors
-  using different protocols.
+  using different protocols, though currently Obby (for use with the
+  Gobby editor) is the only fully-functional one.
 
   Since Rudel is not an application, but an extension to Emacs, it is
   not started and used like most applications (not even Emacs
@@ -41,6 +42,8 @@
    Username: jan RET
    Color: light sky blue RET
    Use Encryption (y or n): n RET
+   Global Password: RET
+   User Password: RET
 
    IMPORTANT: For sessions using the obby backend (like in the example
    above), the following restriction has to be taken into account:
@@ -52,6 +55,14 @@
      Gobby only supports encrypted connections. So the answer has to
      be `y RET' is this case.
 
+   It is possible to configure frequently used sessions using the
+   customization options `rudel-configured-sessions'. When one or more
+   sessions are configured, `rudel-join-session' will provide choices
+   like "my-configured-session", ... and "ask-protocol". Selecting
+   "ask-protocol" invokes the behavior described above. Selecting one
+   of the configured sessions connects to that session without asking
+   for all the data.
+
 ** HOSTING A SESSION
 
    : M-x rudel-host-session [ C-c c h ]
@@ -61,9 +72,16 @@
    want to participate in the session you host, you have to join it as
    described above.
 
-* KNOWN BUGS
+* KNOWN ISSUES
 
-  Here is a list of known major issues.
+   + Publishing eshell buffers will cause your session to be
+     disconnected since eshell disables the hooks that Rudel uses to
+     catch changes to the buffer. As a workaround, you can use M-x
+     ansi-term or another terminal emulator.
+
+* LICENSE
+
+  Rudel is licensed under the same terms as GNU Emacs.
 
 Local variables:
 mode: org

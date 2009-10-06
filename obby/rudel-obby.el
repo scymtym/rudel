@@ -163,16 +163,17 @@ Return the connection object."
     ;; Wait for the connection to reach one of the states idle,
     ;; join-failed and they-finalized.
     (condition-case error
-	(lexical-let ((reporter (make-progress-reporter "Joining " 0.0 1.0))) ;; TODO min and max will be optional
+	(lexical-let ((reporter (make-progress-reporter "Joining ")))
 	  (flet ((display-progress (state)
 	           (cond
-		    ;; For all states, just pulse.
+		    ;; For all states, just spin.
 		    ((consp state)
-		     (progress-reporter-pulse reporter (format "Joining (%s)" (car state))))
+		     (progress-reporter-force-update
+                      reporter nil (format "Joining (%s)" (car state))))
 
 		    ;; Done
 		    (t
-		     (progress-reporter-pulse reporter "Joining ")
+		     (progress-reporter-force-update reporter nil "Joining ")
 		     (progress-reporter-done reporter)))))
 
 	    (rudel-state-wait connection

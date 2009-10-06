@@ -63,7 +63,7 @@
 ;;; Global variables
 ;;
 
-(defconst rudel-version 0.1
+(defconst rudel-version '(0 1)
   "Version of the Rudel framework.")
 
 (defvar rudel-current-session nil
@@ -91,7 +91,10 @@ It would be nice to find another way to do this.")
 
 (defcustom rudel-allocate-buffer-function
   'rudel-allocate-buffer-clear-existing
-  "*"
+  "A function used to find or create buffers to associate to documents.
+The function is called with the document name as the sole
+argument and has to return a buffer object which will be attached
+to the document in question."
   :group   'rudel
   :type    '(choice (const :tag "Clear content of existing buffer"
 			   rudel-allocate-buffer-clear-existing )
