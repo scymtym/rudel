@@ -3,6 +3,24 @@
 	* doc/card.tex (Joining a Session ...): added global and user
 	passwords
 
+	* rudel.el (rudel-version): use list representation instead of
+	float
+        (rudel-allocate-buffer-function): added documentation string
+
+	* INSTALL (COMPILING): fixed typo
+
+2009-10-06  Phil Hagelberg  <phil@enigma>
+
+        * README (JOINING): Mention `rudel-configured-sessions'
+	customization.
+
+	* README (INTRODUCTION): emphasize obby backend being the only
+	supported one so far
+	(JOINING): update example session with passwords.
+
+	* rudel-loaddefs.el: Add autoloads for rudel-host-session and
+	rudel-speedbar
+
 2009-10-05  Phil Hagelberg  <phil@enigma>
 
 	* README: Mention Eshell issue and license.
