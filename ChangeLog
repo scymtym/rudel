@@ -1,3 +1,7 @@
+2009-10-05  Phil Hagelberg  <phil@enigma>
+
+	* README: Mention Eshell issue and license.
+
 2009-10-03  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* rudel-compat.el (make-pulsing-progress-reporter): removed;
@@ -10,7 +14,36 @@
 	(rudel-obby-connection::rudel-subscribe-to): cosmetic changes in
 	status messages
 
+	* ChangeLog: updated
+
+2009-10-02  Phil Hagelberg  <phil@enigma>
+
+	* INSTALL: Mention CEDET's inclusion in Emacs
+
+	* rudel-state-machine.el (rudel-state-wait): update progress
+	reporter usage to match rudel-compat.el
+
+	* rudel-compat.el: Use updated progress reporters
+	(progress-reporter-update): may be used by pulsing reporters too
+	(make-progress-reporter): nil max value returns pulsing reporter
+	(progress-reporter-force-update): may be used by pulsing reporters
+	too
+	(progress-reporter-pulsing-p): added
+	(progress-reporter-pulse): removed message change option
+
 2009-10-02  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel-state-machine.el (rudel-state-wait): accept callback
+	function instead of message; adjusted documentation string
+        * obby/rudel-obby.el (rudel-obby-backend::rudel-connect): when
+	calling `rudel-state-wait', provide a callback; the callback
+	controls a progress reporter
+        * obby/rudel-obby-client.el
+        (rudel-obby-connection::rudel-subscribe-to): when calling
+	`rudel-state-wait', provide a callback; the callback controls a
+	progress reporter
+
+        * rudel-compat.el (progress-reporter-pulse): store index as float
 
 	* obby/rudel-obby-client.el
 	(rudel-obby-client-state-idle::rudel-obby/obby_document_create):
