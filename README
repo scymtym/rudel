@@ -61,9 +61,16 @@
    want to participate in the session you host, you have to join it as
    described above.
 
-* KNOWN BUGS
+* KNOWN ISSUES
 
-  Here is a list of known major issues.
+   + Publishing eshell buffers will cause your session to be
+     disconnected since eshell disables the hooks that Rudel uses to
+     catch changes to the buffer. As a workaround, you can use M-x
+     ansi-term or another terminal emulator.
+
+* LICENSE
+
+  Rudel is licensed under the same terms as GNU Emacs.
 
 Local variables:
 mode: org
