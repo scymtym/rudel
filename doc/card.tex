@@ -270,11 +270,20 @@ collaborative editor until (including) version 4.9.
 
 \subsection{Session Initiation}
 
+{\bf Configured Sessions}
+
+Frequently used sessions can be configured permanently using the {\tt
+rudel-configured-sessions} customization variable. When there are
+configured sessions, connecting to one of these session is offered
+when joining a session using \kbd{\ccc j}.
+
 {\bf Zeroconf}
 
 The Zeroconf backends discovers collaboration sessions which are
 advertised using, well Zeroconf. Currently, it works for Rudel (obby
-backend) and Obby servers.
+backend) and Obby servers. When there are Zeroconf-advertised
+sessions, using \kbd{\ccc j} to join a session will display these
+sessions.
 
 \section{Examples}
 
