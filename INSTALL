@@ -49,7 +49,7 @@
 
 * COMPILING
 
-  In order to achieve better performance, Emacs can byte-compiled the
+  In order to achieve better performance, Emacs can byte-compile the
   Rudel code. This can be done by opening rudel-compile.el in Emacs
   and invoking M-x eval-buffer.
 
