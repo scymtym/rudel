@@ -45,14 +45,14 @@ You have to take care to only enter valid color names."
     (read-string prompt)))
 
 
-;;; Pulsing Progress Reporter
+;;; Spinner Progress Reporter
 ;;
 
-(unless (functionp 'progress-reporter-pulse)
-  (defvar progress-pulse-values ["-" "\\" "|" "/"])
+(unless (functionp 'progress-reporter-spin)
+  (defvar progress-spinner-values ["-" "\\" "|" "/"])
 
   (defsubst progress-reporter-update (reporter &optional value)
-    "Report progress of an operation in the echo area.
+  "Report progress of an operation in the echo area.
 
 The first parameter, REPORTER, should be the result of a call to
 `make-progress-reporter'. For reporters for which the max value
@@ -66,10 +66,10 @@ or not enough time has passed, then do nothing (see
 
 In this case, this function is very inexpensive, you need not
 care how often you call it."
-    (if (progress-reporter-pulsing-p reporter)
-        (progress-reporter-pulse reporter)
-      (when (>= value (car reporter))
-        (progress-reporter-do-update reporter value))))
+  (if (progress-reporter-spinner-p reporter)
+      (progress-reporter-spin reporter)
+    (when (>= value (car reporter))
+      (progress-reporter-do-update reporter value))))
 
     (defun make-progress-reporter (message &optional min-value max-value
                                            current-value min-change min-time)
@@ -112,7 +112,7 @@ return a \"pulsing\" progress reporter."
         (progress-reporter-update reporter (or current-value min-value))
         reporter))
 
-      (defun progress-reporter-force-update (reporter value &optional new-message)
+    (defun progress-reporter-force-update (reporter &optional value new-message)
         "Report progress of an operation in the echo area unconditionally.
 
 First two parameters are the same as for
@@ -123,22 +123,22 @@ change the displayed message."
             (aset parameters 3 new-message))
           (when (aref parameters 0)
             (aset parameters 0 (float-time)))
-          (if (progress-reporter-pulsing-p reporter)
-              (progress-reporter-pulse reporter)
+          (if (progress-reporter-spinner-p reporter)
+              (progress-reporter-spin reporter)
             (progress-reporter-do-update reporter value))))
 
-      (defun progress-reporter-pulsing-p (reporter)
+      (defun progress-reporter-spinner-p (reporter)
         "Return t if REPORTER has an unknown max value."
         (null (aref (cdr reporter) 2)))
 
-      (defun progress-reporter-pulse (reporter)
-        "Advance pulsing indicator of REPORTER."
+      (defun progress-reporter-spin (reporter)
+        "Advance indicator of spinning REPORTER."
         (let* ((parameters (cdr reporter))
                (index      (+ (aref parameters 1) 1)))
           (aset parameters 1 index)
           (let ((message-log-max nil)) ; No logging
             (message "%s %s"
-                     (aref progress-pulse-values (mod index 4))
+                     (aref progress-spinner-values (mod index 4))
                      (aref parameters 3))))))
 
 (provide 'rudel-compat)

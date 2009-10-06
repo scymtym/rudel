@@ -314,7 +314,7 @@ failure."))
 				       :id         doc-id
 				       :owner-id   owner-id
 				       :suffix     suffix))))
-      (message "New document %s" name)))
+      (message "New document: %s" name)))
   nil)
 
 (defmethod rudel-obby/obby_document_remove
@@ -330,7 +330,7 @@ failure."))
 	      (progn
 		(rudel-remove-document session document)
 		(with-slots ((name :object-name)) document
-		  (message "Document removed %s" name)))
+		  (message "Document removed: %s" name)))
 	    (display-warning
 	     '(rudel obby)
 	     (format "Document not found: %s" doc-id)
@@ -853,7 +853,30 @@ nothing else."
   (with-slots (session) this
     (with-slots (self) session
       (rudel-switch this 'subscribing self document)))
-  (rudel-state-wait this '(idle) '(they-finalized) "Subscribing")
+
+  (lexical-let ((reporter (make-progress-reporter "Subscribing " 0.0 1.0)))
+    (flet ((display-progress (state)
+	     (cond
+	      ;; Syncing document content, we can provide detailed progress.
+	      ((and (consp state)
+		    (eq (car state) 'document-synching))
+	       (with-slots (all-bytes remaining-bytes) (cdr state)
+		 (progress-reporter-force-update
+		  reporter
+		  (- 1.0 (/ (float remaining-bytes) (float all-bytes)))
+		  (format "Subscribing (%s) " (car state)))))
+
+	      ;; For other states, we just spin.
+	      ((consp state)
+	       (progress-reporter-force-update
+	        reporter 0.5
+	        (format "Subscribing (%s) " (car state))))
+
+	      ;; Done
+	      (t
+	       (progress-reporter-force-update reporter 1.0 "Subscribing ")
+	       (progress-reporter-done reporter)))))
+      (rudel-state-wait this '(idle) '(they-finalized) #'display-progress)))
 
   ;; We receive a notification of our own subscription from the
   ;; server. Consequently we do not add SELF to the list of subscribed
