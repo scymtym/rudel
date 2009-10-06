@@ -1,3 +1,8 @@
+2009-10-07  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* doc/card.tex (Session Initiation): mention configured sessions;
+	explain Zeroconf-advertised session in more detail
+
 2009-10-06  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* doc/card.tex (Joining a Session ...): added global and user
