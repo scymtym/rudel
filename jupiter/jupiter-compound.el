@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Jupiter, operation, compound
+;; Keywords: jupiter, operation, compound
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -24,13 +24,13 @@
 
 ;;; Commentary:
 ;;
-;; Class jupiter-compound implements a compound operation comprised of
-;; a number of child operations.
+;; Class `jupiter-compound' implements a compound operation comprised
+;; of a number of child operations.
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial revision
 
 
 ;;; Code:
@@ -77,6 +77,13 @@ number of child operation.")
     (dolist (child children) ;; TODO reverse children?
       (setq other (jupiter-transform child other)))
     other))
+
+(defmethod object-print ((this jupiter-compound) &rest strings)
+  "Add number of children to string representation of THIS."
+  (with-slots (children) this
+    (call-next-method
+     this
+     (format " children %d" (length children)))))
 
 (provide 'jupiter-compound)
 ;;; jupiter-compound.el ends here

@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Jupiter, operation, nop
+;; Keywords: jupiter, operation, nop
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -24,7 +24,7 @@
 
 ;;; Commentary:
 ;;
-;; Class jupiter-nop implements a no-operation for the Jupiter
+;; Class `jupiter-nop' implements a no-operation for the Jupiter
 ;; algorithm.
 
 

@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Jupiter, operation, delete
+;; Keywords: jupiter, operation, delete
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -24,13 +24,13 @@
 
 ;;; Commentary:
 ;;
-;; Class jupiter-delete implements a delete operation for the Jupiter
-;; algorithm.
+;; Class `jupiter-delete' implements a delete operation for the
+;; Jupiter algorithm.
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial revision
 
 
 ;;; Code:
@@ -59,10 +59,14 @@ OTHER is destructively modified or replaced."
    ;; Transform an insert operation
    ;;
    ((jupiter-insert-p other)
-    (with-slots ((this-from :from) (this-to :to) (this-length :length)) this
-      (with-slots ((other-from :from) (other-to :to) (other-length :length)) other
+    (with-slots ((this-from   :from)
+		 (this-to     :to)
+		 (this-length :length)) this
+      (with-slots ((other-from   :from)
+		   (other-to     :to)
+		   (other-length :length)) other
 	(cond
-	 ;; 
+	 ;;
 	 ;; <other>
 	 ;;         <this>
 	 ;;
@@ -84,8 +88,12 @@ OTHER is destructively modified or replaced."
    ;; Transform a delete operation
    ;;
    ((jupiter-delete-p other)
-    (with-slots ((this-from :from) (this-to :to) (this-length :length)) this
-      (with-slots ((other-from :from) (other-to :to) (other-length :length)) other
+    (with-slots ((this-from   :from)
+		 (this-to     :to)
+		 (this-length :length)) this
+      (with-slots ((other-from   :from)
+		   (other-to     :to)
+		   (other-length :length)) other
 	(cond
 
 	 ;;        <other>
@@ -96,7 +104,7 @@ OTHER is destructively modified or replaced."
 	 ((> other-from this-to)
 	  (decf other-from this-length)
 	  (decf other-to   this-length))
-	 
+
 	 ;; <other>
 	 ;;         <this>
 	 ;; OTHER deleted a region before the region affected by
@@ -132,7 +140,7 @@ OTHER is destructively modified or replaced."
 	 ;; be executed.
 	 ((and (>= other-from this-from) (<= other-to this-to))
 	  (setq other (jupiter-nop "nop")))
-	 
+
 	 (t (error "logic error in jupiter-delete::transform(jupiter-delete)"))
 	 ))))
 
@@ -153,6 +161,16 @@ OTHER is destructively modified or replaced."
    (t (error "Cannot transform operation of type `%s'"
 	     (object-class other))))
   other)
+
+(defmethod object-print ((this jupiter-delete) &rest strings)
+  "Add from, to and length to string representation of THIS."
+  (with-slots (from to length) this
+    (call-next-method
+     this
+     (format " from %d" from)
+     (format " to %d" to)
+     (format " length %d" length)))
+  )
 
 (provide 'jupiter-delete)
 ;;; jupiter-delete.el ends here

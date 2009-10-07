@@ -1,3 +1,23 @@
+2009-10-08  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* jupiter/jupiter.el (header): downcased keywords
+	(object-print): new method; add revisions and log length to string
+	* jupiter/jupiter-nop.el (header): downcased keywords; cosmetic
+	representation changes to "commentary" section
+	* jupiter/jupiter-insert.el (header): downcased keywords; cosmetic
+	changes to "commentary" section
+	(object-print): new method; add start, end, length and data to
+	string representation
+	* jupiter/jupiter-delete.el (header): downcased keywords; cosmetic
+	changes to "commentary" section
+	(jupiter-transform): cosmetic changes
+	(object-print): new method; add position and length to string
+	representation
+	* jupiter/jupiter-compound.el (header): downcased keywords;
+	cosmetic changes to "commentary" section
+	(object-print): new method; add number of children to string
+	representation
+
 2009-10-07  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* doc/card.tex (Session Initiation): mention configured sessions;

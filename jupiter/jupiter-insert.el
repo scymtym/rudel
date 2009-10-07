@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Jupiter, operation, insert
+;; Keywords: jupiter, operation, insert
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -24,13 +24,13 @@
 
 ;;; Commentary:
 ;;
-;; Class jupiter-insert implements an insert operation for the Jupiter
-;; algorithm.
+;; Class `jupiter-insert' implements an insert operation for the
+;; Jupiter algorithm.
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial revision
 
 
 ;;; Code:
@@ -149,6 +149,17 @@
    (t (error "Cannot transform operation of type `%s'"
 	     (object-class other))))
   other)
+
+(defmethod object-print ((this jupiter-insert) &rest strings)
+  "Add from, to, length and data to string representation of THIS."
+  (with-slots (from to length data) this
+    (call-next-method
+     this
+     (format " from %d" from)
+     (format " to %d" to)
+     (format " length %d" length)
+     (format " data \"%s\"" data)))
+  )
 
 (provide 'jupiter-insert)
 ;;; jupiter-insert.el ends here

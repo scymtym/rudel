@@ -3,7 +3,7 @@
 ;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Rudel, jupiter, algorithm, distributed, integrity
+;; Keywords: rudel, jupiter, algorithm, distributed, integrity
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -121,6 +121,15 @@ site is referring to."
     ;; The transformed operation is the result of the computation.
     transformed-operation)
   )
+
+(defmethod object-print ((this jupiter-context) &rest strings)
+  "Add revisions and log length to string representation of THIS."
+  (with-slots (local-revision remote-revision local-log) this
+    (call-next-method
+     this
+     (format " local %d" local-revision)
+     (format " remote %d" remote-revision)
+     (format " log-items %d" (length local-log)))))
 
 (provide 'jupiter)
 ;;; jupiter.el ends here
