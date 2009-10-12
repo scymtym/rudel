@@ -65,8 +65,7 @@
   :set   (lambda (symbol value)
 	   (set-default symbol value)
 	   (when (featurep 'rudel-mode)
-	     (rudel-header-subscriptions--options-changed)))
-  :safe  t)
+	     (rudel-header-subscriptions--options-changed))))
 
 (defcustom rudel-header-subscriptions-separator " "
   "String used to separate indicator strings of subscribed users."
@@ -75,8 +74,7 @@
   :set   (lambda (symbol value)
 	   (set-default symbol value)
 	   (when (featurep 'rudel-mode)
-	     (rudel-header-subscriptions--options-changed)))
-  :safe  t)
+	     (rudel-header-subscriptions--options-changed))))
 
 (defcustom rudel-mode-line-publish-state-unpublished-string "-"
   "String used to indicate not published state in the mode line."
@@ -85,8 +83,7 @@
   :set   (lambda (symbol value)
 	   (set-default symbol value)
 	   (when (featurep 'rudel-mode)
-	     (rudel-mode-line-publish-state--options-changed)))
-  :safe  t)
+	     (rudel-mode-line-publish-state--options-changed))))
 
 (defcustom rudel-mode-line-publish-state-published-string "P"
   "String used to indicate published state in the mode line."
@@ -95,8 +92,13 @@
   :set   (lambda (symbol value)
 	   (set-default symbol value)
 	   (when (featurep 'rudel-mode)
-	     (rudel-mode-line-publish-state--options-changed)))
-  :safe  t)
+	     (rudel-mode-line-publish-state--options-changed))))
+
+(dolist (v '(rudel-header-subscriptions-use-images
+             rudel-header-subscriptions-separator
+             rudel-mode-line-publish-state-unpublished-string
+             rudel-mode-line-publish-state-published-string))
+  (put v 'save-local-variable t))
 
 
 ;;; Header line subscriptions helper functions

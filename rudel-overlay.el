@@ -50,8 +50,9 @@
   :set     (lambda (symbol value)
 	     (set-default symbol value)
 	     (when (featurep 'rudel-overlay)
-	       (rudel-overlay-options-changed)))
-  :safe    t)
+	       (rudel-overlay-options-changed))))
+
+(put 'rudel-overlay-author-display 'safe-local-variable t)
 
 (defface rudel-author-overlay-face
   '((default (:background "black")))
