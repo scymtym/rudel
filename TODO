@@ -1,0 +1,437 @@
+* Future
+** NEW Operation log can grow beyond all bounds (#37)
+   + Component :: obby-general
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+   When no remote operations are received, the log of local operation
+   is not reset and therefore grows beyond all bounds.
+** NEW Terminating sessions does not work (#47)
+   + Component :: rudel-general
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+   There is a menu entry for terminating sessions which are hosted by
+   Rudel, but it does not do anything.
+** NEW Rename document message is not understood (#7)
+   + Component :: obby-client
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+** NEW Rename document message is not understood (#8)
+   + Component :: obby-server
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+** TODO Show cursor positions of other users (#5)
+   + Component :: rudel-user-interface
+   + Type :: enhancement
+   + Reporter :: jan
+   + Assigned ::
+** TODO Some kind of server log buffer (#11)
+   + Component :: rudel-general
+   + Type :: enhancement
+   + Reporter :: jan
+   + Assigned ::
+   It would be nice to log server events. This could be done in a
+   separate buffer or using a dedicated mechanism like
+   rudel-notification.
+** TODO Backends should be able to offer additional menu items (#14)
+   + Component :: rudel-general
+   + Type :: enhancement
+   + Reporter :: jan
+   + Assigned ::
+** TODO Obby session can be protected by passwords (#15)
+   + Component :: obby-general
+   + Type :: enhancement
+   + Reporter :: jan
+   + Assigned ::
+** TODO Obby users can protect their accounts with passwords (#16)
+   + Component :: obby-general
+   + Type :: enhancement
+   + Reporter :: jan
+   + Assigned ::
+   The Gobby implementation is in obby/inc/server_buffer.hpp:851
+** TODO Zeroconf session notification (#52)
+   + Component :: zeroconf
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   Watch interesting Zeroconf services and use `rudel-notify` if new
+   services are discovered
+** TODO State machine diagram (#59)
+   + Component :: obby-client
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+** TODO State machine diagram (#60)
+   + Component :: obby-server
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+** TODO Send key presses as chat messages (#61)
+   + Component :: rudel-general
+   + Type :: task
+   + Reporter :: Jan
+   + Assigned ::
+   Sending key presses as chat messages could be really useful for
+   somebody something using rudel.
+** STARTED Reference manual (#46)
+   + Component :: documentation
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   In addition to the `README`, a proper reference manual would be
+   nice. At some point, complete info documentation may be
+   desirable. Docbook seems to be the best approach since we get (at
+   least):
+   + Pdf
+   + Html
+   + Info
+
+
+* Milestone rudel-0.3
+** NEW Get rid of error calls in the server	(#58)
+   + Component :: obby-server
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+   It makes no sense to call `error` when something goes wrong in
+   server code that is called from the process filter. Instead, we
+   should try to recover.
+** NEW Global mode line publish state mode does not work for all new buffers (#55)
+   + Component :: rudel-user-interface
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+   `global-mode-line-publish-state-mode` is define using
+   `define-globalized-mode`. This seems to only enabled the associated
+   minor mode for buffers create by `find-file` and after major mode
+   changes. The minor mode is not activated for buffers create by
+   `create-buffer`. Since this is used when subscribing to documents,
+   this is a problem.
+** NEW Handle net6_encryption_info messages	(#57)
+   + Component :: obby-client
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+** TODO Only read color hue, not complete colors	(#53)
+   + Component :: rudel-user-interface
+   + Type :: enhancement
+   + Reporter :: jan
+   + Assigned ::
+   Taking control over saturation and value away from the user makes
+   it impossible to choose unreadable colors.
+
+
+* Milestone rudel-0.2
+** DONE Use state pattern (#18)
+   + Component :: obby-server
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** FIXED Server buffers go out of sync when multi-byte characters are used (#56)
+   + Component :: obby-server
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** FIXED Terminate connections properly when something goes wrong (#51)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** FIXED Removing documents does not work (#45)
+   + Component :: obby-client
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** FIXED Search list of offline users when new users log in (#44)
+   + Component :: obby-client
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** DONE Reference card (#2)
+   + Component :: documentation
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** DONE ode-line indicator of buffer status (#6)
+   + Component :: rudel-user-interface
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** FIXED Author overlay face may not exist (#54)
+   + Component :: rudel-user-interface
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** DONE Visualization of user status (#9)
+   + Component :: rudel-user-interface
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** FIXED Update overlays when users change colors (#23)
+   + Component :: rudel-user-interface
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Allow to toggle display of author overlays (#33)
+   + Component :: rudel-user-interface
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Update file headers (#50)
+   + Component :: documentation
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: task
+   + Priority :: trivial
+   + Reporter :: jan
+** DONE Proper Zeroconf support (#21)
+   + Component :: zeroconf
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Add discovery component (#22)
+   + Component :: obby-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Define initialize-instance with slots or &rest slots? (#49)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+** DONE Use oref to get object names (#24)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Overlays should be removed when a buffer is detached from its document (#39)
+   + Component :: rudel-user-interface
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** FIXED Unsafe use of (call-next-method) (#48)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** FIXED Handle `net6_login_failed' message (#10)
+   + Component :: obby-client
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Add debug hints to macros (#43)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Use state pattern (#17)
+   + Component :: obby-client
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Use with-parsed-arguments (#40)
+   + Component :: obby-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+
+
+* Milestone rudel-0.1
+** FIXED User names and colors are not checked for conflicts (#12)
+   + Component :: obby-server
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Write some html for rudel.sourceforge.net (#27)
+   + Component :: www
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+** INVALID Repeated publishing leads to multiple document instances (#30)
+   + Component :: obby-server
+   + Status :: closed
+   + Resolution :: invalid
+   + Type :: defect
+   + Priority :: minor
+   + Reporter :: jan
+** FIXED Document suffixes are not handled properly (#42)
+   + Component :: obby-server
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** DONE Fix license texts (#32)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: trivial
+   + Reporter :: jan
+** WONTFIX Overlays break on last character (#29)
+   + Component :: rudel-user-interface
+   + Status :: closed
+   + Resolution :: worksforme
+   + Type :: defect
+   + Priority :: minor
+   + Reporter :: jan
+** FIXED Encodings are not handled in obby backend (#1)
+   + Component :: obby-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** FIXED Major mode changes break subscribed buffers (#19)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** FIXED Editing in overwrite mode breaks synchronization (#35)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** FIXED Yanking produces insertion and immediate deletion of the region (#36)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** FIXED Documents with identical names but distinct suffixes map to same buffer (#41)
+   + Component :: obby-client
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** FIXED Killing a buffer does not detach it from its document (#38)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** INVALID Rudel client crashes Gobby (#25)
+   + Component :: obby-general
+   + Status :: closed
+   + Resolution :: invalid
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** DONE Add screenshot of session with Gobby (#20)
+   + Component :: www
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: task
+   + Priority :: trivial
+   + Reporter :: jan
+** DONE Replace 't with t (#34)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Operations of type jupiter-compound cannot be applied to buffers
+   (#31)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+** DONE Do not sync any chunks when buffer is empty (#28)
+   + Component :: obby-server
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: minor
+   + Reporter :: jan
+** DONE Implement Jupiter algorithm (#13)
+   + Component :: obby-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: major
+   + Reporter :: jan
+** DONE Replace email address (#26)
+   + Component :: rudel-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+** FIXED Mark contributions using overlays (#4)
+   + Component :: rudel-user-interface
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: enhancement
+   + Priority :: major
+   + Reporter :: jan
+** FIXED When a user leaves and joins a second user object is created (#3)
+   + Component :: obby-general
+   + Status :: closed
+   + Resolution :: fixed
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+
+
+Local variables:
+mode: org
+end:
