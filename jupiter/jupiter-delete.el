@@ -141,7 +141,7 @@ OTHER is destructively modified or replaced."
 	 ((and (>= other-from this-from) (<= other-to this-to))
 	  (setq other (jupiter-nop "nop")))
 
-	 (t (error "logic error in jupiter-delete::transform(jupiter-delete)"))
+	 (t (error "logic error in (jupiter-transform (x jupiter-delete) (y jupiter-delete))"))
 	 ))))
 
    ;;
