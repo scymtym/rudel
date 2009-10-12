@@ -17,6 +17,7 @@
 (eval-after-load 'rudel
   '(progn (global-rudel-minor-mode)
           (require 'rudel-obby)
-          (require 'rudel-zeroconf)))
+          (when (require 'zeroconf nil t)
+            (require 'rudel-zeroconf))))
 
 (provide 'rudel-loaddefs)
