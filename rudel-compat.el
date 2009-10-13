@@ -141,5 +141,11 @@ change the displayed message."
                      (aref progress-spinner-values (mod index 4))
                      (aref parameters 3))))))
 
+(unless (functionp 'string-match-p)
+  (defsubst string-match-p (regexp string &optional start)
+    "Same as `string-match' except this function does not change the match data"
+    (let ((inhibit-changing-match-data t))
+      (string-match regexp string start))))
+
 (provide 'rudel-compat)
 ;;; rudel-compat.el ends here
