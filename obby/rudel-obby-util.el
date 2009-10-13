@@ -304,7 +304,7 @@ coding-system."
 			 (split-string ,var " " t)))
 		      ;; Coding System
 		      (coding-system
-		       `(coding-system-from-name (downcase ,var)))))))
+		       `(rudel-get-coding-system (downcase ,var)))))))
 	  specs)))
     `(let (,@bindings)
        ,@forms))

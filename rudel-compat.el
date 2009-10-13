@@ -147,5 +147,12 @@ change the displayed message."
     (let ((inhibit-changing-match-data t))
       (string-match regexp string start))))
 
+(defun rudel-get-coding-system (name)
+  (if (functionp 'coding-system-from-name)
+      (coding-system-from-name name)
+    ;; May need to try a little harder here for Emacs 22 depending on
+    ;; what kind of encoding names are given us.
+    (intern name)))
+
 (provide 'rudel-compat)
 ;;; rudel-compat.el ends here
