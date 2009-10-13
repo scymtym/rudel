@@ -369,10 +369,10 @@ of the buffer.")
 (defun rudel-mode-line-publish-state--add-indicator-to-mode-line ()
   "Add Rudel publish state indicator to mode line."
   (let* ((new-format      (copy-list mode-line-format))
-	 (format-rest     (nthcdr
-			   (position 'mode-line-remote mode-line-format)
-			   new-format))
-	 (format-rest-cdr (cdr format-rest)))
+         (format-rest     (nthcdr
+                           (position 'mode-line-modified mode-line-format)
+                           new-format))
+         (format-rest-cdr (cdr format-rest)))
     (setcdr format-rest (cons 'rudel-mode-line-publish-state-string
 			      format-rest-cdr))
     (setq mode-line-format new-format))
