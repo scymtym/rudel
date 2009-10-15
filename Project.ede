@@ -2,7 +2,7 @@
 ;; EDE project file.
 (ede-proj-project "rudel"
   :name "rudel"
-  :version "0.2"
+  :version "0.3"
   :file "Project.ede"
   :targets (list 
    (ede-proj-target-elisp-autoloads "autoloads"

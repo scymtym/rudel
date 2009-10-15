@@ -63,7 +63,7 @@
 ;;; Global variables
 ;;
 
-(defconst rudel-version '(0 1)
+(defconst rudel-version '(0 3)
   "Version of the Rudel framework.")
 
 (defvar rudel-current-session nil
