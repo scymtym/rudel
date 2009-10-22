@@ -1,3 +1,45 @@
+2009-10-22  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* TODO (Future): added BEEP and SubEthaEdit tasks
+
+2009-10-15  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel.el (rudel-version): bumped to 0.3
+	* Project.ede (project rudel): bumped version to 0.3
+
+	* TODO: whitespace fixes
+        (Milestone rudel-0.4): new; focus on telepathy transport
+        (Milestone rudel-0.3): added infinote, document trees
+
+2009-10-13  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* TODO: new file; TODO items for future development and releases
+
+2009-10-12  Phil Hagelberg  <phil@enigma>
+
+        * rudel-mode.el
+	(rudel-mode-line-publish-state--add-indicator-to-mode-line):
+	Replace reference to mode-line indicator that was not present in
+	Emacs 22.
+
+        * rudel-compat.el: add rudel-get-coding-system wrapper function.
+        * rudel-obby-util.el (with-parsed-args): Replace call to
+	Emacs23-specific coding-system-from-name function with
+	rudel-get-coding-system.
+
+        rudel-compat.el: Add string-match-p if not present. (< Emacs 23)
+
+        * rudel-mode.el, rudel-overlay.el: Move use of :safe flag from
+	defcustom to a separate put. Required for Emacs 22 compatibility.
+
+        * rudel-loaddefs.el: Only require rudel-zeroconf if zeroconf is
+	available.
+
+2009-10-12  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* jupiter/jupiter-delete.el (jupiter-delete::jupiter-transform):
+	fixed error message
+
 2009-10-08  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* jupiter/jupiter.el (header): downcased keywords

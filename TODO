@@ -23,6 +23,11 @@
    + Type :: defect
    + Reporter :: jan
    + Assigned ::
+** TODO SubEthaEdit client functionality
+   + Component :: subethaedit-backend
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
 ** TODO Show cursor positions of other users (#5)
    + Component :: rudel-user-interface
    + Type :: enhancement
@@ -76,6 +81,11 @@
    + Assigned ::
    Sending key presses as chat messages could be really useful for
    somebody something using rudel.
+** STARTED BEEP transport
+   + Component :: beep-transport
+   + Type :: task
+   + Reporter :: jan
+   + Assigned :: jan
 ** STARTED Reference manual (#46)
    + Component :: documentation
    + Type :: task
