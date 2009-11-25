@@ -1,3 +1,14 @@
+2009-11-25  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* obby/rudel-obby.el (rudel-obby-backend::capabilities): added
+	encrypt capability
+
+2009-10-29  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* TODO: added closed-status to closed issues
+	(Future): multi-frame BEEP messages; notification mechanism
+	(Milestone rudel-0.3): multiple username/password attempts
+
 2009-10-22  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* TODO (Future): added BEEP and SubEthaEdit tasks

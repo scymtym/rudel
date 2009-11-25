@@ -76,7 +76,8 @@ multiple chunks.")
 (defclass rudel-obby-backend (rudel-protocol-backend)
   ((capabilities :initform '(join host
 			     change-color
-			     track-subscriptions)))
+			     track-subscriptions
+			     encrypt)))
   "Main class of the Rudel obby backend. Creates obby client
 connections and creates obby servers.")
 
