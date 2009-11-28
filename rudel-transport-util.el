@@ -73,6 +73,16 @@ transport changes."))
 transform a bidirectional data stream as it passes through them."
   :abstract t)
 
+(defmethod slot-missing ((this rudel-transport-filter)
+			 slot-name operation &optional new-value)
+  "Make slots of underlying transport available as virtual slots of THIS."
+  (cond
+   ((eq operation 'oref)
+    (slot-value (oref this :transport) slot-name))
+   ((eq operation 'oset)
+    (set-slot-value (oref this :transport) slot-name new-value)))
+  )
+
 (defmethod rudel-set-filter ((this rudel-transport-filter) filter)
   "Install FILTER as dispatcher for messages received by THIS."
   (oset this :filter filter))
@@ -131,7 +141,6 @@ complete messages by calling an assembly function.")
   (with-slots (transport) this
     (rudel-send transport data)))
 
-
 
 ;;; Class rudel-parsing-transport-filter
 ;;
@@ -185,7 +194,7 @@ a pair of one parse and one generate function.")
 
 ;; TODO have a callback instead of the actual reporter
 (defclass rudel-progress-reporting-transport-filter (rudel-transport-filter)
-  ((reporter :initarg reporter
+  ((reporter :initarg :reporter
 	     :documentation
 	     "TODO"))
   "TODO")
@@ -246,8 +255,6 @@ being the \"bottom\")."
 			       :transport current
 			       args))))
     current))
-
-(rudel-transport-make-filter-stack (rudel-tcp-transport "bla") '((rudel-progress-reporting-transport-filter :reporter nil)))
 
 (provide 'rudel-transport-util)
 ;;; rudel-transport-util.el ends here
