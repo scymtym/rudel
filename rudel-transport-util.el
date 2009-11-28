@@ -95,8 +95,6 @@ transform a bidirectional data stream as it passes through them."
 messages can be assembled.")
    (assembly-function :initarg  :assembly-function
 		      :type     function
-		      :initform 'rudel-assemble-lines
-		      :accessor rudel-assembly-function
 		      :documentation
 		      "Function that is called to assemble
 message fragments into complete messages."))
@@ -223,6 +221,34 @@ a pair of one parse and one generate function.")
       ;; Send small messages in one chunk
       (rudel-send transport data)))
   )
+
+
+;;; Miscellaneous functions
+;;
+
+(defun rudel-transport-make-filter-stack (base specs)
+  "Construct a filter stack on top of BASE according to SPECS.
+
+SPECS is structured as follows:
+SPECS ::= (SPEC*)
+SPEC  ::= (CLASS KWARG*)
+KWARG ::= KEYWORD VALUE
+CLASS is the symbol of a class derived from
+`rudel-transport-filter' KEYWORD is a keyword and VALUE is an
+arbitrary expression and is used unevaluated.
+
+The returned value is the \"top\" of the constructed stack (BASE
+being the \"bottom\")."
+  (let ((current base))
+    (dolist (spec specs)
+      (destructuring-bind (class &rest args) spec
+	  (setq current (apply #'make-instance
+			       class
+			       :transport current
+			       args))))
+    current))
+
+(rudel-transport-make-filter-stack (rudel-tcp-transport "bla") '((rudel-progress-reporting-transport-filter :reporter nil)))
 
 (provide 'rudel-transport-util)
 ;;; rudel-transport-util.el ends here
