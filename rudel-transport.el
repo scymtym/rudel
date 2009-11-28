@@ -40,7 +40,23 @@
 
 (require 'eieio)
 
+(require 'rudel-errors)
 (require 'rudel-backend)
+
+
+;;; Error conditions
+;;
+
+;; rudel-malformed-message
+
+(intern "rudel-malformed-message")
+
+(put 'rudel-malformed-message 'error-conditions
+     '(error
+       rudel-error rudel-malformed-message))
+
+(put 'rudel-malformed-message 'error-message
+     "Received malformed message")
 
 
 ;;; Class rudel-transport
