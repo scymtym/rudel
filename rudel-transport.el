@@ -114,12 +114,12 @@ sense that it does not attempt to dispatch any data to the filter
 function before `rudel-start' has been called.")
 
 (defgeneric rudel-wait-for-connections ((this rudel-transport-backend)
-					info dispatch)
+					info dispatch-callback)
   "Create transport objects according to INFO for incoming connections.
 
-Call DISPATCH each time a connection is established. DISPATCH has
-to accept the created `rudel-transport' object as its only
-argument.")
+Call DISPATCH-CALLBACK each time a connection is
+established. DISPATCH-CALLBACK has to accept the created
+`rudel-transport' object as its only argument.")
 
 (provide 'rudel-transport)
 ;;; rudel-transport.el ends here
