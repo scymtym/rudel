@@ -38,7 +38,7 @@
 ;;
 ;; 0.2 - Progress reporting transport filter
 ;;
-;; 0.1 - Initial revision
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -151,12 +151,16 @@ complete messages by calling an assembly function.")
   ((parse-function    :initarg  :parse-function
 		      :type     function
 		      :initform 'identity
+		      :reader   rudel-parse-function
+		      :writer   rudel-set-parse-function
 		      :documentation
 		      "Function that is called on each received
 piece of data to transform it into a suitable representation.")
    (generate-function :initarg  :generate-function
 		      :type     function
 		      :initform 'identity
+		      :reader   rudel-generate-function
+		      :writer   rudel-set-generate-function
 		      :documentation
 		      "Function that is called on each outgoing
 object to transform it into a string representation."))
