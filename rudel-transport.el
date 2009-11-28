@@ -32,7 +32,7 @@
 ;;
 ;; 0.2 - Socket-like interface
 ;;
-;; 0.1 - Initial revision
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -40,7 +40,7 @@
 
 (require 'eieio)
 
-(require 'rudel-errors)
+(require 'rudel-errors) ;; for `rudel-error'
 (require 'rudel-backend)
 
 
