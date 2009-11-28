@@ -31,9 +31,12 @@
 ;; + `rudel-transport-filter'
 ;;   + `rudel-assembling-transport-filter'
 ;;   + `rudel-parsing-transport-filter'
+;;   + `rudel-progress-reporting-transport-filter'
 
 
 ;;; History:
+;;
+;; 0.2 - Progress reporting transport filter
 ;;
 ;; 0.1 - Initial revision
 
@@ -135,7 +138,6 @@ complete messages by calling an assembly function.")
 ;;; Class rudel-parsing-transport-filter
 ;;
 
-;;
 (defclass rudel-parsing-transport-filter (rudel-transport-filter)
   ((parse-function    :initarg  :parse-function
 		      :type     function
@@ -179,6 +181,48 @@ a pair of one parse and one generate function.")
   "Apply generate function to MESSAGE, pass result to transport of THIS."
   (with-slots (transport generate-function) this
     (rudel-send transport (funcall generate-function message))))
+
+
+;;; Class rudel-progress-reporting-transport-filter
+;;
+
+;; TODO have a callback instead of the actual reporter
+(defclass rudel-progress-reporting-transport-filter (rudel-transport-filter)
+  ((reporter :initarg reporter
+	     :documentation
+	     "TODO"))
+  "TODO")
+
+(defmethod initialize-instance
+  ((this rudel-progress-reporting-transport-filter) slots)
+  "TODO"
+  (when (next-method-p)
+    (call-next-method))
+
+  (with-slots (reporter) this
+    (setq reporter (make-progress-reporter "Sending data " 0.0 1.0)))
+  )
+
+(defmethod rudel-send ((this rudel-progress-reporting-transport-filter)
+		       data)
+  "TODO"
+  (with-slots (transport reporter) this
+    (if (>= (length data) rudel-long-message-threshold)
+
+	;; For huge messages, chunk the message data and transmit the
+	;; chunks
+	(let ((total    (/ (length data)
+			   rudel-long-message-chunk-size))
+	      (current  0))
+	  (rudel-loop-chunks data chunk rudel-long-message-chunk-size
+	    (progress-reporter-update reporter (/ (float current) total))
+	    (rudel-send transport socket chunk)
+	    (incf current))
+	  (progress-reporter-done reporter))
+
+      ;; Send small messages in one chunk
+      (rudel-send transport data)))
+  )
 
 (provide 'rudel-transport-util)
 ;;; rudel-transport-util.el ends here
