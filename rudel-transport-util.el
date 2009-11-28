@@ -59,13 +59,15 @@ receive operations this filter builds upon.")  ;; TODO should be read only
    (filter    :initarg  :filter
 	      :type     (or null function)
 	      :initform nil
-	      :accessor rudel-filter
+	      :reader   rudel-filter
+	      :writer   rudel-set-filter
 	      :documentation
 	      "Function that is called when data is received.")
    (sentinel  :initarg  :sentinel
 	      :type     (or null function)
 	      :initform nil
-	      :accessor rudel-sentinel
+	      :reader   rudel-sentinel
+	      :writer   rudel-set-sentinel
 	      :documentation
 	      "Function that is called when the status of the
 transport changes."))
@@ -79,18 +81,15 @@ transform a bidirectional data stream as it passes through them."
   (cond
    ((eq operation 'oref)
     (slot-value (oref this :transport) slot-name))
+
    ((eq operation 'oset)
     (set-slot-value (oref this :transport) slot-name new-value)))
   )
 
-(defmethod rudel-set-filter ((this rudel-transport-filter) filter)
-  "Install FILTER as dispatcher for messages received by THIS."
-  (oset this :filter filter))
-
-(defmethod rudel-set-sentinel ((this rudel-transport-filter) sentinel)
-  "Install SENTINEL as handler for state changes that occur in THIS."
-  (oset this :sentinel sentinel))
-
+(defmethod no-applicable-method ((this rudel-transport-filter)
+				 method &rest args)
+  "Make methods of underlying transport callable as virtual methods of THIS."
+  (apply method (oref this :transport) (rest args)))
 
 
 ;;; Class rudel-assembling-transport-filter
@@ -98,13 +97,15 @@ transform a bidirectional data stream as it passes through them."
 
 (defclass rudel-assembling-transport-filter (rudel-transport-filter)
   ((buffer            :initarg  :buffer
-		      :type     (or null string)
+		      :type     list
 		      :initform nil
 		      :documentation
 		      "Stores message fragments until complete
 messages can be assembled.")
    (assembly-function :initarg  :assembly-function
 		      :type     function
+		      :reader   rudel-assembly-function
+		      :writer   rudel-set-assembly-function
 		      :documentation
 		      "Function that is called to assemble
 message fragments into complete messages."))
@@ -125,6 +126,7 @@ complete messages by calling an assembly function.")
       (rudel-set-filter
        transport
        (lambda (data)
+
 	 ;; Assemble complete fragments from stored fragments and
 	 ;; possibly incomplete messages in DATA.
 	 (with-slots (buffer assembly-function) this1
