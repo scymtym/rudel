@@ -166,13 +166,12 @@ a pair of one parse and one generate function.")
     (lexical-let ((this1 this))
       (rudel-set-filter
        transport
-       (lambda (data)
+       (lambda (message-data)
 	 ;; Parse and process all complete messages.
 	 (with-slots (parse-function filter) this1
 	   (when filter
-	     (rudel-loop-fragments data message-data
-	       (let ((message (funcall parse-function message-data)))
-		 (funcall filter message)))))))))
+	     (let ((message (funcall parse-function message-data)))
+	       (funcall filter message))))))))
   )
 
 (defmethod rudel-send ((this rudel-parsing-transport-filter) message)
