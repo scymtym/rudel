@@ -62,7 +62,7 @@
 (defgeneric rudel-close ((this rudel-transport))
   "Close THIS.")
 
-;; TODO we could get rid of this of we required implementations to
+;; TODO we could get rid of this if we required implementations to
 ;; queue messages until a handler is installed
 (defgeneric rudel-start ((this rudel-transport))
   "Start THIS.")
@@ -76,15 +76,25 @@
   "Interface implemented by transport backends."
   :abstract t)
 
-(defgeneric rudel-make-connection ((this rudel-transport-backend) info)
+(defgeneric rudel-make-connection ((this rudel-transport-backend) info
+				   &optional callback)
   "Create a transport object according to INFO.
+
 The returned transport object has to be in a stopped state in the
 sense that it does not attempt to dispatch any data to the filter
-function before `rudel-start' has been called.")
+function before `rudel-start' has been called.
+
+When non-nil, CALLBACK has to accept to arguments: a state string
+and a float in the range [0, 1] indicating the progress. CALLBACK
+may be called repeatedly while the connection is established.")
 
 (defgeneric rudel-wait-for-connections ((this rudel-transport-backend)
-					info) ;; TODO callback?
-  "Create a transport object according to INFO.")
+					info dispatch)
+  "Create transport objects according to INFO for incoming connections.
+
+Call DISPATCH each time a connection is established. DISPATCH has
+to accept the created `rudel-transport' object as its only
+parameter.")
 
 (provide 'rudel-transport)
 ;;; rudel-transport.el ends here
