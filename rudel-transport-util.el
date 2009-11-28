@@ -95,6 +95,14 @@ transform a bidirectional data stream as it passes through them."
 			 slot-name operation &optional new-value)
   "Make slots of underlying transport available as virtual slots of THIS."
   (cond
+   ((and (or (eq slot-name :root-transport)
+	     (eq slot-name 'root-transport))
+	 (eq operation 'oref))
+    (with-slots (transport) this
+      (if (rudel-transport-filter-child-p transport)
+	  (oref transport :root-transport)
+	transport)))
+
    ((eq operation 'oref)
     (slot-value (oref this :transport) slot-name))
 
