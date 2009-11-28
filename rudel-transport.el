@@ -93,16 +93,25 @@
   :abstract t)
 
 (defgeneric rudel-make-connection ((this rudel-transport-backend) info
-				   &optional callback)
+				   info-callback
+				   &optional progress-callback)
   "Create a transport object according to INFO.
+
+INFO-CALLBACK is called when the information provided in INFO is
+not sufficient for establishing the requested
+connection. INFO-CALLBACK has to accept the backend object and a
+property list containing the current connection information and
+return a property list containing the augmented connection
+information.
+
+When non-nil, PROGRESS-CALLBACK has to accept to arguments: a
+state string and a float in the range [0, 1] indicating the
+progress. PROGRESS-CALLBACK may be called repeatedly while the
+connection is established.
 
 The returned transport object has to be in a stopped state in the
 sense that it does not attempt to dispatch any data to the filter
-function before `rudel-start' has been called.
-
-When non-nil, CALLBACK has to accept to arguments: a state string
-and a float in the range [0, 1] indicating the progress. CALLBACK
-may be called repeatedly while the connection is established.")
+function before `rudel-start' has been called.")
 
 (defgeneric rudel-wait-for-connections ((this rudel-transport-backend)
 					info dispatch)
@@ -110,7 +119,7 @@ may be called repeatedly while the connection is established.")
 
 Call DISPATCH each time a connection is established. DISPATCH has
 to accept the created `rudel-transport' object as its only
-parameter.")
+argument.")
 
 (provide 'rudel-transport)
 ;;; rudel-transport.el ends here
