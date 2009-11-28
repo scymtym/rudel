@@ -108,7 +108,16 @@ messages can be assembled.")
 		      :writer   rudel-set-assembly-function
 		      :documentation
 		      "Function that is called to assemble
-message fragments into complete messages."))
+message fragments into complete messages.")
+   (fragment-function :initarg  :fragment-function
+		      :type     (or null function)
+		      :initform nil
+		      :reader   rudel-fragment-function
+		      :writer   rudel-set-fragment-function
+		      :documentation
+		      "Function that is called to fragment
+complex messages into fragments. If the value is nil, messages
+are sent unmodified."))
   "Objects of this class assemble received message fragments into
 complete messages by calling an assembly function.")
 
@@ -140,8 +149,14 @@ complete messages by calling an assembly function.")
 
 (defmethod rudel-send ((this rudel-assembling-transport-filter) data)
   "Send DATA using the transport of THIS."
-  (with-slots (transport) this
-    (rudel-send transport data)))
+  (with-slots (transport fragment-function) this
+    (if fragment-function
+	;; If there is a fragment function, fragment DATA and send the
+	;; individual fragments.
+	(dolist (fragment (funcall fragment-function data))
+	  (rudel-send transport fragment))
+      ;; If there is no fragment function, just send DATA.
+      (rudel-send transport data))))
 
 
 ;;; Class rudel-parsing-transport-filter
@@ -193,6 +208,22 @@ a pair of one parse and one generate function.")
   "Apply generate function to MESSAGE, pass result to transport of THIS."
   (with-slots (transport generate-function) this
     (rudel-send transport (funcall generate-function message))))
+
+
+;;; Class rudel-injecting-transport-filter
+;;
+
+(defclass rudel-injecting-transport-filter (rudel-transport-filter)
+  ()
+  "Objects of this class act as transport filters but do not
+receive their data from underlying transports. Instead data is
+injected by calling `rudel-inject'.")
+
+(defmethod rudel-inject ((this rudel-injecting-transport-filter) data)
+  "Inject DATA as if it was received from an underlying transport."
+  (with-slots (filter) this
+    (when filter
+      (funcall filter data))))
 
 
 ;;; Class rudel-progress-reporting-transport-filter
