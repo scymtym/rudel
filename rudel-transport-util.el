@@ -44,7 +44,23 @@
 ;;; Code:
 ;;
 
+(require 'rudel-errors) ;; for `rudel-error'
 (require 'rudel-transport)
+
+
+;;; Error conditions
+;;
+
+;; rudel-invalid-state
+
+(intern "rudel-invalid-state")
+
+(put 'rudel-invalid-state 'error-conditions
+     '(error
+       rudel-error rudel-invalid-state))
+
+(put 'rudel-invalid-state 'error-message
+     "Operation invalid for current state.")
 
 
 ;;; Class rudel-transport-filter
@@ -224,6 +240,93 @@ injected by calling `rudel-inject'.")
   (with-slots (filter) this
     (when filter
       (funcall filter data))))
+
+
+;;; Class rudel-buffering-transport-filter
+;;
+
+(defclass rudel-buffering-transport-filter (rudel-transport-filter)
+  ((queue-in  :initarg  :queue-in
+	      :type     list
+	      :initform nil
+	      :documentation
+	      "Queue of incoming data. Non-empty list only when
+the filter is in stopped.")
+   (queue-out :initarg  :queue-out
+	      :type     list
+	      :initform nil
+	      :documentation
+	      "Queue of outgoing data. Non-empty list only when
+the filter is in stopped.")
+   (stopped   :initarg  :stopped
+	      :type     boolean
+	      :initform nil
+	      :documentation
+	      "Flag describing whether the filter is currently
+stopped."))
+  "Objects of this class are transport filters that can queue
+incoming and outgoing data and process it later.")
+
+(defmethod initialize-instance ((this rudel-buffering-transport-filter)
+				slots)
+  "Initialize slots of THIS and install filter in underlying transport."
+  ;; Initialize slots.
+  (when (next-method-p)
+    (call-next-method))
+
+  ;; Install `rudel-handle-data' as filter in underlying transport.
+  (with-slots (transport) this
+    (lexical-let ((this1 this))
+      (rudel-set-filter transport (lambda (data)
+				    (rudel-handle this1 data)))))
+  )
+
+(defmethod rudel-send ((this rudel-buffering-transport-filter) data)
+  "Send DATA through THIS, queueing when necessary."
+  (with-slots (transport stopped queue-out) this
+    (if stopped
+	;; If stopped, queue DATA.
+	(push data queue-out)
+      ;; Otherwise send DATA right away.
+      (rudel-send transport data))))
+
+(defmethod rudel-stop ((this rudel-buffering-transport-filter))
+  "Stop THIS, queue incoming and out going data."
+  (with-slots (stopped) this
+    ;; The filter cannot be stopped if it already is stopped.
+    (when stopped
+      (signal 'rudel-invalid-state '(stopped)))
+
+    ;; Set stopped flag.
+    (setq stopped t))
+  )
+
+(defmethod rudel-start ((this rudel-buffering-transport-filter))
+  "Start THIS, process queued incoming and outgoing data."
+  (with-slots (stopped queue-in queue-out filter) this
+    ;; Send queued outgoing data.
+    (dolist (data (nreverse queue-out))
+      (rudel-send this data))
+
+    ;; Process queued incoming data.
+    (when filter
+      (mapc filter (nreverse queue-in)))
+
+    ;; Clear incoming and outgoing queues, set stopped flag to nil.
+    (setq queue-in  nil
+	  queue-out nil
+	  stopped   nil)))
+
+(defmethod rudel-handle ((this rudel-buffering-transport-filter) data)
+  "Handle DATA."
+  (with-slots (stopped queue-in filter) this
+    (if stopped
+	;; If THIS is stopped, queue DATA.
+	(push data queue-in)
+      ;; Otherwise call FILTER with DATA right away.
+      (when filter
+	(funcall filter data))))
+  )
 
 
 ;;; Class rudel-progress-reporting-transport-filter
