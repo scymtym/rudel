@@ -306,7 +306,7 @@ otherwise.")
       (concat
        ;; Name bit
        (cond
-	((numberp align) (format (format "%-%ds" align) name-string))
+	((numberp align) (format (format "%%-%ds" align) name-string))
 	((eq align t)    (format "%-12s" name-string))
 	(t		name-string))
 
