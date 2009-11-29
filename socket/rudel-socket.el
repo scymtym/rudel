@@ -71,7 +71,7 @@ and :port."
   (let* ((host      (plist-get info :host))
 	 (port      (plist-get info :port))
 	 ;; Create the network process
-	 (socket    (#'make-network-process
+	 (socket    (make-network-process
 		     :name     host
 		     :host     host
 		     :service  port
@@ -83,8 +83,8 @@ and :port."
 		     :sentinel #'rudel-sentinel-dispatch))
 	 (transport (rudel-socket-transport
 		     host
-		     :socket socket))))
-  )
+		     :socket socket)))
+    transport))
 
 
 ;;; Class rudel-socket-transport
