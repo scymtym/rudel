@@ -35,6 +35,7 @@
 ;;; Code:
 ;;
 
+(require 'eieio)
 (require 'data-debug)
 (require 'eieio-datadebug)
 
@@ -58,11 +59,6 @@
   "Face used for received (but not yet processed) data."
   :group 'rudel-debug)
 
-(defface rudel-debug-received-processed-data-face
-  '((default (:background "DeepSkyBlue1")))
-  "Face used for received data after processing."
-  :group 'rudel-debug)
-
 (defface rudel-debug-state-face
   '((default (:background "light gray")))
   "Face used when indicating state changes."
@@ -73,12 +69,15 @@
   "Face used for additional information."
   :group 'rudel-debug)
 
-(defvar rudel-debug-tag-faces
-  '((:sent               . (rudel-debug-sent-data-face               "<  "))
-    (:received           . (rudel-debug-received-data-face           ">  "))
-    (:received-processed . (rudel-debug-received-processed-data-face ">> "))
-    (:state              . (rudel-debug-state-face                   "|  "))
-    (:special            . (rudel-debug-special-face                 ";  ")))
+
+;;; Constants
+;;
+
+(defconst rudel-debug-tag-faces
+  '((:sent     . (rudel-debug-sent-data-face     "< "))
+    (:received . (rudel-debug-received-data-face "> "))
+    (:state    . (rudel-debug-state-face         "| "))
+    (:special  . (rudel-debug-special-face       "; ")))
   "Associate tag to faces and prefixes.")
 
 
@@ -194,12 +193,12 @@
   (let* ((buffer-name (format "*%s stream*" stream))
 	 (buffer      (or (get-buffer buffer-name)
 			  (data-debug-new-buffer buffer-name)))
-	 (appearance (cdr (assoc tag rudel-debug-tag-faces)))
-	 (face       (when appearance
-		       (or (nth 0 appearance)
-			   'default)))
-	 (prefix     (or (nth 1 appearance)
-			 "")))
+	 (appearance  (cdr (assoc tag rudel-debug-tag-faces)))
+	 (face        (when appearance
+			(or (nth 0 appearance)
+			    'default)))
+	 (prefix      (or (nth 1 appearance)
+			  "")))
     (save-excursion
       (set-buffer buffer)
       (goto-char 0)

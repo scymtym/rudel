@@ -85,7 +85,7 @@
     (with-slots (socket) this
       (rudel-debug-stream-insert
        (rudel-debug-stream-name socket)
-       :received-processed
+       :received
        (concat (substring data 0 (min (length data) 100))
 	       (when (> (length data) 100)
 		 "..."))
