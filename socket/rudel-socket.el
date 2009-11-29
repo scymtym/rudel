@@ -35,6 +35,8 @@
 ;;; Code:
 ;;
 
+(require 'cl) ;; for `every'
+
 (require 'rudel-backend)
 (require 'rudel-transport)
 
@@ -110,10 +112,18 @@ The transport backend is a factory for TCP transport objects.")
 
   (oset this :version rudel-socket-transport-version))
 
-(defmethod rudel-make-connection ((this rudel-tcp-backend) info)
+(defmethod rudel-make-connection
+  ((this rudel-tcp-backend) info
+   info-callback &optional progress-callback)
   "Connect to a TCP server using the information in INFO.
 INFO has to be a property list containing the keys :host
 and :port."
+  ;; Ensure that INFO contains all necessary information.
+  (unless (every (lambda (keyword) (member keyword info))
+		 '(:host :port))
+    (setq info (funcall info-callback this info)))
+
+  ;; Extract information from INFO and create the socket.
   (let* ((host      (plist-get info :host))
 	 (port      (plist-get info :port))
 	 ;; Create the network process
