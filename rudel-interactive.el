@@ -29,13 +29,14 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial version
 
 
 ;;; Code:
 ;;
 
 (require 'rudel-compat) ;; for `read-color' replacement
+(require 'rudel-backend) ;; for `rudel-backend-cons-p'
 
 
 ;;; Function for reading Rudel objects from the user.
