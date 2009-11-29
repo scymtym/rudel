@@ -30,7 +30,7 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -40,6 +40,7 @@
 
 (require 'rudel-operations)
 (require 'jupiter-operation)
+(require 'jupiter-nop)
 
 
 ;;; Class jupiter-insert
