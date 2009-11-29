@@ -534,7 +534,7 @@ arguments THIS and USER."
 Runs object hook (see `rudel-hook-object') `unsubscribe-hook'
 with arguments THIS and USER."
   ;; Remove USER from list.
-  (object-remove-from-list document :subscribed user)
+  (object-remove-from-list this :subscribed user)
 
   ;; Run the hook.
   (object-run-hook-with-args this 'unsubscribe-hook user))
