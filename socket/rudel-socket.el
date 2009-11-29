@@ -48,6 +48,52 @@
   "Version of the socket transport backend for Rudel.")
 
 
+;;; Class rudel-socket-transport
+;;
+
+(defclass rudel-socket-transport (rudel-socket-owner
+				  rudel-transport)
+  ((filter   :initarg  :filter
+	     :type     (or null function)
+	     :initform nil
+	     :accessor rudel-filter
+	     :documentation
+	     "")
+   (sentinel :initarg  :sentinel
+	     :type     (or null function)
+	     :initform nil
+	     :accessor rudel-sentinel
+	     :documentation
+	     ""))
+  "Socket transport.")
+
+(defmethod rudel-set-filter ((this rudel-socket-transport) filter)
+  "Install FILTER as dispatcher for messages received by THIS."
+  (oset this :filter filter))
+
+(defmethod rudel-set-sentinel ((this rudel-transport) sentinel)
+  ""
+  (oset this :sentinel sentinel))
+
+(defmethod rudel-send ((this rudel-socket-transport) data)
+  ""
+  (with-slots (socket) this
+    (process-send-string socket data)))
+
+(defmethod rudel-close ((this rudel-socket-transport))
+  ""
+  )
+
+(defmethod rudel-start ((this rudel-socket-transport))
+  (with-slots (socket) this
+    (continue-process socket)))
+
+(defmethod rudel-receive ((this rudel-socket-transport) data)
+  (with-slots (filter) this
+    (when filter
+      (funcall filter data))))
+
+
 ;;; Class rudel-tcp-backend
 ;;
 
@@ -80,39 +126,12 @@ and :port."
 		     :filter   #'rudel-filter-dispatch
 		     ;; Install connection sentinel to redirect state
 		     ;; changes to the connection object
-		     :sentinel #'rudel-sentinel-dispatch))
+		     :sentinel #'rudel-sentinel-dispatch
+		     :stop     t))
 	 (transport (rudel-socket-transport
 		     host
 		     :socket socket)))
     transport))
-
-
-;;; Class rudel-socket-transport
-;;
-
-(defclass rudel-socket-transport (rudel-socket-owner
-				  rudel-transport)
-  ((handler :initarg  :handler
-	    :type     (or null function)
-	    :initform nil
-	    :documentation
-	    ""))
-  "socket transport.")
-
-(defmethod rudel-set-handler ((this rudel-socket-transport) handler1)
-  "Install HANDLER1 as dispatcher for messages received by THIS."
-  (with-slots (handler) this
-    (setq handler handler1)))
-
-(defmethod rudel-send ((this rudel-socket-transport) data)
-  ""
-  (with-slots (socket) this
-    (rudel-send socket data)))
-
-(defmethod rudel-receive ((this rudel-socket-transport) data)
-  (with-slots (handler) this
-    (when handler
-      (funcall hander data))))
 
 
 ;;; Autoloading
