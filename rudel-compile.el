@@ -1,9 +1,11 @@
 ;;; rudel-compile.el --- Byte-compile Rudel
 ;;
 ;; Copyright (C) 2009 Phil Hagelberg
+;; Copyright (C) 2009 Jan Moringen
 ;;
 ;; Author: Phil Hagelberg <phil@enigma>
-;; Keywords: Rudel, compile
+;;         Jan Moringen <scymtym@users.sourceforge.net>
+;; Keywords: rudel, compile
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -24,23 +26,54 @@
 
 ;;; Commentary:
 ;;
-;; Press M-x eval-buffer to byte-compile Rudel.
+;; This file contains some Emacs Lisp code, which can be used to
+;; generate autoloads for Rudel and byte-compile Rudel. Autoloads or
+;; written into a file named rudel-loaddefs.el. This file should be
+;; loaded during the Emacs startup process.
+;;
+;; Press M-x eval-buffer to generate autoloads and byte-compile Rudel.
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision
+;; 0.2 - Generation of autoloads
+;;
+;; 0.1 - Initial version
 
 
 ;;; Code:
 ;;
 
-(let ((rudel-dir (file-name-directory
-		  (or (buffer-file-name) load-file-name))))
-  ;; Adjust load path for compilation.
-  (dolist (dir '("." "jupiter" "obby" "zeroconf"))
-    (let ((d (concat rudel-dir "/" dir)))
-      (add-to-list 'load-path d)))
+(require 'eieio)
+
+(let* ((rudel-dir (file-name-directory
+		   (or (buffer-file-name) load-file-name)))
+       (subdirs   (mapcar
+		   (lambda (subdir)
+		     (concat rudel-dir "/" subdir))
+		   '("." "jupiter" "obby" "zeroconf")))
+       (loaddefs  (concat rudel-dir "rudel-loaddefs.el")))
+
+  ;; Adjust load path for compilation. We need to have all Rudel
+  ;; subdirectories on the load path.
+  (dolist (subdir subdirs)
+    (add-to-list 'load-path subdir))
 
   ;; Byte compile everything.
-  (byte-recompile-directory rudel-dir 0))
+  (byte-recompile-directory rudel-dir 0)
+
+  ;; Update autoloads.
+  (let ((generated-autoload-file loaddefs))
+    (apply #'update-directory-autoloads subdirs))
+
+  ;; This is for compatibility with older Emacs versions. Starting
+  ;; from version 23.1 of GNU Emacs eieio should always be
+  ;; (auto)loaded.
+  (with-current-buffer (find-file-noselect loaddefs)
+    (goto-char 1)
+    (unless (looking-at "(require 'eieio)")
+      (insert "(require 'eieio)\n\n")
+      (save-buffer))
+    (kill-buffer)))
+
+;;; rudel-compile.el ends here
