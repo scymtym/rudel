@@ -103,7 +103,7 @@ backend:
 
 The programmatic equivalent looks like this:
 
-(add-to-list 
+(add-to-list
  'rudel-configured-sessions
  (list :name            \"myserver\"
        :backend         'obby
@@ -111,7 +111,7 @@ The programmatic equivalent looks like this:
        :username        user-login-name
        ;; Use M-x list-colors-display to see color choices.
        :color           \"white\"
-       :encryption      t 
+       :encryption      t
        :port            6522
        ;; empty string means no password
        :global-password \"\"
@@ -232,12 +232,14 @@ advertise the session."
   (multiple-value-bind (primary-backends fallback-backends)
       (rudel-session-initiation-suitable-backends 'advertise)
     (or ;; Try to advertise the session using primary backends.
-        (some (mapcar (lambda (backend)
+        (some #'identity
+	      (mapcar (lambda (backend)
 			(rudel-advertise backend info))
 		      (mapcar #'cdr primary-backends)))
 	;; When the primary backends fail, try to advertise the
 	;; session using fallback backends
-	(some (mapcar (lambda (backend)
+	(some #'identity
+	      (mapcar (lambda (backend)
 			(rudel-advertise backend info))
 		      (mapcar #'cdr fallback-backends)))))
   )
