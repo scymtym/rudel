@@ -192,6 +192,31 @@ data from last and concatenate with DATA before processing."
        ,data))
   )
 
+(defmacro rudel-assemble-fragments (data storage function)
+  "Return complete fragment in DATA, store excess data in STORAGE.
+If the value of STORAGE is non-nil when calling, consider content
+as leftover data from last call and concatenate with DATA before
+processing.
+FUNCTION is called to identify complete and partial fragments in
+the data."
+  (declare (debug (symbolp symbolp form)))
+  (let ((complete (make-symbol "complete"))
+	(partial  (make-symbol "partial")))
+    `(progn
+       ;; If there are stored fragments, append them to the new data.
+       (if ,storage
+	   (setq ,data    (cons ,data ,storage)
+		 ,storage nil)
+	 (setq ,data (list ,data)))
+       ;; Ask FUNCTION to find complete and partial fragments in the
+       ;; combined data. Store the results.
+       (multiple-value-bind (,complete ,partial)
+	   (funcall ,function ,data)
+	 (setq ,data    ,complete
+	       ,storage ,partial))
+       ,data))
+  )
+
 (defmacro rudel-loop-lines (data var &rest forms)
   "Execute FROMS with VAR subsequently bound to all lines in DATA."
   (declare (indent 2)
