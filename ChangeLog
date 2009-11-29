@@ -1,5 +1,42 @@
 2009-11-29  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	* socket/rudel-socket.el
+	(rudel-tcp-backend::rudel-wait-for-connections): new method; wait
+	for incoming connections and dispatch to callback
+	(rudel-tcp-handle-connect): new function; helper function to wrap
+	incoming connection sockets in transport objects
+
+	* socket/rudel-socket.el (header): added version 0.2 to history
+	(rudel-tcp-version): renamed `rudel-socket-transport-version' ->
+	`rudel-tcp-version'; bumped to 0.2
+	(rudel-socket-transport::filter): removed; stored in process
+	object
+	(rudel-socket-transport::sentinel): removed; stored in process
+	object
+	(rudel-socket-transport::rudel-filter): new method; retrieve
+	filter from process
+	(rudel-socket-transport::rudel-set-filter): set filter of process
+	(rudel-socket-transport::rudel-sentinel): new method; retrieve
+	sentinel from process
+	(rudel-tcp-transport::rudel-set-sentinel): set sentinel of process
+	(rudel-tcp-transport::rudel-receive): removed; now handled
+	directly
+	(rudel-tcp-backend::initialize-instance): use `rudel-tcp-version'
+	(rudel-tcp-backend::rudel-make-connection): pass constructed
+	socket to a `rudel-socket-transport'; do not install filter or
+	sentinel
+
+	* socket/rudel-socket.el (rudel-tcp-backend::initialize-instance):
+	added documentation string
+
+	* socket/rudel-socket.el (rudel-make-connection): made object name
+	of transport object more unique
+
+	* socket/rudel-socket.el (require cl): required for `every'
+	(rudel-tcp-backend::rudel-make-connection): added arguments
+	info-callback and progress-callback; call info-callback when info
+	elements are missing
+
 	* socket/rudel-socket.el: new file; socket transport backend for
 	Rudel; currently provides TCP-based transport
 	* socket/Project.ede: new file; project file for socket transport

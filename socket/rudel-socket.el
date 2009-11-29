@@ -128,17 +128,50 @@ and :port."
     (setq info (funcall info-callback this info)))
 
   ;; Extract information from INFO and create the socket.
-  (let* ((host      (plist-get info :host))
-	 (port      (plist-get info :port))
+  (let* ((host   (plist-get info :host))
+	 (port   (plist-get info :port))
 	 ;; Create the network process
-	 (socket    (make-network-process
-		     :name     (format "TCP to %s" host)
-		     :host     host
-		     :service  port
-		     :stop     t)))
+	 (socket (make-network-process
+		  :name     (format "TCP to %s" host)
+		  :host     host
+		  :service  port
+		  :stop     t)))
     (rudel-socket-transport
      (format "to %s:%s" host port)
      :socket socket))
+  )
+
+(defmethod rudel-wait-for-connections ((this rudel-tcp-backend)
+				       info dispatch-callback)
+  "Create TCP server according to INFO, dispatch to DISPATCH-CALLBACK."
+  ;; Extract information from INFO and create the socket.
+  (let* ((address (plist-get info :address))
+	 (port    (plist-get info :port)))
+    ;; Create the network process
+    (lexical-let ((dispatch-callback1 dispatch-callback))
+      (apply
+       #'make-network-process
+       :name    (format "TCP on %s" port)
+       :service port
+       :server  t
+       :log
+       (lambda (server connection message)
+	 (rudel-tcp-handle-connect connection dispatch-callback1))
+       (when address
+	 (list :host address)))))
+  )
+
+(defun rudel-tcp-handle-connect (connection dispatch-callback)
+  "Handle incoming connection CONNECTION and call DISPATCH-CALLBACK."
+  ;; Wrap CONNECTION in a transport object. Pass the constructed
+  ;; object to DISPATCH-CALLBACK.
+  (let ((transport (rudel-socket-transport
+		    (format
+		     "TCP from %s"
+		     (format-network-address
+		      (process-contact connection :remote)))
+		    :socket connection)))
+    (funcall dispatch-callback transport))
   )
 
 
