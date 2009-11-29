@@ -340,6 +340,13 @@ incoming and outgoing data and process it later.")
 ;;; Class rudel-progress-reporting-transport-filter
 ;;
 
+(defconst rudel-long-message-threshold 32768
+  "Threshold for message size, above which messages are sent in
+multiple chunks.")
+
+(defconst rudel-long-message-chunk-size 16384
+  "Chunk size used, when chunking long messages.")
+
 ;; TODO have a callback instead of the actual reporter
 (defclass rudel-progress-reporting-transport-filter (rudel-transport-filter)
   ((reporter :initarg :reporter
@@ -365,12 +372,12 @@ incoming and outgoing data and process it later.")
 
 	;; For huge messages, chunk the message data and transmit the
 	;; chunks
-	(let ((total    (/ (length data)
-			   rudel-long-message-chunk-size))
-	      (current  0))
+	(let ((total   (/ (length data)
+			  rudel-long-message-chunk-size))
+	      (current 0))
 	  (rudel-loop-chunks data chunk rudel-long-message-chunk-size
 	    (progress-reporter-update reporter (/ (float current) total))
-	    (rudel-send transport socket chunk)
+	    (rudel-send transport chunk)
 	    (incf current))
 	  (progress-reporter-done reporter))
 
