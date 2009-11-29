@@ -99,7 +99,7 @@
 
 ;;;###autoload
 (defclass rudel-tcp-backend (rudel-transport-backend)
-  ()
+  ((capabilities :initform (listen connect)))
   "TCP transport backend.
 The transport backend is a factory for TCP transport objects.")
 
