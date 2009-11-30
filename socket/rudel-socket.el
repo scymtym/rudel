@@ -182,5 +182,5 @@ and :port."
 (rudel-add-backend (rudel-backend-get-factory 'transport)
 		   'tcp 'rudel-tcp-backend)
 
-(provide 'rudel-tcp)
-;;; rudel-tcp.el ends here
+(provide 'rudel-socket)
+;;; rudel-socket.el ends here
