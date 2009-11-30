@@ -131,20 +131,11 @@ and STATE is an object of a class derived from rudel-state.")
   "A finite state machine.")
 
 (defmethod initialize-instance ((this rudel-state-machine) slots)
-  "Initialize slots skipping :start initarg."
-  (let ((rest             slots)
-	(replacement-args))
-    ;; Remove :start initarg
-    (while rest
-      (unless (eq (car rest) :start)
-	(push (first  rest) replacement-args)
-	(push (second rest) replacement-args))
-      (setq rest (cddr rest)))
-
-    ;; Initialize slots with remaining initargs.
-    (when (next-method-p)
-      (call-next-method this (nreverse replacement-args))))
-  )
+  "Initialize slots of THIS skipping :start initarg."
+  ;; Call the next method, passing only non-virtual initargs.
+  (when (next-method-p)
+    (call-next-method
+     this (rudel-state-machine-strip-initargs slots))))
 
 (defmethod initialize-instance :after ((this rudel-state-machine) slots)
   "Set current state of THIS to a proper initial value.
@@ -309,6 +300,21 @@ NEXT can nil, a list or a `rudel-state' object."
 
 ;;; Miscellaneous functions
 ;;
+
+(defun rudel-state-machine-strip-initargs (slots)
+  "Remove virtual initargs and their values from SLOTS."
+  (let ((rest             slots)
+	(replacement-args))
+    ;; Remove :start initarg
+    (while rest
+      (unless (eq (car rest) :start)
+	(push (first  rest) replacement-args)
+	(push (second rest) replacement-args))
+      (setq rest (cddr rest)))
+
+    ;; Return remaining initargs.
+    (reverse replacement-args))
+  )
 
 (defun rudel-state-wait (machine success-states
 			 &optional error-states callback)
