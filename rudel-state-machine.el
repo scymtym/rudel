@@ -130,8 +130,23 @@ and STATE is an object of a class derived from rudel-state.")
 	   "The current state of the machine."))
   "A finite state machine.")
 
-(defmethod initialize-instance :after ((this rudel-state-machine)
-				       &rest slots)
+(defmethod initialize-instance ((this rudel-state-machine) slots)
+  "Initialize slots skipping :start initarg."
+  (let ((rest             slots)
+	(replacement-args))
+    ;; Remove :start initarg
+    (while rest
+      (unless (eq (car rest) :start)
+	(push (first  rest) replacement-args)
+	(push (second rest) replacement-args))
+      (setq rest (cddr rest)))
+
+    ;; Initialize slots with remaining initargs.
+    (when (next-method-p)
+      (call-next-method this (nreverse replacement-args))))
+  )
+
+(defmethod initialize-instance :after ((this rudel-state-machine) slots)
   "Set current state of THIS to a proper initial value.
 If a start state is specified in the arguments to the
 constructor, that state is used. If there is no such state, the
@@ -139,10 +154,15 @@ list of states is search for a state named start. If that fails
 as well, the first state in the state list is used."
   (with-slots (states) this
     ;; Find a suitable start state and switch to it.
-    (let ((start (or (plist-get slots :start)
-		     (car (assoc 'start states))
-		     (when (length states)
-		       (car (nth 0 states))))))
+    (let* ((start-arg (plist-get slots :start))
+	   (args      (when (listp start-arg)
+			(cdr start-arg)))
+	   (start     (or (if (listp start-arg)
+			      (car start-arg)
+			    start-arg)
+			  (car (assoc 'start states))
+			  (when (length states)
+			    (car (nth 0 states))))))
       (unless start
 	(signal 'rudel-no-start-state nil))
       ;; Make start state the current state and call send an enter
@@ -150,7 +170,7 @@ as well, the first state in the state list is used."
       (let ((start (cdr (assoc start states))))
 	(oset this :state start)
 	(rudel--switch-to-return-value
-	 this start (rudel-enter start)))))
+	 this start (apply #'rudel-enter start args)))))
   )
 
 (defmethod rudel-find-state ((this rudel-state-machine) name)
