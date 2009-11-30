@@ -51,7 +51,7 @@
        (subdirs   (mapcar
 		   (lambda (subdir)
 		     (concat rudel-dir "/" subdir))
-		   '("." "jupiter" "socket" "obby" "zeroconf")))
+		   '("." "jupiter" "socket" "tls" "obby" "zeroconf")))
        (loaddefs  (concat rudel-dir "rudel-loaddefs.el")))
 
   ;; Adjust load path for compilation. We need to have all Rudel
