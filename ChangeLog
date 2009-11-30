@@ -1,3 +1,31 @@
+2009-11-30  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel-compat.el (progress-spinner-values):
+	(progress-reporter-spinner-p):
+	(progress-reporter-force-update):
+	(progress-reporter-update):
+	(progress-reporter-spin):
+	(make-progress-reporter): always define these functions since the
+	spinning progress reporter patch has not been accepted anyway
+
+	* rudel-state-machine.el (rudel-state-machine::initialize-instance):
+	use `rudel-state-machine-strip-initargs' to get rid of virtual
+	initargs
+	(rudel-state-machine-strip-initargs): new function; remove certain
+	initargs from a property list of initargs
+
+	* rudel-state-machine.el (rudel-state-machine::initialize-instance):
+	value of :start can now be a rudel-state-child, a symbol, or a list
+	starting with a symbol; improved documentation string documentation
+	string
+	(rudel-state-machine::object-print): pass strings argument to next
+	method
+
+	* rudel-state-machine.el (rudel-state-machine::initialize-instance):
+	new method; remove :start initarg
+	(rudel-state-machine::initialize-instance :after): allow :start
+	initarg to specify arguments to start state
+
 2009-11-29  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* socket/rudel-socket.el

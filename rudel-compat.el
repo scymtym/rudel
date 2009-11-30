@@ -73,31 +73,29 @@ You have to take care to only enter valid color names."
 ;;; Spinner Progress Reporter
 ;;
 
-(unless (functionp 'progress-reporter-spin)
+(defvar progress-spinner-values ["-" "\\" "|" "/"])
 
-  (defvar progress-spinner-values ["-" "\\" "|" "/"])
+(defun progress-reporter-spinner-p (reporter)
+  "Return t if REPORTER has an unknown max value."
+  (null (aref (cdr reporter) 2)))
 
-  (defun progress-reporter-spinner-p (reporter)
-    "Return t if REPORTER has an unknown max value."
-    (null (aref (cdr reporter) 2)))
-
-  (defun progress-reporter-force-update (reporter &optional value new-message)
-    "Report progress of an operation in the echo area unconditionally.
+(defun progress-reporter-force-update (reporter &optional value new-message)
+  "Report progress of an operation in the echo area unconditionally.
 
 First two parameters are the same as for
 `progress-reporter-update'.  Optional NEW-MESSAGE allows you to
 change the displayed message."
-    (let ((parameters (cdr reporter)))
-      (when new-message
-	(aset parameters 3 new-message))
-      (when (aref parameters 0)
-	(aset parameters 0 (float-time)))
-      (if (progress-reporter-spinner-p reporter)
-	  (progress-reporter-spin reporter)
-	(progress-reporter-do-update reporter value))))
+  (let ((parameters (cdr reporter)))
+    (when new-message
+      (aset parameters 3 new-message))
+    (when (aref parameters 0)
+      (aset parameters 0 (float-time)))
+    (if (progress-reporter-spinner-p reporter)
+	(progress-reporter-spin reporter)
+      (progress-reporter-do-update reporter value))))
 
-  (defsubst progress-reporter-update (reporter &optional value)
-    "Report progress of an operation in the echo area.
+(defsubst progress-reporter-update (reporter &optional value)
+  "Report progress of an operation in the echo area.
 
 The first parameter, REPORTER, should be the result of a call to
 `make-progress-reporter'. For reporters for which the max value
@@ -111,24 +109,24 @@ or not enough time has passed, then do nothing (see
 
 In this case, this function is very inexpensive, you need not
 care how often you call it."
-    (if (progress-reporter-spinner-p reporter)
-	(progress-reporter-spin reporter)
-      (when (>= value (car reporter))
-	(progress-reporter-do-update reporter value))))
+  (if (progress-reporter-spinner-p reporter)
+      (progress-reporter-spin reporter)
+    (when (>= value (car reporter))
+      (progress-reporter-do-update reporter value))))
 
-  (defun progress-reporter-spin (reporter)
-    "Advance indicator of spinning REPORTER."
-    (let* ((parameters (cdr reporter))
-	   (index      (+ (aref parameters 1) 1)))
-      (aset parameters 1 index)
-      (let ((message-log-max nil)) ; No logging
-	(message "%s %s"
-		 (aref progress-spinner-values (mod index 4))
-		 (aref parameters 3)))))
+(defun progress-reporter-spin (reporter)
+  "Advance indicator of spinning REPORTER."
+  (let* ((parameters (cdr reporter))
+	 (index      (+ (aref parameters 1) 1)))
+    (aset parameters 1 index)
+    (let ((message-log-max nil)) ; No logging
+      (message "%s %s"
+	       (aref progress-spinner-values (mod index 4))
+	       (aref parameters 3)))))
 
-  (defun make-progress-reporter (message &optional min-value max-value
-					 current-value min-change min-time)
-    "Return progress reporter object to be used with `progress-reporter-update'.
+(defun make-progress-reporter (message &optional min-value max-value
+				       current-value min-change min-time)
+  "Return progress reporter object to be used with `progress-reporter-update'.
 
 MESSAGE is shown in the echo area.  When at least 1% of operation
 is complete, the exact percentage will be appended to the
@@ -152,22 +150,20 @@ then this parameter is effectively rounded up.
 
 If MIN-VALUE and MAX-VALUE are unknown, they may be omitted to
 return a \"pulsing\" progress reporter."
-    (unless min-time
-      (setq min-time 0.2))
-    (let ((reporter
-	   (cons min-value ;; Force a call to `message' now
-		 (vector (if (and (fboundp 'float-time)
-				  (>= min-time 0.02))
-			     (float-time) nil)
-			 (or min-value 0)
-			 max-value
-			 message
-			 (if min-change (max (min min-change 50) 1) 1)
-			 min-time))))
-      (progress-reporter-update reporter (or current-value min-value))
-      reporter))
-
-  )
+  (unless min-time
+    (setq min-time 0.2))
+  (let ((reporter
+	 (cons min-value ;; Force a call to `message' now
+	       (vector (if (and (fboundp 'float-time)
+				(>= min-time 0.02))
+			   (float-time) nil)
+		       (or min-value 0)
+		       max-value
+		       message
+		       (if min-change (max (min min-change 50) 1) 1)
+		       min-time))))
+    (progress-reporter-update reporter (or current-value min-value))
+    reporter))
 
 (provide 'rudel-compat)
 ;;; rudel-compat.el ends here
