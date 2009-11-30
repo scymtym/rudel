@@ -24,14 +24,14 @@
 
 ;;; Commentary:
 ;;
-;; This contains a simple implementation of the so calls Start TLS
-;; protocol, which means enabling TLS encryption for an existing
+;; This file contains a simple implementation of the so calls Start
+;; TLS protocol, which means enabling TLS encryption for an existing
 ;; network connection.
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial version
 
 
 ;;; Code:
