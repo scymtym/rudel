@@ -217,6 +217,31 @@ the data."
        ,data))
   )
 
+(defun rudel-assemble-lines (data)
+  "Split DATA at line breaks and return complete and incomplete lines.
+DATA has to be a cons-cell which contains a string of new data in
+its car and a list of old data strings in its cdr.
+The returned value is a list of the following form
+(COMPLETE INCOMPLETE)
+where complete COMPLETE is a list of complete lines and
+INCOMPLETE is a list of string fragments of not yet complete
+lines."
+  ;; Try to find a line break in data.
+  (let ((index (position ?\n (car data) :from-end t)))
+    (list
+     ;; Complete lines
+     (when index
+       (let ((lines (split-string (substring (car data) 0 index) "\n")))
+	 (setcar lines (concat
+			(mapconcat #'identity (reverse (cdr data)) "")
+			(car lines)))
+	 lines))
+     (unless (and index (eq index (- (length (car data)) 1)))
+       (if index
+	   (list (substring (car data) (+ index 1)))
+	 data))))
+  )
+
 (defmacro rudel-loop-lines (data var &rest forms)
   "Execute FROMS with VAR subsequently bound to all lines in DATA."
   (declare (indent 2)
