@@ -228,6 +228,16 @@ the data."
 	   (progn ,@forms)))))
   )
 
+(defmacro rudel-loop-fragments (data var &rest forms)
+  "Execute FROMS with VAR subsequently bound to all fragments in DATA."
+  (declare (indent 2)
+	   (debug (form symbolp &rest form)))
+  (let ((fragment (make-symbol "fragment")))
+    `(dolist (,fragment ,data)
+       (let ((,var ,fragment))
+	 (progn ,@forms))))
+  )
+
 (defmacro rudel-loop-chunks (data var size &rest forms)
   "Execute FROMS in a loop with VAR bound to chunks of DATA of SIZE.
 Unless (zerop (mod (length data) size) 0) the final chunk is
