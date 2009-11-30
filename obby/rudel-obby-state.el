@@ -49,7 +49,7 @@
 
 (defclass rudel-obby-state (rudel-state)
   ((connection :initarg :connection
-	       :type    rudel-obby-socket-owner
+	       :type    object
 	       :documentation
 	       "Connection object that uses the state."))
   "Base class for state classes used in the obby backend."
