@@ -148,29 +148,37 @@ and STATE is an object of a class derived from rudel-state.")
 
 (defmethod initialize-instance :after ((this rudel-state-machine) slots)
   "Set current state of THIS to a proper initial value.
-If a start state is specified in the arguments to the
-constructor, that state is used. If there is no such state, the
-list of states is search for a state named start. If that fails
-as well, the first state in the state list is used."
+If a start state is specified using the :start init argument to
+the constructor, that state is used. If there is no such state,
+the list of states is search for a state named 'start or 'new. If
+that fails as well, the first state in the state list is used."
   (with-slots (states) this
     ;; Find a suitable start state and switch to it.
     (let* ((start-arg (plist-get slots :start))
 	   (args      (when (listp start-arg)
 			(cdr start-arg)))
-	   (start     (or (if (listp start-arg)
-			      (car start-arg)
+	   (start     (or ;; First look for :start initarg.
+		          (cond
+			   ((rudel-state-child-p start-arg)
 			    start-arg)
-			  (car (assoc 'start states))
-			  (when (length states)
-			    (car (nth 0 states))))))
+			   ((symbolp start-arg)
+			    (rudel-find-state this start-arg))
+			   ((listp start-arg)
+			    (rudel-find-state this (car start-arg))))
+			  ;; Then look for states named 'start or 'new.
+			  (cdr (assoc 'start states))
+			  (cdr (assoc 'new   states))
+			  ;; Fallback to first state in state list.
+			  (when states
+			    (cdr (nth 0 states))))))
       (unless start
 	(signal 'rudel-no-start-state nil))
+
       ;; Make start state the current state and call send an enter
       ;; message.
-      (let ((start (cdr (assoc start states))))
-	(oset this :state start)
-	(rudel--switch-to-return-value
-	 this start (apply #'rudel-enter start args)))))
+      (oset this :state start)
+      (rudel--switch-to-return-value
+       this start (apply #'rudel-enter start args))))
   )
 
 (defmethod rudel-find-state ((this rudel-state-machine) name)
@@ -295,7 +303,7 @@ NEXT can nil, a list or a `rudel-state' object."
 	       (format " state: %s"
 		       (object-name-string state))
 	       strings))
-    (call-next-method this " state: #start"))
+    (call-next-method this " state: #start" strings))
   )
 
 
