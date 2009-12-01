@@ -261,7 +261,8 @@ and :port."
 		     :stop     t)))
     (rudel-socket-transport
      (format "to %s" host)
-     :socket socket)))
+     :socket socket))
+  )
 
 
 ;;; Autoloading

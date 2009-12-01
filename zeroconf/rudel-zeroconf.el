@@ -3,7 +3,7 @@
 ;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Rudel, service, discovery, advertising, zeroconf,
+;; Keywords: rudel, service, discovery, advertising, zeroconf,
 ;;           rendezvous, avahi
 ;; X-RCS: $Id:$
 ;;
@@ -28,22 +28,28 @@
 ;; Zeroconf session discovery and advertising for Rudel. The main
 ;; class `rudel-zeroconf-backend' implements discovery and advertising
 ;; for registered service types. Service types are registered by
-;; adding an element of the form (SERVICE BACKEND) to the
-;; `rudel-zeroconf-service-types'. BACKEND is the symbol of the
-;; protocol backend and SERVICE is the string used as service type in
-;; the Zeroconf record (example: '("_lobby._tcp" obby)).
+;; adding an element of the form
+;; (SERVICE TRANSPORT-BACKEND PROTOCOL-BACKEND)
+;; to the `rudel-zeroconf-service-types'. TRANSPORT-BACKEND is the
+;; symbol of the transport backend (see `rudel-transport-backend'),
+;; PROTOCOL-BACKEND is the symbol of the protocol backend (see
+;; `rudel-protocol-backend'), and SERVICE is the string used as
+;; service type in the Zeroconf record (example: '("_lobby._tcp" tcp
+;; obby)).
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.2 - Support for transport and protocol backends
+;;
+;; 0.1 - Initial version
 
 
 ;;; Code:
 ;;
 
 (eval-when-compile
-  (require 'cl)) ;; first, second
+  (require 'cl)) ;; first, second, third
 
 (require 'zeroconf)
 
@@ -54,12 +60,13 @@
 ;;; Constants and global variables
 ;;
 
-(defconst rudel-zeroconf-version '(0 1)
+(defconst rudel-zeroconf-version '(0 2)
   "Version of the Zeroconf backend for Rudel.")
 
 (defvar rudel-zeroconf-service-types nil
   "Service types used by Rudel backends.
-Each element is of the form (SERVICE BACKEND).")
+Each element is of the form
+ (SERVICE TRANSPORT-BACKEND PROTOCOL-BACKEND).")
 
 
 ;;; Accessors and manipulators for the service list
@@ -68,8 +75,11 @@ Each element is of the form (SERVICE BACKEND).")
 (defalias 'rudel-zeroconf-service-type 'first
   "Return type of service.")
 
-(defalias 'rudel-zeroconf-service-backend 'second
-  "Return backend associated with service type.")
+(defalias 'rudel-zeroconf-transport-backend 'second
+  "Return transport backend associated with service type.")
+
+(defalias 'rudel-zeroconf-protocol-backend 'third
+  "Return protocol backend associated with service type.")
 
 (defun rudel-zeroconf-service (key which)
   "Return the Zeroconf service type used by BACKEND."
@@ -78,12 +88,15 @@ Each element is of the form (SERVICE BACKEND).")
 			   #'string= #'eq)))
 
 ;;;###autoload
-(defun rudel-zeroconf-register-service (type backend)
-  "Add an entry for TYPE with BACKEND to the list of service types.
-BACKEND is the name of the protocol backend handling the service
-type TYPE."
-  (push (list type backend)
-	rudel-zeroconf-service-types))
+(defun rudel-zeroconf-register-service
+  (type transport-backend protocol-backend)
+  "Add an entry for TYPE with TRANSPORT-BACKEND and PROTOCOL-BACKEND to the list of service types.
+TRANSPORT-BACKEND is the name of the transport backend handling
+the service type TYPE.
+PROTOCOL-BACKEND is the name of the protocol backend handling the
+service type TYPE."
+  (add-to-list 'rudel-zeroconf-service-types
+	       (list type transport-backend protocol-backend)))
 
 
 ;;; Initialization
@@ -102,7 +115,7 @@ type TYPE."
    (priority     :initform primary))
   "")
 
-(defmethod initialize-instance ((this rudel-zeroconf-backend) &rest slots)
+(defmethod initialize-instance ((this rudel-zeroconf-backend) slots)
   "Initialize slots of THIS with SLOTS."
   (when (next-method-p)
     (call-next-method))
@@ -121,20 +134,20 @@ type TYPE."
       #'append
       (mapcar
        #'rudel-zeroconf-services
-       (mapcar #'rudel-zeroconf-service-backend
-	       rudel-zeroconf-service-types))))))
+       rudel-zeroconf-service-types)))))
   )
 
 (defmethod rudel-advertise ((this rudel-session-initiation-backend) info)
   "Use Zeroconf to advertise the session described by INFO to other users."
-  (let ((name    (plist-get info :name))
-	(backend (plist-get info :backend))
-	(host    (plist-get info :host))
-	(port    (plist-get info :port))
-	(data    (plist-get info :data)))
-    (when backend
+  (let ((name              (plist-get info :name))
+	(transport-backend (plist-get info :transport-backend))
+	(protocol-backend  (plist-get info :protocol-backend))
+	(host              (plist-get info :host))
+	(port              (plist-get info :port))
+	(data              (plist-get info :data)))
+    (when protocol-backend
       (apply #'rudel-zeroconf-publish
-	     backend name host port data)))
+	     transport-backend protocol-backend name host port data)))
   t)
 
 (defmethod rudel-withdraw ((this rudel-session-initiation-backend))
@@ -145,23 +158,22 @@ type TYPE."
 ;;; Zeroconf wrapper functions
 ;;
 
-(defun rudel-zeroconf-services (backend)
+(defun rudel-zeroconf-services (service)
   "List Zeroconf services for BACKEND."
   (zeroconf-list-services
-   (rudel-zeroconf-service-type
-    (rudel-zeroconf-service
-     #'rudel-zeroconf-service-backend backend))))
+   (rudel-zeroconf-service-type service)))
 
-(defun rudel-zeroconf-services-present-p (backend)
+(defun rudel-zeroconf-services-present-p (service)
   "Check whether there are Zeroconf services for BACKEND."
-  (rudel-zeroconf-services backend))
+  (rudel-zeroconf-services service))
 
-(defun rudel-zeroconf-publish (backend name host port &rest data)
-  "Publish BACKEND service NAME for HOST and PORT."
+(defun rudel-zeroconf-publish (transport-backend protocol-backend
+			       name host port &rest data)
+  "Publish PROTOCOL-BACKEND over TRANSPORT-BACKEND service NAME for HOST and PORT."
   ;; Try to find the service entry for the protocol backend and
   ;; publish the service if an entry is found.
   (let ((service (rudel-zeroconf-service
-		  #'rudel-zeroconf-service-backend backend)))
+		  #'rudel-zeroconf-protocol-backend protocol-backend)))
     (when service
       (zeroconf-publish-service
        name
@@ -173,8 +185,7 @@ type TYPE."
        (mapcar
 	(lambda (item)
 	  (concat (car item) "=" (cdr item)))
-	data)
-       )))
+	data))))
   )
 
 (defun rudel-zeroconf-withdraw (backend name)
@@ -194,17 +205,20 @@ type TYPE."
 			#'rudel-zeroconf-service-type type)))
     ;; Construct information property list.
     (list
-     :name       (format "Zeroconf advertised session \"%s\""
-			 (zeroconf-service-name service))
-     :backend    (rudel-backend-get
-		  'protocol
-		  (rudel-zeroconf-service-backend service-type))
-     :host       (zeroconf-service-host service)
-     :port       (zeroconf-service-port service)
+     :name              (format "Zeroconf advertised session \"%s\""
+				(zeroconf-service-name service))
+     :transport-backend (rudel-backend-get
+			 'transport
+			 (rudel-zeroconf-transport-backend service-type))
+     :protocol-backend  (rudel-backend-get
+			 'protocol
+			 (rudel-zeroconf-protocol-backend service-type))
+     :host              (zeroconf-service-host service)
+     :port              (zeroconf-service-port service)
      ;; Encryption defaults to yes to be compatible with Gobby.
-     :encryption (or (not (member :encryption data))
-		     (string= (plist-get data :encryption)
-			      "yes"))))
+     :encryption        (or (not (member :encryption data))
+			    (string= (plist-get data :encryption)
+				     "yes"))))
   )
 
 (defun rudel-zeroconf-parse-txt-record (record)

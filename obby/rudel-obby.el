@@ -31,9 +31,11 @@
 
 ;;; History:
 ;;
-;; 0.2 - Refactored client and server to employ state machine.
+;; 0.3 - Support for transports in client code
 ;;
-;; 0.1 - Initial revision.
+;; 0.2 - Refactored client and server to employ state machine
+;;
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -55,7 +57,7 @@
 ;;; Constants
 ;;
 
-(defconst rudel-obby-version '(0 2)
+(defconst rudel-obby-version '(0 3)
   "Version of the obby backend for Rudel.")
 
 (defconst rudel-obby-protocol-version 8
@@ -109,19 +111,21 @@ connections and creates obby servers.")
 	(user-password   (if (and info (member :user-password info))
 			     (plist-get info :user-password)
 			   (read-string "User password: " ""))))
-    (append (list :host            host
-		  :port            port
-		  :username        username
-		  :color           color
-		  :encryption      encryption
-		  :global-password (unless (string= global-password "")
-				     global-password)
-		  :user-password   (unless (string= user-password "")
-				     user-password))
+    (append (list :transport-backend 'tcp
+		  :protocol-backend  'obby
+		  :host              host
+		  :port              port
+		  :username          username
+		  :color             color
+		  :encryption        encryption
+		  :global-password   (unless (string= global-password "")
+				       global-password)
+		  :user-password     (unless (string= user-password "")
+				       user-password))
 	    info))
   )
 
-(defmethod rudel-connect ((this rudel-obby-backend) info)
+(defmethod rudel-connect ((this rudel-obby-backend) transport info)
   "Connect to an obby server using the information INFO.
 Return the connection object."
   ;; Before we start, load the client functionality.
@@ -131,35 +135,17 @@ Return the connection object."
   (let* ((session    (plist-get info :session))
 	 (host       (plist-get info :host))
 	 (port       (plist-get info :port))
-	 (encryption (plist-get info :encryption))
-	 ;; Create the network process
-	 (socket     (funcall
-		      (if encryption
-			  (progn
-			    (require 'rudel-tls)
-			    #'rudel-tls-make-process)
-			#'make-network-process)
-		      :name     host
-		      :host     host
-		      :service  port
-		      ;; Install connection filter to redirect data to
-		      ;; the connection object
-		      :filter   #'rudel-filter-dispatch
-		      ;; Install connection sentinel to redirect state
-		      ;; changes to the connection object
-		      :sentinel #'rudel-sentinel-dispatch
-		      ;; Do not start receiving immediately since the
-		      ;; filter function is not yet setup properly.
-		      :stop     t))
 	 (connection (rudel-obby-connection
 		      host
 		      :session session
-		      :socket  socket
+		      :socket  (oref transport :socket)
 		      :info    info)))
 
     ;; Now start receiving and wait until the basic session setup is
     ;; complete.
-    (continue-process socket)
+    (set-process-filter (oref transport :socket) #'rudel-filter-dispatch)
+    (set-process-sentinel (oref transport :socket) #'rudel-sentinel-dispatch)
+    (rudel-start transport)
 
     ;; Wait for the connection to reach one of the states idle,
     ;; join-failed and they-finalized.
@@ -170,7 +156,7 @@ Return the connection object."
 		    ;; For all states, just spin.
 		    ((consp state)
 		     (progress-reporter-force-update
-                      reporter nil (format "Joining (%s)" (car state))))
+		      reporter nil (format "Joining (%s)" (car state))))
 
 		    ;; Done
 		    (t
@@ -483,7 +469,8 @@ calling this function."
 
 ;;;###autoload
 (eval-after-load 'rudel-zeroconf
-  '(rudel-zeroconf-register-service "_lobby._tcp" 'obby))
+  '(rudel-zeroconf-register-service "_lobby._tcp"
+				    'start-tls 'obby))
 
 (provide 'rudel-obby)
 ;;; rudel-obby.el ends here

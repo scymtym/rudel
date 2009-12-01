@@ -41,6 +41,7 @@
 
 (require 'jupiter)
 
+(require 'rudel-tls)
 (require 'rudel-state-machine)
 (require 'rudel-operations)
 (require 'rudel-chat)

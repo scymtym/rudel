@@ -1,4 +1,89 @@
+2009-12-01  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	added initial support for the transport abstraction to affected
+	components
+	* obby/rudel-obby-client (require rudel-tls): required for
+	STARTTLS encryption
+	* obby/rudel-obby.el (header): added version 0.3 to history
+	section
+	(rudel-obby-backend::rudel-ask-connect-info): return info list
+	containing entries for transport and protocol backend
+	(rudel-obby-backend::rudel-connect): added transport argument; use
+	transport object instead of creating a socket
+	(zeroconf service registration): register transport and protocol
+	backend
+	* rudel-protocol.el (header): history section fix
+	(rudel-protocol-backend::rudel-ask-connect-info): renamed
+	`rudel-ask-join-info' -> `rudel-ask-connect-info'
+	(rudel-protocol-backend::rudel-connect): renamed `rudel-join ->
+	`rudel-connect; added argument transport; updated documentation
+	string
+	* rudel.el (header): added version 0.2 to history section
+	(rudel-join-session): obtain transport and protocol backends from
+	info; create a transport object; return created session object
+	* zeroconf/rudel-zeroconf.el (header): downcased keywords; updated
+	commentary section; added version 0.2 to history
+	(rudel-zeroconf-version): bumped to 0.2
+	(rudel-zeroconf-service-types): updated documentation string
+	(rudel-zeroconf-service-backend): removed
+	(rudel-zeroconf-transport-backend): new; accessor for transport
+	backend
+	(rudel-zeroconf-protocol-backend): new; accessor for protocol
+	backend
+	(rudel-zeroconf-register-service): accept a transport and a
+	protocol backend argument; update documentation string
+	(initialize-instance): remove &rest from argument slots
+	(rudel-advertise): handle transport and protocol backend
+	(rudel-zeroconf-services): updated to work with new service
+	representation
+	(rudel-zeroconf-services-present-p): updated to work with new
+	service representation
+	(rudel-zeroconf-publish): accept a transport and a protocol
+	backend argument
+	(rudel-zeroconf-service->plist): handle transport and protocol
+	backends
+
 2009-11-30  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel-compile.el (top-level): added tls directory to list of
+	directories with autoloads
+	* tls/rudel-tls.el (header): added 0.2 to version section
+        (require rudel-socket): required since base class of
+	`rudel-start-tls-transport'
+        (rudel-start-tls-transport): new class; socket transport with
+	START TLS ability
+        (rudel-start-tls-transport::rudel-enable-encryption): new method;
+	enable TLS encryption
+        (rudel-start-tls-backend): new class; START TLS transport backend
+        (rudel-start-tls-backend::initialize-instance): new method
+        (rudel-start-tls-backend::rudel-make-connection): new method;
+	create new START TLS transport object
+        (autoloading): added autoloaded registration of the backend
+
+	* rudel-util.el: (rudel-assemble-lines): new function assemble
+	complete lines from string fragments
+
+	* socket/rudel-socket.el (footer): changed provided feature
+	rudel-tcp -> rudel-socket; changed comment
+
+	* tls/rudel-tls.el (rudel-tls-wait-init): use
+	`rudel-assemble-fragments' instead of
+	`rudel-assemble-line-fragments'; use `rudel-loop-fragments'
+	instead of `rudel-loop-lines'
+        (rudel-tls-wait-handshake): use `rudel-assemble-fragments' instead
+	of `rudel-assemble-line-fragments'; use `rudel-loop-fragments'
+	instead of `rudel-loop-lines'
+        (rudel-tls-established): use `rudel-assemble-fragments' instead of
+	`rudel-assemble-line-fragments'; use `rudel-loop-fragments'
+	instead of `rudel-loop-lines'
+
+	* rudel-util.el (rudel-loop-fragments): new macro; call a form for
+	each fragment
+
+	* tls/rudel-tls.el: moved to tls directory
+	* tls/Project.ede (target tls): added rudel-tls.el
+	* Project.ede (target autoloads): added tls directory
+	(target compile): removed rudel-tls.el
 
 	* rudel-compat.el (progress-spinner-values):
 	(progress-reporter-spinner-p):
