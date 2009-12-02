@@ -103,13 +103,24 @@
 	(sit-for 1))))
 
   ;; The connection is now established
-  'joining)
+  'waiting-for-join-info)
 
 (defmethod rudel-obby/net6_encryption_failed
   ((this rudel-obby-client-state-encryption-start))
   "Handle net6 'encryption_failed' message."
-  ;; The connection is now established; without encryption though
-  'joining)
+  ;; The connection is now established; without encryption though.
+  'waiting-for-join-info)
+
+
+;;; Class rudel-obby-client-state-wait-for-join-info
+;;
+
+(defclass rudel-obby-client-state-waiting-for-join-info
+  (rudel-obby-client-connection-state)
+  ()
+  "State entered when the connection is established and
+potentially needs additional information for joining the
+session.")
 
 
 ;;; Class rudel-obby-client-state-joining
@@ -120,24 +131,23 @@
   ()
   "First state after the connection has been properly set up.")
 
-(defmethod rudel-enter ((this rudel-obby-client-state-joining))
+(defmethod rudel-enter ((this rudel-obby-client-state-joining) info)
   "When entering this state, send a login request."
   ;; Send login request with username and color. This can easily fail
   ;; (resulting in response 'net6_login_failed') if the username or
   ;; color is already taken.
-  (with-slots (info) (oref this connection)
-    (let ((username        (plist-get info :username))
-	  (color           (plist-get info :color))
-	  (global-password (plist-get info :global-password))
-	  (user-password   (plist-get info :user-password)))
-      (apply #'rudel-send
-	     this
-	     "net6_client_login"
-	     username (rudel-obby-format-color color)
-	     (append (when global-password
-		       (list global-password))
-		     (when (and global-password user-password)
-		       (list user-password))))))
+  (let ((username        (plist-get info :username))
+	(color           (plist-get info :color))
+	(global-password (plist-get info :global-password))
+	(user-password   (plist-get info :user-password)))
+    (apply #'rudel-send
+	   this
+	   "net6_client_login"
+	   username (rudel-obby-format-color color)
+	   (append (when global-password
+		     (list global-password))
+		   (when (and global-password user-password)
+		     (list user-password)))))
   nil)
 
 (defmethod rudel-obby/obby_sync_init
@@ -718,16 +728,17 @@ failure."))
 ;;
 
 (defvar rudel-obby-client-connection-states
-  '((new                  . rudel-obby-client-state-new)
-    (encryption-negotiate . rudel-obby-client-state-encryption-negotiate)
-    (encryption-start     . rudel-obby-client-state-encryption-start)
-    (joining              . rudel-obby-client-state-joining)
-    (join-failed          . rudel-obby-client-state-join-failed)
-    (idle                 . rudel-obby-client-state-idle)
-    (session-synching     . rudel-obby-client-state-session-synching)
-    (subscribing          . rudel-obby-client-state-subscribing)
-    (document-synching    . rudel-obby-client-state-document-synching)
-    (they-finalized       . rudel-obby-client-state-they-finalized))
+  '((new                   . rudel-obby-client-state-new)
+    (encryption-negotiate  . rudel-obby-client-state-encryption-negotiate)
+    (encryption-start      . rudel-obby-client-state-encryption-start)
+    (waiting-for-join-info . rudel-obby-client-state-waiting-for-join-info)
+    (joining               . rudel-obby-client-state-joining)
+    (join-failed           . rudel-obby-client-state-join-failed)
+    (idle                  . rudel-obby-client-state-idle)
+    (session-synching      . rudel-obby-client-state-session-synching)
+    (subscribing           . rudel-obby-client-state-subscribing)
+    (document-synching     . rudel-obby-client-state-document-synching)
+    (they-finalized        . rudel-obby-client-state-they-finalized))
   "Name symbols and classes of connection states.")
 
 

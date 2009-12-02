@@ -833,12 +833,6 @@ will be prompted for."
 	 (transport)
 	 (connection))
 
-    ;; Give the backend a chance to collect remaining connect
-    ;; info. For session initiation methods like Zeroconf, we have the
-    ;; _connection_ info, but are still missing the username and
-    ;; stuff.
-    (setq info (rudel-ask-connect-info protocol-backend info))
-
     ;; Add the session object to INFO.
     (setq info (plist-put info :session session))
 
@@ -846,7 +840,8 @@ will be prompted for."
     (setq transport  (rudel-make-connection
 		      transport-backend info #'ignore))
     (setq connection (rudel-connect
-		      protocol-backend transport info))
+		      protocol-backend transport
+		      info #'rudel-ask-connect-info))
     (oset session :connection connection)
 
     ;; Store the new session object globally.

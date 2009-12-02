@@ -1,3 +1,24 @@
+2009-12-02  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel.el (rudel-join-session): do not call
+	`rudel-ask-connect-info' as this is done by the protocol backend
+	when needed
+	* rudel-protocol.el (generic rudel-connect): added arguments
+	info-callback and progress-callback; updated documentation string
+	* obby/rudel-obby.el (rudel-obby-backend::rudel-connect): added
+	arguments info-callback and progress-callback; removed progress
+	reporter, since callback is used instead; in case of recoverable
+	errors, do not signal but try again
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-encryption-start::rudel-obby/net6_encryption_begin):
+	(rudel-obby-client-state-encryption-start::rudel-obby/net6_encryption_failed):
+	new successor state is waiting-for-join-info
+	(rudel-obby-client-state-waiting-for-join-info): new class; state
+	entered when waiting for join info
+	(rudel-obby-client-state-joining::rudel-enter): new argument info;
+	do not retrieve info from connection object
+	(rudel-obby-client-connection-states): added waiting-for-join-info
+
 2009-12-01  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	added initial support for the transport abstraction to affected

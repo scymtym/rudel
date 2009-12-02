@@ -90,7 +90,8 @@ connections and creates obby servers.")
 
   (oset this :version rudel-obby-version))
 
-(defmethod rudel-ask-connect-info ((this rudel-obby-backend) &optional info)
+(defmethod rudel-ask-connect-info ((this rudel-obby-backend)
+				   &optional info)
   "Ask user for the information required to connect to an obby server."
   ;; Read server host and port.
   (let ((host            (or (and info (plist-get info :host))
@@ -125,7 +126,9 @@ connections and creates obby servers.")
 	    info))
   )
 
-(defmethod rudel-connect ((this rudel-obby-backend) transport info)
+(defmethod rudel-connect ((this rudel-obby-backend) transport
+			  info info-callback
+			  &optional progress-callback)
   "Connect to an obby server using the information INFO.
 Return the connection object."
   ;; Before we start, load the client functionality.
@@ -135,49 +138,86 @@ Return the connection object."
   (let* ((session    (plist-get info :session))
 	 (host       (plist-get info :host))
 	 (port       (plist-get info :port))
+	 (encryption (plist-get info :encryption))
 	 (connection (rudel-obby-connection
 		      host
 		      :session session
 		      :socket  (oref transport :socket)
 		      :info    info)))
 
-    ;; Now start receiving and wait until the basic session setup is
+    ;; Start the transport and wait until the basic session setup is
     ;; complete.
     (set-process-filter (oref transport :socket) #'rudel-filter-dispatch)
     (set-process-sentinel (oref transport :socket) #'rudel-sentinel-dispatch)
     (rudel-start transport)
 
-    ;; Wait for the connection to reach one of the states idle,
-    ;; join-failed and they-finalized.
-    (condition-case error
-	(lexical-let ((reporter (make-progress-reporter "Joining ")))
-	  (flet ((display-progress (state)
-	           (cond
-		    ;; For all states, just spin.
-		    ((consp state)
-		     (progress-reporter-force-update
-		      reporter nil (format "Joining (%s)" (car state))))
+    (rudel-state-wait connection
+		      '(waiting-for-join-info) nil
+		      progress-callback)
 
-		    ;; Done
-		    (t
-		     (progress-reporter-force-update reporter nil "Joining ")
-		     (progress-reporter-done reporter)))))
+    ;; Wait until we join the session.
+    (catch 'connect
+      (let ((switch-to (list 'joining info)))
+	(while t
+	  ;; Request username and/or color when necessary.
+	  (unless (and (plist-get info :username)
+		       (plist-get info :color))
+	    (setq info      (funcall info-callback this info)
+		  switch-to (list 'joining info)))
 
-	    (rudel-state-wait connection
-			      '(idle) '(join-failed they-finalized)
-			      #'display-progress)))
+	  ;; Switch connection to specified state to start the login
+	  ;; procedure.
+	  (when switch-to
+	    (apply #'rudel-switch connection switch-to))
 
-      (rudel-entered-error-state
-       (destructuring-bind (symbol . state) (cdr error)
-	 (if (eq (rudel-find-state connection 'join-failed) state)
-	     (with-slots (error-symbol error-data) state
-	       (signal 'rudel-join-error
-		       (append (list error-symbol) error-data)))
-	   (signal 'rudel-join-error nil)))))
+	  ;; Wait for the login procedure to succeed or fail.
+	  (condition-case error-data
+	      ;; When the connection enters state 'idle', the login
+	      ;; succeeded; Break out of the while loop then.
+	      (progn
+		(rudel-state-wait connection
+				  '(idle) '(join-failed they-finalized)
+				  progress-callback)
+		(throw 'connect t))
+
+	    ;; Connection entered error state
+	    (rudel-entered-error-state
+	     (destructuring-bind (symbol . state) (cdr error-data)
+	       (if (eq (rudel-find-state connection 'join-failed) state)
+
+		   ;; For the join-failed state, we can extract
+		   ;; details and react accordingly.
+		   (case symbol
+		     ;; Error state is 'join-failed'
+		     (join-failed
+		      (with-slots (error-symbol error-data) state
+			(message "Login error: %s %s."
+				 error-symbol error-data)
+			(sleep-for 2)
+			(case error-symbol
+			  ;; Invalid username; reset it
+			  (rudel-obby-username-invalid
+			   (setq info      (plist-put info :username nil)
+				 switch-to (list 'joining info)))
+
+			  ;; Username already in use; reset it
+			  (rudel-obby-username-in-use
+			   (setq info      (plist-put info :username nil)
+				 switch-to (list 'joining info)))
+
+			  ;; Color already in use; reset it
+			  (rudel-obby-color-in-use
+			   (setq info      (plist-put info :color nil)
+				 switch-to (list 'joining info)))
+
+			  ;; Unknown error TODO should we signal?
+			  (t nil)))))
+
+		 ;; For all other error states, we just give up.
+		 (signal 'rudel-join-error nil))))))))
 
     ;; The connection is now usable; return it.
-    connection)
-  )
+    connection))
 
 (defmethod rudel-ask-host-info ((this rudel-obby-backend))
   "Ask user for information required to host an obby session."
