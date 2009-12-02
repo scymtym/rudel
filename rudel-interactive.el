@@ -178,5 +178,29 @@ return the name as string."
   "When the requested buffer NAME exists, create another buffer."
   (get-buffer-create (generate-new-buffer-name name)))
 
+
+;;; Progress reporting
+;;
+
+(defun rudel-make-state-progress-callback (label)
+  "Return a progress reporter that displays LABEL along with states.
+This function's primary purpose is constructing callbacks
+suitable for `rudel-state-wait'"
+  (lexical-let ((label1   label)
+		(reporter (make-progress-reporter label)))
+    (lambda (state)
+      (cond
+       ;; For all states, just spin.
+       ((consp state)
+	(progress-reporter-force-update
+	 reporter nil (format "%s(%s)" label1 (car state))))
+
+       ;; Done
+       (t
+	(progress-reporter-force-update
+	 reporter nil label1)
+	(progress-reporter-done reporter)))))
+  )
+
 (provide 'rudel-interactive)
 ;;; rudel-interactive.el ends here
