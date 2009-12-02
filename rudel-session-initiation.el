@@ -46,7 +46,9 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision
+;; 0.2 - Support for transport backends
+;;
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -73,8 +75,9 @@ mostly strings, but symbols and numbers are possible as well.
 
 The following keys are required for any session:
 
-* :name    (string)
-* :backend (string or symbol)
+* :name              (string)
+* :transport-backend (string or symbol)
+* :protocol-backend  (string or symbol)
 
 Other keys are optional and depend on the selected
 backend. Required keys for which no value is specified will be
@@ -91,38 +94,41 @@ Additional keys required by most backends:
 Here is a complete example of customized values for the obby
 backend:
 
-* :name            \"sonian\"
-* :backend         obby
-* :host            \"sobby\"
-* :port            6522
-* :encryption      t
-* :username        \"phil\"
-* :color           \"white\"
-* :global-password \"\"             (this means \"no password\")
-* :user-password   \"\"
+* :name              \"sonian\"
+* :transport-backend tcp
+* :protocol-backend  obby
+* :host              \"sobby\"
+* :port              6522
+* :encryption        t
+* :username          \"phil\"
+* :color             \"white\"
+* :global-password   \"\"         (this means \"no password\")
+* :user-password     \"\"
 
 The programmatic equivalent looks like this:
 
 (add-to-list
  'rudel-configured-sessions
- (list :name            \"myserver\"
-       :backend         'obby
-       :host            \"my.sobby-server.net\"
-       :username        user-login-name
+ (list :name              \"myserver\"
+       :protocol-backend  'tcp
+       :transport-backend 'obby
+       :host              \"my.sobby-server.net\"
+       :username          user-login-name
        ;; Use M-x list-colors-display to see color choices.
-       :color           \"white\"
-       :encryption      t
-       :port            6522
+       :color             \"white\"
+       :encryption        t
+       :port              6522
        ;; empty string means no password
-       :global-password \"\"
-       :user-password   \"\"))"
+       :global-password   \"\"
+       :user-password     \"\"))"
   :group 'rudel
   :type  '(repeat :tag "Connections"
 		  (plist :tag "Connection"
-			 :options ((:name     string)
-				   (:backend  symbol)
-				   (:username string)
-				   (:color    color))))
+			 :options ((:name              string)
+				   (:transport-backend symbol)
+                                   (:protocol-backend  symbol)
+				   (:username          string)
+				   (:color             color))))
   )
 
 
@@ -248,7 +254,7 @@ advertise the session."
 ;;; Class rudel-ask-protocol-backend
 ;;
 
-(defconst rudel-ask-protocol-version '(0 1)
+(defconst rudel-ask-protocol-version '(0 2)
   "Version of the ask-protocol backend for Rudel.")
 
 ;;;###autoload
@@ -269,13 +275,15 @@ required by the chosen backend.")
 
 (defmethod rudel-discover ((this rudel-ask-protocol-backend))
   "\"Discover\" sessions by asking the user about the backend to use and the connect info."
-  (let ((backend (rudel-backend-choose
-		  'protocol
-		  (lambda (backend)
-		    (rudel-capable-of-p backend 'join)))))
-    (list (append (list :name    "asked"
-			:backend backend)
-		  (rudel-ask-connect-info (cdr backend)))))
+  (let ((protocol-backend  (rudel-backend-choose
+			    'protocol
+			    (lambda (backend)
+			      (rudel-capable-of-p backend 'join))))
+	(transport-backend (rudel-backend-choose 'transport)))
+    (list (append (list :name              "asked"
+			:protocol-backend  protocol-backend
+			:transport-backend transport-backend)
+		  (rudel-ask-connect-info (cdr protocol-backend)))))
   )
 
 ;;;###autoload
@@ -286,7 +294,7 @@ required by the chosen backend.")
 ;;; Class rudel-configured-sessions-backend
 ;;
 
-(defconst rudel-configured-sessions-version '(0 1)
+(defconst rudel-configured-sessions-version '(0 2)
   "Version of the configured-sessions backend for Rudel.")
 
 ;;;###autoload
@@ -332,11 +340,15 @@ configured using customization.")
       (setq rest (cddr rest))
       (cond
        ;; Resolve backend arguments.
-       ((eq key :backend)
-	(let ((backend (rudel-backend-get 'protocol
-					  (if (stringp value)
-					      (intern value)
-					    value))))
+       ((or (eq key :transport-backend)
+	    (eq key :protocol-backend))
+	(let ((backend (rudel-backend-get
+			(if (eq key :transport-backend)
+			    'transport
+			  'protocol)
+			(if (stringp value)
+			    (intern value)
+			  value))))
 	  (push backend adjusted-info)
 	  (push key     adjusted-info)))
        ;; Keep other arguments unmodified.
