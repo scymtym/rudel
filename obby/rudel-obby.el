@@ -52,6 +52,7 @@
 (require 'rudel-util)
 (require 'rudel-icons)
 (require 'rudel-compat) ;; for `read-color' replacement
+(require 'rudel-interactive) ;; for read functions
 
 
 ;;; Constants
@@ -62,6 +63,9 @@
 
 (defconst rudel-obby-protocol-version 8
   "Version of the obby protocol this library understands.")
+
+(defconst rudel-obby-default-port 6522
+  "Default port used by the obby protocol.")
 
 (defvar rudel-obby-long-message-threshold 32768
   "Threshold for message size, above which messages are sent in
@@ -94,26 +98,33 @@ connections and creates obby servers.")
 				   &optional info)
   "Ask user for the information required to connect to an obby server."
   ;; Read server host and port.
-  (let ((host            (or (and info (plist-get info :host))
-			     (read-string "Server: ")))
-	(port            (or (and info (plist-get info :port))
-			     (read-number "Port: " 6522)))
-	;; Read desired username and color
-	(username        (or (and info (plist-get info :username))
-			     (read-string "Username: " user-login-name)))
-	(color           (or (and info (plist-get info :color))
-			     (read-color  "Color: " t)))
-	(encryption      (if (and info (member :encryption info))
-			     (plist-get info :encryption)
-			   (y-or-n-p "Use encryption? ")))
-	(global-password (if (and info (member :global-password info))
-			     (plist-get info :global-password)
-			   (read-string "Global password: " "")))
-	(user-password   (if (and info (member :user-password info))
-			     (plist-get info :user-password)
-			   (read-string "User password: " ""))))
-    (append (list :transport-backend 'tcp
-		  :protocol-backend  'obby
+  (let* ((host              (or (and info (plist-get info :host))
+				(read-string "Server: ")))
+	 (port              (or (and info (plist-get info :port))
+				(read-number
+				 "Port: " rudel-obby-default-port)))
+	 (encryption        (if (and info (member :encryption info))
+				(plist-get info :encryption)
+			      (y-or-n-p "Use encryption (Required by Gobby server, not supported by Rudel server)? ")))
+	 (transport-backend (or (plist-get info :transport-backend)
+				(rudel-backend-get
+				 'transport
+				 (if encryption 'start-tls 'tcp))))
+	 (protocol-backend  (or (plist-get info :protocol-backend)
+				(rudel-backend-get 'protocol 'obby)))
+	 ;; Read desired username and color
+	 (username          (or (and info (plist-get info :username))
+				(rudel-read-user-name)))
+	 (color             (or (and info (plist-get info :color))
+				(rudel-read-user-color)))
+	 (global-password   (if (and info (member :global-password info))
+				(plist-get info :global-password)
+			      (read-string "Global password: " "")))
+	 (user-password     (if (and info (member :user-password info))
+				(plist-get info :user-password)
+			      (read-string "User password: " ""))))
+    (append (list :transport-backend transport-backend
+		  :protocol-backend  protocol-backend
 		  :host              host
 		  :port              port
 		  :username          username

@@ -1,5 +1,21 @@
 2009-12-02  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	* obby/rudel-obby.el (rudel-obby-default-port): new constant; used
+	as default when reading the port number
+	(rudel-obby-backend::rudel-ask-connect-info): use specialized read
+	functions; handle transport and protocol backend better
+
+	* rudel-session-initiation.el (header): bumped version to 0.2 in
+	history section
+	(rudel-configured-sessions): added :transport-backend and
+	:protocol-backend in type specification and documentation string
+	(rudel-ask-protocol-version): bumped version to 0.2
+	(rudel-ask-protocol-backend::rudel-discover): handle transport and
+	protocol backend
+	(rudel-configured-sessions-version): bumped version to 0.2
+	(rudel-session-initiation-adjust-info): handle :transport-backend
+	and :protocol-backend keywords
+
 	* rudel.el (rudel-join-session): do not call
 	`rudel-ask-connect-info' as this is done by the protocol backend
 	when needed
