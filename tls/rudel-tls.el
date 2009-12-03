@@ -259,7 +259,7 @@ and :port."
 		     :host     host
 		     :service  port
 		     :stop     t)))
-    (rudel-socket-transport
+    (rudel-start-tls-transport
      (format "to %s" host)
      :socket socket))
   )
