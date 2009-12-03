@@ -96,50 +96,6 @@ list of hooks."
     (apply #'run-hook-with-args 'hook this arguments)))
 
 
-;;; Class rudel-socket-owner
-;;
-
-(defclass rudel-socket-owner ()
-  ((socket :initarg :socket
-	   :type    process
-	   :documentation
-	   "The process object representing the socket through
-which the communication happens."))
-  "Class rudel-socket-owner ")
-
-(defmethod initialize-instance :after ((this rudel-socket-owner)
-				       &rest slots)
-  "Attach THIS to as process object of our socket."
-  ;; Attach to our socket.
-  (with-slots (socket) this
-    (rudel-set-process-object socket this))
-  )
-
-(defmethod rudel-disconnect ((this rudel-socket-owner))
-  "Disconnect the network connection owned by THIS."
-  (with-slots (socket) this
-    (delete-process socket)))
-
-(defmethod rudel-state-change ((this rudel-socket-owner) state message)
-  "Called when the state of THIS changes to STATE.
-MESSAGE is the message emitted when the state transition
-occurred."
-  (with-slots (socket) this
-    (case state
-      ;; Nothing to do here.
-      (run
-       nil)
-
-      ;; Dispatch events which indicate the termination of the
-      ;; connection to `rudel-close'.
-      ((closed failed exit)
-       (rudel-close this))))
-  )
-
-(defmethod rudel-close ((this rudel-socket-owner))
-  "Called when the connection associated to THIS is closed.")
-
-
 ;;; Networking helper functions and macros
 ;;
 
@@ -154,17 +110,6 @@ occurred."
   (unless key
     (setq key :object))
   (put (intern (process-name process)) key object))
-
-(defun rudel-filter-dispatch (process data)
-  "Call `rudel-receive' method of object attached to PROCESS with DATA."
-  (let ((object (rudel-process-object process)))
-    (rudel-receive object data)))
-
-(defun rudel-sentinel-dispatch (process message)
-  "Call `rudel-state-change' method of the object attached to PROCESS with state and MESSAGE."
-  (let ((object (rudel-process-object process))
-	(state  (process-status process)))
-    (rudel-state-change object state message)))
 
 
 ;;; Fragmentation and assembling functions.

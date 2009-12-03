@@ -29,9 +29,11 @@
 
 ;;; History:
 ;;
-;; 0.2 - State machine.
+;; 0.3 - Support for transports
 ;;
-;; 0.1 - Initial revision.
+;; 0.2 - State machine
+;;
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -96,10 +98,10 @@
   ((this rudel-obby-client-state-encryption-start))
   "Handle net6 'encryption_begin' message."
   ;; Start TLS encryption for the connection.
-  (with-slots (connection) this
-    (with-slots (socket) connection
-      (when (rudel-process-object socket :supports-tls)
-	(rudel-tls-start-tls socket)
+  (with-slots (transport) (oref this :connection)
+    (let ((root-transport (oref transport :root-transport)))
+      (when (rudel-start-tls-transport-child-p root-transport)
+	(rudel-enable-encryption root-transport)
 	(sit-for 1))))
 
   ;; The connection is now established
@@ -745,17 +747,21 @@ failure."))
 ;;; Class rudel-obby-connection
 ;;
 
-(defclass rudel-obby-connection (rudel-obby-socket-owner
-				 rudel-connection
+(defclass rudel-obby-connection (rudel-connection
 				 rudel-state-machine)
-  ((info     :initarg :info
-	     :type    list
-	     :documentation
-	     "Stores connection information for later use.")
-   (contexts :initarg :contexts
-	     :type    hash-table
-	     :documentation
-	     "Contains jupiter context objects for all
+  ((transport :initarg  :transport
+	      :type     rudel-transport
+	      :documentation
+	      "The transport object through which this connection
+sends and receives its data.")
+   (info      :initarg :info
+	      :type    list
+	      :documentation
+	      "Stores connection information for later use.")
+   (contexts  :initarg :contexts
+	      :type    hash-table
+	      :documentation
+	      "Contains jupiter context objects for all
 documents."))
   "Class rudel-obby-connection ")
 
@@ -771,6 +777,23 @@ documents."))
 
   ;; Register states.
   (rudel-register-states this rudel-obby-client-connection-states)
+
+  ;; Set up the transport.
+  (with-slots (transport) this
+
+    ;; Build the following transport filter stack:
+    ;; + `rudel-parsing-transport-filter'
+    ;; + `rudel-assembling-transport-filter'
+    ;; + TRANSPORT
+    (setq transport (rudel-obby-make-transport-filter-stack transport))
+
+    ;; Install `rudel-accept' as filter to dispatch messages to the
+    ;; current state machine state.
+    (lexical-let ((this1 this))
+      (rudel-set-filter
+       transport
+       (lambda (data)
+	 (rudel-accept this1 data)))))
   )
 
 (defmethod rudel-register-state ((this rudel-obby-connection)
@@ -783,6 +806,11 @@ documents."))
   (when (next-method-p)
     (call-next-method))
   )
+
+(defmethod rudel-send ((this rudel-obby-connection) &rest args)
+  "Send ARGS through the transport of THIS."
+  (with-slots (transport) this
+    (rudel-send transport args)))
 
 (defmethod rudel-disconnect ((this rudel-obby-connection))
   ""
@@ -816,13 +844,6 @@ documents."))
   "Remove the jupiter context associated to DOCUMENT from THIS connection."
   (with-slots (contexts) this
     (remhash (oref document :id) contexts)))
-
-(defmethod rudel-message ((this rudel-obby-connection) message)
-  "Dispatch MESSAGE to the current state of THIS object.
-If the state has no suitable method, generate a warning, but do
-nothing else."
-  ;; Dispatch message to state.
-  (rudel-accept this message))
 
 (defmethod rudel-change-color- ((this rudel-obby-connection) color)
   ""

@@ -48,6 +48,7 @@
 
 (require 'rudel)
 (require 'rudel-backend)
+(require 'rudel-transport)
 (require 'rudel-protocol)
 (require 'rudel-util)
 (require 'rudel-icons)
@@ -148,18 +149,15 @@ Return the connection object."
   ;; Create the network process
   (let* ((session    (plist-get info :session))
 	 (host       (plist-get info :host))
-	 (port       (plist-get info :port))
 	 (encryption (plist-get info :encryption))
 	 (connection (rudel-obby-connection
 		      host
-		      :session session
-		      :socket  (oref transport :socket)
-		      :info    info)))
+		      :session   session
+		      :transport transport
+		      :info      info)))
 
     ;; Start the transport and wait until the basic session setup is
     ;; complete.
-    (set-process-filter (oref transport :socket) #'rudel-filter-dispatch)
-    (set-process-sentinel (oref transport :socket) #'rudel-sentinel-dispatch)
     (rudel-start transport)
 
     (rudel-state-wait connection
@@ -233,37 +231,30 @@ Return the connection object."
 (defmethod rudel-ask-host-info ((this rudel-obby-backend))
   "Ask user for information required to host an obby session."
   (let ((port (read-number "Port: " 6522)))
-    (list :port port)))
+    (list
+     :address "0.0.0.0"
+     :port    port)))
 
-(defmethod rudel-host ((this rudel-obby-backend) info)
+(defmethod rudel-host ((this rudel-obby-backend) transport-backend info)
   "Host an obby session using the information INFO.
 Return the created server."
   ;; Before we start, we load the server functionality.
   (require 'rudel-obby-server)
 
-  ;; Create the network process.
-  (let* ((port   (plist-get info :port))
-	 ;; Make a server socket
-	 (socket (make-network-process
-		  :name     "obby-server"
-		  :host     "0.0.0.0"
-		  :service  port
-		  :server   t
-		  :filter   #'rudel-filter-dispatch
-		  :sentinel #'rudel-sentinel-dispatch
-		  ;;
-		  :log
-		  (lambda (server-process client-process message)
-		    (let ((server (rudel-process-object server-process)))
-		      (rudel-add-client server client-process)))))
-	 ;; Construct server object.
-	 (server (rudel-obby-server "obby-server"
-				    :backend this
-				    :socket  socket)))
+  ;; Construct and return the server object.
+  (let ((server (rudel-obby-server
+		 "obby-server"
+		 :backend this)))
 
-    ;; Return the constructed server.
-    server)
-  )
+    ;; Dispatch incoming connections to SERVER.
+    (lexical-let ((server1 server))
+      (rudel-wait-for-connections
+       transport-backend info
+       (lambda (client-transport)
+	 (rudel-add-client server1 client-transport))))
+
+    ;; Return the constructed server object.
+    server))
 
 (defmethod rudel-make-document ((this rudel-obby-backend)
 				name session)
@@ -489,25 +480,18 @@ The terminating `\n' should be removed from MESSAGE before
 calling this function."
   (mapcar #'rudel-obby-unescape-string (split-string message ":")))
 
-(defun rudel-obby-send (socket name arguments)
-  "Send an obby message NAME with arguments ARGUMENTS through SOCKET."
-  ;; First, assemble the message string.
-  (let ((message (apply #'rudel-obby-assemble-message
-			name arguments)))
-    (if (>= (length message) rudel-obby-long-message-threshold)
-	;; For huge messages, chunk the message data and transmit the
-	;; chunks
-	(let ((total    (/ (length message)
-			   rudel-obby-long-message-chunk-size))
-	      (current  0)
-	      (reporter (make-progress-reporter "Sending data " 0.0 1.0)))
-	  (rudel-loop-chunks message chunk rudel-obby-long-message-chunk-size
-	    (progress-reporter-update reporter (/ (float current) total))
-	    (process-send-string socket chunk)
-	    (incf current))
-	  (progress-reporter-done reporter))
-      ;; Send small messages in one chunk
-      (process-send-string socket message)))
+(defun rudel-obby-generate-message (name-and-args)
+  "Transform NAME and arguments into an obby protocol message.
+
+The resulting message is a string that looks like this:
+\"NAME:ARG1:ARG2:...:ARGN\\n\""
+  (concat (mapconcat
+	   (lambda (part)
+	     (if (and (not (null part)) (stringp part)) ;; TODO temp
+		 (rudel-obby-escape-string part)
+	       part))
+	   name-and-args ":")
+	  "\n")
   )
 
 

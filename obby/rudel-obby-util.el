@@ -40,48 +40,11 @@
 
 (require 'eieio)
 
-(require 'rudel)
-(require 'rudel-util)
-
 (require 'jupiter)
 
-
-;;; Class rudel-obby-socket-owner
-;;
-
-(defclass rudel-obby-socket-owner (rudel-socket-owner)
-  ((buffer :initarg  :buffer
-	   :type     (or null string)
-	   :initform nil
-	   :documentation
-	   "Stores message fragments until complete messages can
-be assembled."))
-  "This class adds functions for sending and receiving obby
-messages to the base class rudel-socket-owner.")
-
-(defmethod rudel-send ((this rudel-obby-socket-owner)
-		       name &rest arguments)
-  "Send obby message NAME with arguments ARGUMENTS through the socket associated to THIS."
-  (with-slots (socket) this
-    (rudel-obby-send socket name arguments)))
-
-(defmethod rudel-receive ((this rudel-obby-socket-owner) data)
-  "Reassemble lines in DATA received on the socket associated with THIS and call message handler."
-  ;; Assemble fragmented lines.
-  (with-slots (buffer) this
-    (rudel-assemble-line-fragments data buffer))
-
-  ;; Process all available lines.
-  (rudel-loop-lines data line
-    ;; `rudel-message' has to dispatch message to an appropriate
-    ;; handler.
-    (let ((message (rudel-obby-parse-message line)))
-      (rudel-message this message)))
-  )
-
-(defgeneric rudel-message ((this rudel-obby-socket-owner) message)
-  "Called when a message arrives.
-Should be implemented in derived classes.")
+(require 'rudel)
+(require 'rudel-util)
+(require 'rudel-transport-util) ;; for `rudel-transport-make-filter-stack'
 
 
 ;;; Message serialization
@@ -238,6 +201,20 @@ construction of the name of the new operation. "
 
 (defmethod rudel-obby-byte->char ((this jupiter-nop) buffer)
   "Nothing to convert if THIS is a nop.")
+
+
+;;; Transport functions
+;;
+
+(defun rudel-obby-make-transport-filter-stack (transport)
+  "Construct an obby protocol filter stack on top of TRANSPORT."
+  (rudel-transport-make-filter-stack
+   transport
+   '((rudel-assembling-transport-filter
+      :assembly-function rudel-assemble-lines)
+     (rudel-parsing-transport-filter
+      :parse-function    rudel-obby-parse-message
+      :generate-function rudel-obby-generate-message))))
 
 
 ;;; Miscellaneous functions

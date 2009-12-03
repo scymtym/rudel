@@ -83,8 +83,13 @@ connection will be associated.")
   "Retrieve information for hosting a session from user.
 Return a property list that contains the collected information.")
 
-(defgeneric rudel-host ((this rudel-protocol-backend) info)
-  "Create a new session according to the property list INFO.")
+(defgeneric rudel-host ((this rudel-protocol-backend) backend
+			info)
+  "Create a new session according to the property list INFO.
+BACKEND has to be an object of a class derived from
+`rudel-transport-backend' and has to have the listen
+capability.
+The created session object is returned.")
 
 (defgeneric rudel-make-document ((this rudel-protocol-backend)
 				 name session)

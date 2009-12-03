@@ -1,3 +1,74 @@
+2009-12-03  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel.el (rudel-host-session): determine a transport and a
+	protocol backend; ask the protocol backend to create the session
+	* rudel-util.el (rudel-socket-owner):
+	(rudel-filter-dispatch):
+	(rudel-sentinel-dispatch): removed; made obsolete by transports
+	* rudel-protocol.el (rudel-protocol-backend::rudel-host): added
+	backend argument, which is the transport backend; updated
+	documentation string
+	* rudel-debug.el (rudel-state-machine::rudel-state-change):
+	attached method to `rudel-state-machine' instead of
+	`rudel-socket-owner'
+	(rudel-debug-stream-name): determine the name from a transport
+	object instead of a socket
+	* obby/rudel-obby.el (require rudel-transport): required for
+	transports
+	(rudel-obby-backend::rudel-connect): use a transport object
+	instead of a socket
+	(rudel-obby-backend::rudel-ask-host-info): added :address property
+	(rudel-obby-backend::rudel-host): added transport-backend
+	argument; do not create a socket but call the
+	`rudel-wait-for-connections' method of the transport backend
+	(rudel-obby-send): removed; made obsolete by transports
+	(rudel-obby-generate-message): new function; used in parsing
+	transport filters to serialize obby messages
+	* obby/rudel-obby-util.el (require rudel-transport-util): new; for
+	`rudel-transport-make-filter-stack'
+	(rudel-obby-socket-owner): removed; made obsolete by transports
+	* obby/rudel-obby-server.el (header): bumped version to 0.3
+	(rudel-obby-client): removed base class `rudel-obby-socket-owner'
+	(rudel-obby-client::transport): new slot; stores transport object
+	(rudel-obby-client::initialize-instance): build a transport filter
+	stack and install `rudel-accept' as filter
+	(rudel-obby-client::rudel-message): removed; `rudel-accept' is
+	called by the transport
+	(rudel-obby-client::rudel-send): new; send data through transport
+	(rudel-obby-server): removed base class `rudel-socket-owner'
+	(rudel-obby-server::rudel-add-client): expect a transport object
+	instead of a socket
+	* obby/rudel-obby-debug.el (header): cosmetic changes
+	(require rudel-obby-client): new; required since all methods are
+	now attached to the `rudel-obby-connection' class
+	(rudel-obby-connection::rudel-send): now attached to the
+	`rudel-obby-connection' class
+	(rudel-obby-connection::rudel-accept): renamed `rudel-receive' ->
+	`rudel-accept'; now attached to the `rudel-obby-connection' class
+	(rudel-obby-socket-owner::rudel-message): removed; obsolete
+	(rudel-obby-connection::rudel-switch): now attached to the
+	`rudel-obby-connection' class
+	* obby/rudel-obby-client.el (header): bumped version to 0.3
+	(rudel-obby-client-state-encryption-start::rudel-obby/net6_encryption_begin):
+	call transport method to enable encryption
+	(rudel-obby-connection): removed base class `rudel-socket-owner'
+	(rudel-obby-connection::transport): new slot; stores transport
+	object
+	(rudel-obby-connection::initialize-instance): build a transport
+	filter stack and install `rudel-accept' as filter
+	(rudel-obby-connection::rudel-send): new; send data through the
+	transport
+	(rudel-obby-connection::rudel-message): removed; obsolete
+
+	* socket/rudel-socket.el
+	(rudel-tcp-backend::rudel-wait-for-connections): when creating the
+	network process, set filter and sentinel to `ignore'
+
+	* tls/rudel-tls.el
+	(rudel-start-tls-backend::rudel-make-connection): create transport
+	object of class `rudel-start-tls-transport' not
+	`rudel-socket-transport'
+
 2009-12-02  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* obby/rudel-obby.el (rudel-obby-default-port): new constant; used

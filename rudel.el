@@ -866,22 +866,17 @@ All data required to host a session will be prompted for
 interactively."
   (interactive)
   ;; If necessary, ask the user for the backend we should use.
-  (let* ((backend (cdr (rudel-backend-choose
-			'protocol
-			(lambda (backend)
-			  (rudel-capable-of-p backend 'host)))))
-	 (info    (rudel-ask-host-info backend))
-	 (server))
-
-    ;; Try to create the server
-    (condition-case error-data
-	(setq server (rudel-host backend info))
-      ('error
-       (error "Could not host session using backend `%s' with %s: %s"
-	      (object-name-string backend)
-	      info
-	      (car error-data))))
-    server))
+  (let* ((transport-backend (cdr (rudel-backend-choose
+				  'transport
+				  (lambda (backend)
+				    (rudel-capable-of-p backend 'listen)))))
+	 (protocol-backend  (cdr (rudel-backend-choose
+				  'protocol
+				  (lambda (backend)
+				    (rudel-capable-of-p backend 'host)))))
+	 (info              (rudel-ask-host-info protocol-backend)))
+    ;; Create the session object.
+    (rudel-host protocol-backend transport-backend info)))
 
 ;;;###autoload
 (defun rudel-end-session ()

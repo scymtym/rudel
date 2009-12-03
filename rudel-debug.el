@@ -167,7 +167,7 @@
 ;;; Socket debugging
 ;;
 
-(defmethod rudel-state-change :before ((this rudel-socket-owner)
+(defmethod rudel-state-change :before ((this rudel-state-machine)
 				       state message)
   "Print STATE and MESSAGE to debug stream."
   (with-slots (socket) this
@@ -184,9 +184,9 @@
 ;;; Utility functions
 ;;
 
-(defun rudel-debug-stream-name (socket)
-  "Return debug stream name for SOCKET."
-  (process-name socket))
+(defun rudel-debug-stream-name (transport)
+  "Return debug stream name for TRANSPORT."
+  (object-name-string transport))
 
 (defun rudel-debug-stream-insert (stream tag data &optional object)
   "Insert DATA and possibly OBJECT into stream using TAG as style."

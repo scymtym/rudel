@@ -38,9 +38,11 @@
 
 ;;; History:
 ;;
-;; 0.2 - State machine.
+;; 0.3 - Support for transports
 ;;
-;; 0.1 - Initial revision.
+;; 0.2 - State machine
+;;
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -476,9 +478,13 @@ of her color to COLOR."
 ;;; Class rudel-obby-client
 ;;
 
-(defclass rudel-obby-client (rudel-obby-socket-owner
-			     rudel-state-machine)
-  ((server     :initarg  :server
+(defclass rudel-obby-client (rudel-state-machine)
+  ((transport  :initarg  :transport
+	       :type     rudel-transport
+	       :documentation
+	       "The transport object through which this
+connection sends and receives its data.")
+   (server     :initarg  :server
 	       :type     rudel-obby-server
 	       :documentation
 	       "")
@@ -509,6 +515,23 @@ handled by the server.")
 
   ;; Register states.
   (rudel-register-states this rudel-obby-server-connection-states)
+
+  ;; Set up the transport.
+  (with-slots (transport) this
+
+    ;; Build the following transport filter stack:
+    ;; + `rudel-parsing-transport-filter'
+    ;; + `rudel-assembling-transport-filter'
+    ;; + TRANSPORT
+    (setq transport (rudel-obby-make-transport-filter-stack transport))
+
+    ;; Install `rudel-accept' as filter to dispatch messages to the
+    ;; current state machine state.
+    (lexical-let ((this1 this))
+      (rudel-set-filter
+       transport
+       (lambda (data)
+	 (rudel-accept this1 data)))))
   )
 
 (defmethod rudel-register-state ((this rudel-obby-client) symbol state)
@@ -528,10 +551,10 @@ handled by the server.")
   (with-slots (server) this
     (rudel-remove-client server this)))
 
-(defmethod rudel-message ((this rudel-obby-client) message)
-  "Dispatch MESSAGE to the active state of THIS state machine."
-  ;; Dispatch message to state
-  (rudel-accept this message))
+(defmethod rudel-send ((this rudel-obby-client) &rest args)
+  "Send ARGS through the transport of THIS."
+  (with-slots (transport) this
+    (rudel-send transport args)))
 
 (defmethod rudel-broadcast ((this rudel-obby-client)
 			    receivers name &rest arguments)
@@ -610,8 +633,7 @@ handled by the server.")
 ;;; Class rudel-obby-server
 ;;
 
-(defclass rudel-obby-server (rudel-server-session
-			     rudel-socket-owner)
+(defclass rudel-obby-server (rudel-server-session)
   ((clients        :initarg  :clients
 		   :type     list
 		   :initform nil
@@ -721,12 +743,13 @@ user. COLOR has to be sufficiently different from used colors."
   )
 
 (defmethod rudel-add-client ((this rudel-obby-server)
-			     client-socket)
+			     client-transport)
   ""
   (with-slots (next-client-id clients) this
-    (let ((client (rudel-obby-client (process-name client-socket)
+    (let ((client (rudel-obby-client
+		   (object-name client-transport)
 		   :server     this
-		   :socket     client-socket
+		   :transport  client-transport
 		   :id         next-client-id
 		   :encryption nil)))
       (push client clients))
