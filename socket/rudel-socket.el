@@ -151,9 +151,11 @@ and :port."
     (lexical-let ((dispatch-callback1 dispatch-callback))
       (apply
        #'make-network-process
-       :name    (format "TCP on %s" port)
-       :service port
-       :server  t
+       :name     (format "TCP on %s" port)
+       :service  port
+       :server   t
+       :filter   #'ignore
+       :sentinel #'ignore
        :log
        (lambda (server connection message)
 	 (rudel-tcp-handle-connect connection dispatch-callback1))
