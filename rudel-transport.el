@@ -84,6 +84,25 @@
   "Start THIS.")
 
 
+;;; Class rudel-listener
+;;
+
+(defclass rudel-listener ()
+  ()
+  "Interface for listener objects.
+Listener objects wait for incoming connections and create
+transport objects representing such connections."
+:abstract t)
+
+(defgeneric rudel-set-dispatcher ((this rudel-listener) handler)
+  "Install HANDLER as dispatch function for incoming connections.
+HANDLER has to accept a single argument which will be a transport
+object representing the incoming connection.")
+
+(defgeneric rudel-close ((this rudel-listener))
+  "Cause THIS to stop listening for incoming connections.")
+
+
 ;;; Class rudel-transport-backend
 ;;
 
@@ -92,8 +111,8 @@
   "Interface implemented by transport backends."
   :abstract t)
 
-(defgeneric rudel-make-connection ((this rudel-transport-backend) info
-				   info-callback
+(defgeneric rudel-make-connection ((this rudel-transport-backend)
+				   info info-callback
 				   &optional progress-callback)
   "Create a transport object according to INFO.
 
@@ -114,12 +133,16 @@ sense that it does not attempt to dispatch any data to the filter
 function before `rudel-start' has been called.")
 
 (defgeneric rudel-wait-for-connections ((this rudel-transport-backend)
-					info dispatch-callback)
-  "Create transport objects according to INFO for incoming connections.
+					info info-callback)
+  "Create and return listener object according to INFO.
+INFO has to be a property list specifying desired properties of
+the created listener.
 
-Call DISPATCH-CALLBACK each time a connection is
-established. DISPATCH-CALLBACK has to accept the created
-`rudel-transport' object as its only argument.")
+INFO-CALLBACK is called when the information provided in INFO is
+not sufficient for creating the requested listener. INFO-CALLBACK
+has to accept the backend object and a property list containing
+the current information and return a property list containing
+augmented information.")
 
 (provide 'rudel-transport)
 ;;; rudel-transport.el ends here

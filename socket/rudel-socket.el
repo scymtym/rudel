@@ -100,6 +100,49 @@
     (continue-process socket)))
 
 
+;;; Class rudel-socket-listener
+;;
+
+(defclass rudel-socket-listener (rudel-listener)
+  ((socket   :initarg  :socket
+	     :type     (or null process)
+	     :initform nil
+	     :documentation
+	     "The server socket represented by this listener
+object.")
+   (dispatch :initarg :dispatch
+	     :type    (or null function)
+	     :documentation
+	     ""))
+  "")
+
+(defmethod rudel-set-dispatcher ((this rudel-socket-listener) handler)
+  "Install HANDLER as dispatch function for incoming connections.
+HANDLER has to accept a single argument which will be a transport
+object representing the incoming connection."
+  (oset this :dispatch handler))
+
+(defmethod rudel-close ((this rudel-socket-listener))
+  "Make THIS stop listening for incoming connections."
+  (with-slots (socket) this
+    (delete-process socket)))
+
+(defmethod rudel-handle-connect ((this rudel-socket-listener) socket)
+  "Handle incoming connection SOCKET."
+  (with-slots (dispatch) this
+    (when dispatch
+      ;; Wrap SOCKET in a transport object. Pass the constructed
+      ;; object to the dispatch function.
+      (let ((transport (rudel-socket-transport
+			(format
+			 "TCP from %s"
+			 (format-network-address
+			  (process-contact socket :remote)))
+			:socket socket)))
+	(funcall dispatch transport))))
+  )
+
+
 ;;; Class rudel-tcp-backend
 ;;
 
@@ -142,39 +185,37 @@ and :port."
   )
 
 (defmethod rudel-wait-for-connections ((this rudel-tcp-backend)
-				       info dispatch-callback)
-  "Create TCP server according to INFO, dispatch to DISPATCH-CALLBACK."
-  ;; Extract information from INFO and create the socket.
-  (let* ((address (plist-get info :address))
-	 (port    (plist-get info :port)))
-    ;; Create the network process
-    (lexical-let ((dispatch-callback1 dispatch-callback))
-      (apply
-       #'make-network-process
-       :name     (format "TCP on %s" port)
-       :service  port
-       :server   t
-       :filter   #'ignore
-       :sentinel #'ignore
-       :log
-       (lambda (server connection message)
-	 (rudel-tcp-handle-connect connection dispatch-callback1))
-       (when address
-	 (list :host address)))))
-  )
+				       info info-callback)
+  "Create TCP server according to INFO.
+INFO has to be a property list containing the key :port."
+  ;; Ensure that INFO contains all necessary information.
+  (unless (every (lambda (keyword) (member keyword info))
+		 '(:port))
+    (setq info (funcall info-callback this info)))
 
-(defun rudel-tcp-handle-connect (connection dispatch-callback)
-  "Handle incoming connection CONNECTION and call DISPATCH-CALLBACK."
-  ;; Wrap CONNECTION in a transport object. Pass the constructed
-  ;; object to DISPATCH-CALLBACK.
-  (let ((transport (rudel-socket-transport
-		    (format
-		     "TCP from %s"
-		     (format-network-address
-		      (process-contact connection :remote)))
-		    :socket connection)))
-    (funcall dispatch-callback transport))
-  )
+  ;; Extract information from INFO and create the socket.
+  (let* ((address  (plist-get info :address))
+	 (port     (plist-get info :port))
+	 ;; Create the listener object; without process for now.
+	 (listener (rudel-socket-listener
+		    (format "on %s:%s" (or address "*") port)))
+	 ;; Create the network process.
+	 (socket   (lexical-let ((listener1 listener))
+		     (apply
+		      #'make-network-process
+		      :name     (format "TCP on %s" port)
+		      :service  port
+		      :server   t
+		      :filter   #'ignore
+		      :sentinel #'ignore
+		      :log
+		      (lambda (server socket message)
+			(rudel-handle-connect listener1 socket))
+		      (when address
+			(list :host address))))))
+    ;; Return the listener.
+    (oset listener :socket socket)
+    listener))
 
 
 ;;; Autoloading

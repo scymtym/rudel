@@ -228,33 +228,24 @@ Return the connection object."
     ;; The connection is now usable; return it.
     connection))
 
-(defmethod rudel-ask-host-info ((this rudel-obby-backend))
+(defmethod rudel-ask-host-info ((this rudel-obby-backend)
+				&optional info)
   "Ask user for information required to host an obby session."
   (let ((port (read-number "Port: " 6522)))
     (list
      :address "0.0.0.0"
      :port    port)))
 
-(defmethod rudel-host ((this rudel-obby-backend) transport-backend info)
+(defmethod rudel-host ((this rudel-obby-backend) listener info)
   "Host an obby session using the information INFO.
 Return the created server."
   ;; Before we start, we load the server functionality.
   (require 'rudel-obby-server)
 
   ;; Construct and return the server object.
-  (let ((server (rudel-obby-server
-		 "obby-server"
-		 :backend this)))
-
-    ;; Dispatch incoming connections to SERVER.
-    (lexical-let ((server1 server))
-      (rudel-wait-for-connections
-       transport-backend info
-       (lambda (client-transport)
-	 (rudel-add-client server1 client-transport))))
-
-    ;; Return the constructed server object.
-    server))
+  (rudel-obby-server
+   "obby-server"
+   :listener listener))
 
 (defmethod rudel-make-document ((this rudel-obby-backend)
 				name session)

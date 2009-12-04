@@ -60,6 +60,7 @@
 (require 'rudel-obby-errors)
 (require 'rudel-obby-util)
 (require 'rudel-obby-state)
+(require 'rudel-obby) ;; for `rudel-obby-user' and `rudel-obby-document'
 
 
 ;;; Class rudel-obby-server-state-new
@@ -634,7 +635,12 @@ handled by the server.")
 ;;
 
 (defclass rudel-obby-server (rudel-server-session)
-  ((clients        :initarg  :clients
+  ((listener       :initarg :listener
+		   :type    rudel-listener
+		   :documentation
+		   "The listener object that dispatches incoming
+connections to this server.")
+   (clients        :initarg  :clients
 		   :type     list
 		   :initform nil
 		   :documentation
@@ -657,11 +663,22 @@ handled by the server.")
 
 (defmethod initialize-instance ((this rudel-obby-server) &rest slots)
   ""
+  ;; Initialize slots of THIS.
   (when (next-method-p)
     (call-next-method))
 
+  ;; Create a hash-table to store the contexts.
   (with-slots (contexts) this
-    (setq contexts (make-hash-table :test 'equal))))
+    (setq contexts (make-hash-table :test 'equal)))
+
+  ;; Dispatch incoming connections to our `rudel-add-client' method.
+  (with-slots (listener) this
+    (lexical-let ((this1 this))
+      (rudel-set-dispatcher
+       listener
+       (lambda (client-transport)
+	 (rudel-add-client this1 client-transport)))))
+  )
 
 (defmethod rudel-end ((this rudel-obby-server))
   ""

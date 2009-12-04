@@ -58,8 +58,10 @@
   "Interface implemented by protocol backends."
   :abstract t)
 
-(defgeneric rudel-ask-connect-info ((this rudel-protocol-backend))
+(defgeneric rudel-ask-connect-info ((this rudel-protocol-backend)
+				    &optional info)
   "Retrieve information for joining a session from user.
+When INFO is non-nil, augment INFO to produce new list.
 Return a property list that contains the collected information.")
 
 (defgeneric rudel-connect ((this rudel-protocol-backend) transport
@@ -79,8 +81,10 @@ Implementations can rely on the fact that the property :session
 in INFO contains the `rudel-session' object to which the new
 connection will be associated.")
 
-(defgeneric rudel-ask-host-info ((this rudel-protocol-backend))
+(defgeneric rudel-ask-host-info ((this rudel-protocol-backend)
+				 &optional info)
   "Retrieve information for hosting a session from user.
+When INFO is non-nil, augment INFO to produce new list.
 Return a property list that contains the collected information.")
 
 (defgeneric rudel-host ((this rudel-protocol-backend) backend
