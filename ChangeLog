@@ -1,3 +1,46 @@
+2009-12-05  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* obby/rudel-obby-server.el
+	(rudel-obby-client::initialize-instance): removed &rest from slots
+	argument; updated documentation string
+	(rudel-obby-client::rudel-broadcast): renamed argument arguments
+	-> args; updated documentation string
+	(rudel-obby-server::initialize-instance): removed &rest from slots
+	argument; added documentation string
+
+2009-12-04  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* socket/rudel-socket.el (rudel-socket-listener): new class;
+	implements `rudel-listener'
+	(rudel-tcp-backend::rudel-wait-for-connections): removed argument
+	dispatch-callback; added argument info-callback; ensure info
+	contains required properties; create a listener socket and pass it
+	to a new listener object
+	* rudel.el (rudel-host-session): added argument info; generate
+	empty info list in interactive form; create a listener object and
+	pass it to the protocol backend
+	* rudel-transport.el (rudel-listener): new abstract class; generic
+	functionality for accepting incoming connections
+	(rudel-transport-backend::rudel-wait-for-connections): removed
+	argument dispatch-callback; added argument info-callback; updated
+	documentation string
+	* rudel-protocol.el
+	(rudel-protocol-backend::rudel-ask-connect-info): added optional
+	argument info; updated documentation string
+	(rudel-protocol-backend::rudel-ask-host-info): added optional
+	argument info; updated documentation string
+	* obby/rudel-obby.el (rudel-obby-backend::rudel-ask-host-info):
+	added optional argument info
+	(rudel-obby-backend::rudel-host): renamed argument
+	`transport-backend' -> `listener'; do not install dispatch
+	function; the server does this itself
+	* obby/rudel-obby-server.el (require rudel-obby): required to
+	silence the byte-compiler
+	(rudel-obby-server::listener): new slot; stores listener object of
+	the server
+	(rudel-obby-server::initialize-instance): install
+	`rudel-add-client' into the listener as dispatch function
+
 2009-12-03  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* rudel.el (rudel-host-session): determine a transport and a

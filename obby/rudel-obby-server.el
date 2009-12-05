@@ -508,8 +508,8 @@ connected to the server. This object handles all direct
 communication with the client, while broadcast messages are
 handled by the server.")
 
-(defmethod initialize-instance ((this rudel-obby-client) &rest slots)
-  "Initialize slots of THIS and register state machine states."
+(defmethod initialize-instance ((this rudel-obby-client) slots)
+  "Initialize slots of THIS, register states and install filter."
   ;; Initialize slots of THIS
   (when (next-method-p)
     (call-next-method))
@@ -558,10 +558,10 @@ handled by the server.")
     (rudel-send transport args)))
 
 (defmethod rudel-broadcast ((this rudel-obby-client)
-			    receivers name &rest arguments)
-  "Broadcast message NAME with arguments ARGUMENTS to RECEIVERS."
+			    receivers name &rest args)
+  "Broadcast message NAME with arguments ARGS to RECEIVERS."
   (with-slots (server) this
-    (apply #'rudel-broadcast server receivers name arguments)))
+    (apply #'rudel-broadcast server receivers name args)))
 
 (defmethod rudel-remote-operation ((this rudel-obby-client)
 				   document
@@ -661,8 +661,8 @@ connections to this server.")
 		   ""))
   "Class rudel-obby-server ")
 
-(defmethod initialize-instance ((this rudel-obby-server) &rest slots)
-  ""
+(defmethod initialize-instance ((this rudel-obby-server) slots)
+  "Initialize slots of THIS and install a dispatch function."
   ;; Initialize slots of THIS.
   (when (next-method-p)
     (call-next-method))
