@@ -36,6 +36,48 @@
 ;;; Code:
 ;;
 
+(require 'rudel-errors)
+
+
+;;; Emacs lisp errors
+;;
+
+;; rudel-obby-invalid-username
+
+(intern "rudel-obby-invalid-username")
+
+(put 'rudel-obby-invalid-username 'error-conditions
+     '(error
+       rudel-error rudel-join-error
+       rudel-obby-login-error rudel-obby-invalid-username))
+
+(put 'rudel-obby-invalid-username 'error-message
+     "Invalid username")
+
+;; rudel-obby-username-in-use
+
+(intern "rudel-obby-username-in-use")
+
+(put 'rudel-obby-username-in-use 'error-conditions
+     '(error
+       rudel-error rudel-join-error
+       rudel-obby-login-error rudel-obby-username-in-use))
+
+(put 'rudel-obby-username-in-use 'error-message
+     "Username is in use")
+
+;; rudel-obby-color-in-use
+
+(intern "rudel-obby-color-in-use")
+
+(put 'rudel-obby-color-in-use 'error-conditions
+     '(error
+       rudel-error rudel-join-error
+       rudel-obby-login-error rudel-obby-color-in-use))
+
+(put 'rudel-obby-color-in-use 'error-message
+     "Color is in use")
+
 
 ;;; Obby protocol error codes
 ;;
