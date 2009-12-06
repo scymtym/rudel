@@ -3,7 +3,7 @@
 ;; Copyright (C) 2008, 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Rudel, obby, backend, miscellaneous
+;; Keywords: rudel, obby, backend, miscellaneous
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -24,12 +24,17 @@
 
 ;;; Commentary:
 ;;
+;; The provided utility functions cover the following tasks:
 ;;
+;; + operation <-> message conversion
+;; + char <-> byte conversion
+;; + transport filter stack construction
+;; + argument parsing
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -219,38 +224,6 @@ construction of the name of the new operation. "
 
 ;;; Miscellaneous functions
 ;;
-
-(defun rudel-obby-dispatch (object name arguments &optional prefix)
-  "Call method starting with PREFIX and ending in NAME of OBJECT with ARGUMENTS.
-When PREFIX is not specified, \"rudel-obby/\" is used."
-  ;; Default prefix.
-  (unless prefix
-    (setq prefix "rudel-obby/"))
-
-  ;; Construct a matching symbol.
-  (let ((method (intern-soft (concat prefix name))))
-    ;; If we found a suitable method, run it; Otherwise warn and do
-    ;; nothing.
-    (unless (and method
-		 (condition-case error
-		     ;; Try to call METHOD. If successful, always
-		     ;; return t.
-		     (progn
-		       (apply method object arguments)
-		       t)
-		   ;; Warn only when the condition is
-		   ;; 'no-method-definition' and refers to METHOD,
-		   ;; otherwise continue unwinding.
-		   (no-method-definition
-		    (if (eq method (cadr error))
-			nil
-		      (signal (car error) (cdr error))))))
-      (display-warning
-       '(rudel obby)
-       (format "%s: in context `%s': no method: `%s'; arguments: %s"
-	       (object-name-string object) prefix name arguments)
-       :debug)))
-  )
 
 (defmacro with-parsed-arguments (specs &rest forms)
   "Execute FORMS with variable bindings according to SPECS.
