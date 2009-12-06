@@ -133,7 +133,7 @@ the slots of some other object as if they were their own slots."
 ;;; Class rudel-delegator
 ;;
 
-(defclass rudel-delegator (rudel-state)
+(defclass rudel-delegator ()
   ((delegation-target-slot :type       symbol
 			   :allocation :class
 			   :documentation
