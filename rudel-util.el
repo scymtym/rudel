@@ -24,12 +24,20 @@
 
 ;;; Commentary:
 ;;
-;; This file contains miscellaneous functions for Rudel.
+;; This file contains miscellaneous classes and functions for Rudel.
+;;
+;; The following mixins are provided:
+;;
+;; + `rudel-hook-object'  - like regular hooks, but for objects
+;; + `rudel-impersonator' - transparently access slots
+;; + `rudel-delegator'    - transparently call methods
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.2 - Impersonation and delegation mixins
+;;
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -94,6 +102,53 @@ list of hooks."
   "Run HOOK of THIS with arguments ARGUMENTS."
   (let ((hook (slot-value this hook)))
     (apply #'run-hook-with-args 'hook this arguments)))
+
+
+;;; Class rudel-impersonator
+;;
+
+(defclass rudel-impersonator ()
+  ((impersonation-target-slot :type       symbol
+			      :allocation :class
+			      :documentation
+			      "A symbol specifying the name of
+the slot that holds the reference to the target object."))
+  "A mixin that allows derived classes to transparently accesses
+the slots of some other object as if they were their own slots."
+  :abstract t)
+
+(defmethod slot-missing ((this rudel-impersonator)
+			 slot-name operation &optional new-value)
+  "Look up SLOT-NAME in the state machine associated to THIS."
+  (let ((target (slot-value this (oref this impersonating-target-slot))))
+    (case operation
+      (oref
+       (slot-value target slot-name))
+
+      (oset
+       (set-slot-value target slot-name new-value))))
+  )
+
+
+;;; Class rudel-delegator
+;;
+
+(defclass rudel-delegator (rudel-state)
+  ((delegation-target-slot :type       symbol
+			   :allocation :class
+			   :documentation
+			   "A symbol specifying the name of the
+slot that holds the reference to the target object."))
+  "A mixin that allows derived state classes to transparently
+call methods of some other object as if they were their own
+methods."
+  :abstract t)
+
+(defmethod no-applicable-method ((this rudel-delegator)
+				 method &rest args)
+  "Call METHOD on the target object instead of THIS."
+  (let ((target (slot-value this (oref this delegation-target-slot))))
+    (apply method target (rest args))))
 
 
 ;;; Networking helper functions and macros
