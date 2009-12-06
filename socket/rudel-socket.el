@@ -37,7 +37,8 @@
 ;;; Code:
 ;;
 
-(require 'cl) ;; for `every'
+(eval-when-compile
+  (require 'cl)) ;; for `every'
 
 (require 'rudel-backend)
 (require 'rudel-transport)
