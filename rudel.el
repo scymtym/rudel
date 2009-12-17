@@ -860,22 +860,29 @@ will be prompted for."
     session))
 
 ;;;###autoload
-(defun rudel-host-session ()
+(defun rudel-host-session (info)
   "Host a collaborative editing session.
 All data required to host a session will be prompted for
 interactively."
-  (interactive)
-  ;; If necessary, ask the user for the backend we should use.
-  (let* ((transport-backend (cdr (rudel-backend-choose
-				  'transport
-				  (lambda (backend)
-				    (rudel-capable-of-p backend 'listen)))))
-	 (protocol-backend  (cdr (rudel-backend-choose
-				  'protocol
-				  (lambda (backend)
-				    (rudel-capable-of-p backend 'host)))))
-	 (info              (rudel-ask-host-info protocol-backend)))
-    ;; Create the session object.
+  (interactive
+   (list
+    ;; If necessary, ask the user for the backend we should use.
+    (let ((transport-backend (cdr (rudel-backend-choose
+				   'transport
+				   (lambda (backend)
+				     (rudel-capable-of-p backend 'listen)))))
+	  (protocol-backend  (cdr (rudel-backend-choose
+				   'protocol
+				   (lambda (backend)
+				     (rudel-capable-of-p backend 'host))))))
+      (append
+       (rudel-ask-host-info protocol-backend)
+       `(:transport-backend ,transport-backend
+	 :protocol-backend  ,protocol-backend)))))
+
+  ;; Create the session object.
+  (let ((transport-backend (plist-get info :transport-backend))
+	(protocol-backend  (plist-get info :protocol-backend)))
     (rudel-host protocol-backend transport-backend info)))
 
 ;;;###autoload
