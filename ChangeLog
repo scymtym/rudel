@@ -1,5 +1,7 @@
 2009-12-17  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	* rudel.el (rudel-host-session): use cdrs of backend cells
+
 	* rudel.el (rudel-host-session): added mandatory argument info;
 	interactive specification uses `rudel-backend-choose' and
 	`rudel-ask-host-info' to assemble a suitable value for info

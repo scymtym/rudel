@@ -881,8 +881,8 @@ interactively."
 	 :protocol-backend  ,protocol-backend)))))
 
   ;; Create the session object.
-  (let ((transport-backend (plist-get info :transport-backend))
-	(protocol-backend  (plist-get info :protocol-backend)))
+  (let ((transport-backend (cdr (plist-get info :transport-backend)))
+	(protocol-backend  (cdr (plist-get info :protocol-backend))))
     (rudel-host protocol-backend transport-backend info)))
 
 ;;;###autoload
