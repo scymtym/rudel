@@ -865,18 +865,24 @@ will be prompted for."
 All data required to host a session will be prompted for
 interactively."
   (interactive
-   ;; Empty info plist for now.
-   (list nil))
-  ;; If necessary, ask the user for the backend we should use.
-  (let ((transport-backend (cdr (rudel-backend-choose
-				 'transport
-				 (lambda (backend)
-				   (rudel-capable-of-p backend 'listen)))))
-	(protocol-backend  (cdr (rudel-backend-choose
-				 'protocol
-				 (lambda (backend)
-				   (rudel-capable-of-p backend 'host)))))
-	(listener))
+   (list
+    ;; If necessary, ask the user for the backend we should use.
+    (let ((transport-backend (cdr (rudel-backend-choose
+				   'transport
+				   (lambda (backend)
+				     (rudel-capable-of-p backend 'listen)))))
+	  (protocol-backend  (cdr (rudel-backend-choose
+				   'protocol
+				   (lambda (backend)
+				     (rudel-capable-of-p backend 'host))))))
+      (append
+       (rudel-ask-host-info protocol-backend)
+       `(:transport-backend ,transport-backend
+	 :protocol-backend  ,protocol-backend)))))
+
+  ;; Create the session object.
+  (let ((transport-backend (cdr (plist-get info :transport-backend)))
+	(protocol-backend  (cdr (plist-get info :protocol-backend))))
 
     ;; TODO temporary solution
     (setq info (or info (rudel-ask-host-info protocol-backend info)))
