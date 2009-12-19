@@ -120,7 +120,7 @@ the slots of some other object as if they were their own slots."
 (defmethod slot-missing ((this rudel-impersonator)
 			 slot-name operation &optional new-value)
   "Look up SLOT-NAME in the state machine associated to THIS."
-  (let ((target (slot-value this (oref this impersonating-target-slot))))
+  (let ((target (slot-value this (oref this impersonation-target-slot))))
     (case operation
       (oref
        (slot-value target slot-name))
