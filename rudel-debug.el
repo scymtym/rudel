@@ -211,4 +211,7 @@
     )
 
 (provide 'rudel-debug)
+;; Local Variables:
+;; no-byte-compile: t
+;; End:
 ;;; rudel-debug.el ends here

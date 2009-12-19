@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Rudel, obby, debugging
+;; Keywords: rudel, obby, debugging
 ;; X-RCS: $Id:$
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -104,4 +104,7 @@
   )
 
 (provide 'rudel-obby-debug)
+;; Local Variables:
+;; no-byte-compile: t
+;; End:
 ;;; rudel-obby-debug.el ends here
