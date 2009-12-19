@@ -1,3 +1,8 @@
+2009-12-19  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel-backend.el (rudel-backend-choose): mention which kind of
+	backend we are asking for
+
 2009-12-17  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* rudel.el (rudel-host-session): use cdrs of backend cells
@@ -5,6 +10,37 @@
 	* rudel.el (rudel-host-session): added mandatory argument info;
 	interactive specification uses `rudel-backend-choose' and
 	`rudel-ask-host-info' to assemble a suitable value for info
+
+2009-12-06  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* obby/rudel-obby-errors.el (require rudel-errors): not really
+	required, but logical
+	(rudel-obby-invalid-username):
+	(rudel-obby-username-in-use):
+	(rudel-obby-color-in-use): new error symbols
+
+	* obby/rudel-obby-util.el (header): updated keywords; extended
+	commentary section; cosmetic changes to history section
+	(rudel-obby-dispatch): removed; obsolete
+	* obby/rudel-obby-state.el (header): updated keywords
+	(rudel-obby-document-handler): make abstract
+	(rudel-obby-document-handler::document-container-slot): new slot;
+	name of slot which holds the object with the document list
+	(rudel-obby-document-handler::rudel-obby/obby_document): find
+	document list in the named slot
+
+	* socket/rudel-socket.el (require cl): added `eval-when-compile'
+	to the require
+
+	* rudel-util.el (rudel-delegator): removed base class
+	`rudel-state'; should not have been there
+
+	* rudel-util.el (header): expanded commentary section; bumped
+	version to 0.2
+	(rudel-impersonator): new class; allows derived classes to
+	transparently access slots of a target object
+	(rudel-delegator): new class; allows derived classes to let
+	methods of a target object appear as their own
 
 2009-12-05  Jan Moringen  <scymtym@users.sourceforge.net>
 
@@ -137,6 +173,12 @@
 	(rudel-configured-sessions-version): bumped version to 0.2
 	(rudel-session-initiation-adjust-info): handle :transport-backend
 	and :protocol-backend keywords
+
+	* rudel.el (rudel-join-session): use
+	`rudel-make-state-progress-callback' to construct callbacks for
+	connecting and joining operations
+	* rudel-interactive.el (rudel-make-state-progress-callback): new
+	function; return a callback suitable for `rudel-state-wait'
 
 	* rudel.el (rudel-join-session): do not call
 	`rudel-ask-connect-info' as this is done by the protocol backend

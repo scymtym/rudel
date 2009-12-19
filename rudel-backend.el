@@ -239,7 +239,10 @@ The returned backend is of the form (NAME . CLASS-OR-OBJECT)."
       ;; When we have more than one backend, we have to ask the user,
       ;; which one she wants.
       (require 'rudel-interactive)
-      (rudel-read-backend backends nil 'object)))
+      (rudel-read-backend
+       backends
+       (format "%s backend: " (capitalize (symbol-name category)) )
+       'object)))
   )
 
 
