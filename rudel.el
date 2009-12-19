@@ -861,39 +861,45 @@ will be prompted for."
 
 ;;;###autoload
 (defun rudel-host-session (info)
-  "Host a collaborative editing session.
-All data required to host a session will be prompted for
-interactively."
+  "Host a collaborative editing session described by INFO.
+INFO is a property list that describes the collaborative editing
+session to be created in terms of properties like :address, :port
+and :encryption. The particular properties and their respective
+meanings depend on the used backend.
+
+When called interactively, all data required to host a session
+will be prompted for."
   (interactive
    (list
     ;; If necessary, ask the user for the backend we should use.
-    (let ((transport-backend (cdr (rudel-backend-choose
+    (let ((transport-backend (rudel-backend-choose
 				   'transport
 				   (lambda (backend)
-				     (rudel-capable-of-p backend 'listen)))))
-	  (protocol-backend  (cdr (rudel-backend-choose
+				     (rudel-capable-of-p backend 'listen))))
+	  (protocol-backend  (rudel-backend-choose
 				   'protocol
 				   (lambda (backend)
-				     (rudel-capable-of-p backend 'host))))))
-      (append
-       (rudel-ask-host-info protocol-backend)
-       `(:transport-backend ,transport-backend
-	 :protocol-backend  ,protocol-backend)))))
+				     (rudel-capable-of-p backend 'host)))))
+    (rudel-ask-host-info
+     (cdr protocol-backend)
+     (list :transport-backend transport-backend
+	   :protocol-backend  protocol-backend)))))
 
   ;; Create the session object.
   (let ((transport-backend (cdr (plist-get info :transport-backend)))
-	(protocol-backend  (cdr (plist-get info :protocol-backend))))
+	(protocol-backend  (cdr (plist-get info :protocol-backend)))
+	(listener)
+	(session))
 
     ;; TODO temporary solution
-    (setq info (or info (rudel-ask-host-info protocol-backend info)))
+    (setq info (rudel-ask-host-info protocol-backend info))
 
-    ;;
+    ;; Create the listener and session object.
     (setq listener (rudel-wait-for-connections
 		    transport-backend info #'ignore))
+    (setq session  (rudel-host protocol-backend listener info))
 
-    ;; Create the session object.
-    (rudel-host protocol-backend listener info))
-  )
+    session))
 
 ;;;###autoload
 (defun rudel-end-session ()
