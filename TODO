@@ -28,11 +28,22 @@
    + Type :: defect
    + Reporter :: jan
    + Assigned ::
+** TODO Display error message property of join errors?
+   + Component :: user-interface
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+** TODO Synchronize object graphs
+   + Component :: ?
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   Extend protocols to allow synchronizing graph- (or just tree-) like
+   data structures like XML or Emacs Lisp objects.
 ** TODO Notification mechanism
    + Component :: user-interface
    + Type :: task
    + Reporter :: jan
-   + Type :: task
    + Assigned ::
 ** TODO SubEthaEdit client functionality
    + Component :: subethaedit-backend
@@ -92,11 +103,6 @@
    + Assigned ::
    Sending key presses as chat messages could be really useful for
    somebody something using rudel.
-** STARTED BEEP transport
-   + Component :: beep-transport
-   + Type :: task
-   + Reporter :: jan
-   + Assigned :: jan
 ** STARTED Reference manual (#46)
    + Component :: documentation
    + Type :: task
@@ -117,13 +123,26 @@
    + Type :: task
    + Reporter :: jan
    + Assigned ::
-
-* Milestone rudel-0.3
-** TODO Multiple username/password attempts in one login attempt
-   + Component :: rudel-general
+** TODO Only read color hue, not complete colors (#53)
+   + Component :: rudel-user-interface
+   + Type :: enhancement
+   + Reporter :: jan
+   + Assigned ::
+   Taking control over saturation and value away from the user makes
+   it impossible to choose unreadable colors.
+** STARTED SubEthaEdit client functionality
+   + Component :: subethaedit-backend
    + Type :: task
    + Reporter :: jan
    + Assigned ::
+** STARTED BEEP transport
+   + Component :: beep-transport
+   + Type :: task
+   + Reporter :: jan
+   + Assigned :: jan
+
+
+* Milestone rudel-0.3
 ** TODO Infinote client functionality
    + Component :: infinote-backend
    + Type :: task
@@ -134,6 +153,26 @@
    + Type :: task
    + Reporter :: jan
    + Assigned ::
+** NEW TLS transport does not start in stopped state
+   + Component :: tls-transport
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+** NEW Zeroconf needs some time before it works
+   + Component :: zeroconf
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+   When requiring the Zeroconf backend and immediately asking for
+   discovered sessions, none are returned, even if there are
+   some. Retrying later returns these sessions.
+** NEW Connection resets are not handled properly with transports
+   + Component :: multiple components
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+   The current session used to be terminated when the connection
+   dropped. This does not work when using transports.
 ** NEW Get rid of error calls in the server (#58)
    + Component :: obby-backend
    + Type :: defect
@@ -158,13 +197,18 @@
    + Type :: defect
    + Reporter :: jan
    + Assigned ::
-** TODO Only read color hue, not complete colors (#53)
-   + Component :: rudel-user-interface
-   + Type :: enhancement
+** STARTED Use transports
+   + Component :: multiple components
+   + Type :: task
    + Reporter :: jan
    + Assigned ::
-   Taking control over saturation and value away from the user makes
-   it impossible to choose unreadable colors.
+   All network communication should be done using transport objects
+   instead of sockets
+** DONE Multiple username/password attempts in one login attempt
+   + Component :: rudel-general
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
 
 
 * Milestone rudel-0.2
