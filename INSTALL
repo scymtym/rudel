@@ -38,7 +38,7 @@
   development version from http://sourceforge.net/projects/rudel/ and
   place the code in any directory you like.
 
-  Once Eieio (see CEDET in the REQUIREMENTS section above) is
+  Once Eieio (see CEDET in the [[*REQUIREMENTS]] section above) is
   installed, add the following to your personal Emacs configuration:
 
   (load-file "/PATH/TO/RUDEL/rudel-loaddefs.el")
@@ -50,7 +50,7 @@
 * COMPILING
 
   In order to achieve better performance, Emacs can byte-compile the
-  Rudel code. This can be done by opening rudel-compile.el in Emacs
+  Rudel code. This can be done by opening [[./rudel-compile.el]] in Emacs
   and invoking M-x eval-buffer.
 
 Local variables:
