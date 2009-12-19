@@ -327,9 +327,9 @@ of her color to COLOR."
     (let ((document (with-slots (server) (oref this :connection)
 		      (rudel-find-document server doc-id
 					   #'equal #'rudel-both-ids))))
-      (rudel-obby-dispatch this action
-			   (append (list document) arguments)
-			   "rudel-obby/obby_document/")))
+      (rudel-dispatch
+       this "rudel-obby/obby_document/" action
+       (append (list document) arguments))))
   )
 
 (defmethod rudel-obby/obby_document/subscribe
@@ -422,11 +422,10 @@ of her color to COLOR."
   (with-parsed-arguments ((local-revision  number)
 			  (remote-revision number))
     ;; Dispatch to specialized operation handlers.
-    (rudel-obby-dispatch
-     this action
+    (rudel-dispatch
+     this "rudel-obby/obby_document/record/" action
      (append (list document local-revision remote-revision)
-	     arguments)
-     "rudel-obby/obby_document/record/"))
+	     arguments)))
   )
 
 (defmethod rudel-obby/obby_document/record/ins
