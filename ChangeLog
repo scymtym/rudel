@@ -1,4 +1,11 @@
-2009-12-19  Jan Moringen  <scymtym@users.sourceforge.net>
+2009-12-20  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* doc/notes-for-developers.org: new file; some notes which may be
+	relevant for Rudel developers
+
+	* rudel-debug.el (local variables): prevent byte-compilation
+	* obby/rudel-obby-debug.el (header): downcased keywords
+	(local variables): prevent byte-compilation
 
 	* rudel.el (rudel-user::rudel-change-notify): new method; run
 	change hook
@@ -9,6 +16,8 @@
 	* obby/rudel-obby-client.el
 	(rudel-obby-client-state-idle::rudel-rudel-obby/net6_client_join):
 	call `rudel-change-notify' after modifying the user object
+
+2009-12-19  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* obby/rudel-obby.el (rudel-ask-connect-info): when extracting
 	properties from info list, there is no need to ensure info being
