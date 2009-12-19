@@ -45,6 +45,7 @@
 ;;
 
 (require 'eieio)
+(require 'bytecomp)
 
 (let* ((rudel-dir (file-name-directory
 		   (or (buffer-file-name) load-file-name)))
@@ -54,26 +55,28 @@
 		   '("." "jupiter" "socket" "tls" "obby" "zeroconf")))
        (loaddefs  (concat rudel-dir "rudel-loaddefs.el")))
 
-  ;; Adjust load path for compilation. We need to have all Rudel
-  ;; subdirectories on the load path.
-  (dolist (subdir subdirs)
-    (add-to-list 'load-path subdir))
+  (flet ((byte-compile-cl-warn (&rest) nil))
 
-  ;; Byte compile everything.
-  (byte-recompile-directory rudel-dir 0)
+    ;; Adjust load path for compilation. We need to have all Rudel
+    ;; subdirectories on the load path.
+    (dolist (subdir subdirs)
+      (add-to-list 'load-path subdir))
 
-  ;; Update autoloads.
-  (let ((generated-autoload-file loaddefs))
-    (apply #'update-directory-autoloads subdirs))
+    ;; Byte compile everything.
+    (byte-recompile-directory rudel-dir 0)
 
-  ;; This is for compatibility with older Emacs versions. Starting
-  ;; from version 23.1 of GNU Emacs eieio should always be
-  ;; (auto)loaded.
-  (with-current-buffer (find-file-noselect loaddefs)
-    (goto-char 1)
-    (unless (looking-at "(require 'eieio)")
-      (insert "(require 'eieio)\n\n")
-      (save-buffer))
-    (kill-buffer)))
+    ;; Update autoloads.
+    (let ((generated-autoload-file loaddefs))
+      (apply #'update-directory-autoloads subdirs))
+
+    ;; This is for compatibility with older Emacs versions. Starting
+    ;; from version 23.1 of GNU Emacs eieio should always be
+    ;; (auto)loaded.
+    (with-current-buffer (find-file-noselect loaddefs)
+      (goto-char 1)
+      (unless (looking-at "(require 'eieio)")
+	(insert "(require 'eieio)\n\n")
+	(save-buffer))
+      (kill-buffer))))
 
 ;;; rudel-compile.el ends here
