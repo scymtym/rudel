@@ -245,12 +245,12 @@ of her color to COLOR."
   (with-parsed-arguments ((color- color))
     (with-slots (user) (oref this :connection)
       (with-slots (color (user-id :user-id)) user
-	;; Set color slot value.
+
+	;; Set color slot value and notify the user object.
 	(setq color color-)
+	(rudel-change-notify user)
 
-	;; Run change hook.
-	(object-run-hook-with-args user 'change-hook)
-
+	;; Broadcast to other clients.
 	(rudel-broadcast this (list 'exclude (oref this :connection))
 			 "obby_user_colour"
 			 (format "%x" user-id)

@@ -364,6 +364,10 @@ collaborative editing session. Note that a participating user
 does not have to be connected to the session at any given time."
   :abstract t)
 
+(defmethod rudel-change-notify ((this rudel-user))
+  "Run change hook of THIS after slot values have changed."
+  (object-run-hook-with-args this 'change-hook))
+
 (defmethod rudel-display-string ((this rudel-user)
 				 &optional use-images align)
   "Return a textual representation of THIS for user interface stuff."

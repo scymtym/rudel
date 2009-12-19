@@ -246,17 +246,18 @@ failure."))
 		      color1      color
 		      connected   t
 		      encryption1 (string= encryption "1"))
+		(rudel-change-notify user))
 
-		;; Run the change hook of the user object.
-		(object-run-hook-with-args user 'change-hook))
-	    ;; Otherwise, create a new user object.
-	    (let ((user (rudel-obby-user
-			 name
-			 :client-id  client-id
-			 :user-id    user-id
-			 :connected  t
-			 :encryption (string= encryption "1")
-			 :color      color)))
+	    ;; Otherwise, we create a new user object and add it to
+	    ;; the session's user list.
+	    (progn
+	      (setq user (rudel-obby-user
+			  name
+			  :color      color
+			  :client-id  client-id
+			  :user-id    user-id
+			  :connected  t
+			  :encryption (string= encryption "1")))
 	      (rudel-add-user session user))))))
     (message "Client joined: %s %s" name color))
   nil)

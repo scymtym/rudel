@@ -1,5 +1,37 @@
 2009-12-19  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	* rudel.el (rudel-user::rudel-change-notify): new method; run
+	change hook
+	* obby/rudel-obby-server.el
+	(rudel-obby-server-state-idle::rudel-obby/obby_user_colour): call
+	`rudel-change-notify' instead of `object-run-hook-with-args' after
+	modifying the user object
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-idle::rudel-rudel-obby/net6_client_join):
+	call `rudel-change-notify' after modifying the user object
+
+	* obby/rudel-obby.el (rudel-ask-connect-info): when extracting
+	properties from info list, there is no need to ensure info being
+	non-nil
+
+	* rudel.el (rudel-host-session): pass partial info list to
+	`rudel-ask-host-info'; cleanup; extended documentation string
+	* obby/rudel-obby.el (rudel-obby-backend::rudel-ask-host-info):
+	try extract address and port from info list before prompting
+
+	* TODO (Future): added display of error message property,
+	synchronization of objects; moved BEEP transport to 0.4
+	(Milestone 0.3): added TLS does not start in stopped state,
+	zeroconf delay, connection reset problem, use transports
+
+	* rudel-util.el (rudel-impersonator::slot-missing): fixed slot
+	name `impersonating-target-slot' -> `impersonation-target-slot'
+
+	* rudel-compile.el (require bytecomp): make sure we can redefine
+	`byte-compile-cl-warn'
+	(top level): redefine `byte-compile-cl-warn' to silence
+	byte-compiler
+
 	* rudel-backend.el (rudel-backend-choose): mention which kind of
 	backend we are asking for
 
