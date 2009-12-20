@@ -45,11 +45,6 @@
    + Type :: task
    + Reporter :: jan
    + Assigned ::
-** TODO SubEthaEdit client functionality
-   + Component :: subethaedit-backend
-   + Type :: task
-   + Reporter :: jan
-   + Assigned ::
 ** TODO Show cursor positions of other users (#5)
    + Component :: rudel-user-interface
    + Type :: enhancement
@@ -197,18 +192,18 @@
    + Type :: defect
    + Reporter :: jan
    + Assigned ::
-** STARTED Use transports
+** DONE Use transports
    + Component :: multiple components
    + Type :: task
    + Reporter :: jan
-   + Assigned ::
+   + Assigned :: jan
    All network communication should be done using transport objects
    instead of sockets
 ** DONE Multiple username/password attempts in one login attempt
    + Component :: rudel-general
    + Type :: task
    + Reporter :: jan
-   + Assigned ::
+   + Assigned :: jan
 
 
 * Milestone rudel-0.2
