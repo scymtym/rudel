@@ -30,7 +30,7 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -141,7 +141,8 @@ obby 'document' messages."
   ;; warn.
   (with-parsed-arguments ((doc-id document-id))
     ;; Locate the document based on owner id and document id.
-    (let* ((container (slot-value this (oref this document-container-slot)))
+    (let* ((container (slot-value (oref this :connection)
+				  (oref this document-container-slot)))
 	   (document  (rudel-find-document container doc-id
 					   #'equal #'rudel-both-ids)))
       (if document

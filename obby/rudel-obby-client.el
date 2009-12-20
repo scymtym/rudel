@@ -222,7 +222,7 @@ failure."))
 (defclass rudel-obby-client-state-idle
   (rudel-obby-client-connection-state
    rudel-obby-document-handler)
-  ()
+  ((document-container-slot :initform 'session))
   "Default state of the connection.")
 
 (defmethod rudel-obby/net6_client_join
@@ -628,10 +628,11 @@ failure."))
 (defclass rudel-obby-client-state-subscribing
   (rudel-obby-client-connection-state
    rudel-obby-document-handler)
-  ((document :initarg :document
-	     :type    rudel-obby-document-child
-	     :documentation
-	     ""))
+  ((document-container-slot :initform 'session)
+   (document                :initarg  :document
+			    :type     rudel-obby-document-child
+			    :documentation
+			    ""))
   "")
 
 (defmethod rudel-enter ((this rudel-obby-client-state-subscribing)
@@ -666,18 +667,19 @@ failure."))
 (defclass rudel-obby-client-state-document-synching
   (rudel-obby-client-connection-state
    rudel-obby-document-handler)
-  ((document        :initarg  :document
-		    :type     rudel-obby-document-child
-		    :documentation
-		    "")
-   (all-bytes       :initarg  :all-bytes
-		    :type     (integer 0)
-		    :documentation
-		    "")
-   (remaining-bytes :initarg  :remaining-bytes
-		    :type     (integer 0)
-		    :documentation
-		    ""))
+  ((document-container-slot :initform 'session)
+   (document                :initarg  :document
+			    :type     rudel-obby-document-child
+			    :documentation
+			    "")
+   (all-bytes               :initarg  :all-bytes
+			    :type     (integer 0)
+			    :documentation
+			    "")
+   (remaining-bytes         :initarg  :remaining-bytes
+			    :type     (integer 0)
+			    :documentation
+			    ""))
   "")
 
 (defmethod rudel-enter ((this rudel-obby-client-state-document-synching)

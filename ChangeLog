@@ -1,5 +1,14 @@
 2009-12-20  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	* obby/rudel-obby-state.el (header): fixed history
+	(rudel-obby-document-handler::rudel-obby/obby_document): go
+	through the connection object for now
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-idle::document-container-slot):
+	(rudel-obby-client-state-subscribing::document-container-slot):
+	(rudel-obby-client-state-document-synching::document-container-slot):
+	set initial value to 'session
+
 	* rudel.el (rudel-user::rudel-display-string): moved to
 	rudel-display.el
 	* rudel-display.el: new file; functions that create text
