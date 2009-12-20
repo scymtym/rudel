@@ -368,18 +368,6 @@ does not have to be connected to the session at any given time."
   "Run change hook of THIS after slot values have changed."
   (object-run-hook-with-args this 'change-hook))
 
-(defmethod rudel-display-string ((this rudel-user)
-				 &optional use-images align)
-  "Return a textual representation of THIS for user interface stuff."
-  (with-slots ((name :object-name) color) this
-    (propertize
-     (concat
-      (when use-images
-	(propertize "*" 'display rudel-icon-person))
-      name)
-     'face (list :background color)))
-  )
-
 
 ;;; Class rudel-document
 ;;

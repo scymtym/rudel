@@ -1,5 +1,26 @@
 2009-12-20  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	* rudel.el (rudel-user::rudel-display-string): moved to
+	rudel-display.el
+	* rudel-display.el: new file; functions that create text
+	representations of Rudel objects
+	* obby/rudel-obby-display.el: new file; functions that create text
+	representations of obby objects
+	* obby/Project.ede (target obby): added rudel-display.el
+	* Project.ede (target rudel): added rudel-display.el
+
+	* TODO (Future): removed duplicate task SubEthaEdit client
+	functionality
+	(Milestone 0.3): use transports is done
+
+	* obby/rudel-obby-server.el
+	(rudel-obby-server-state-idle::rudel-obby/obby_document):
+	(rudel-obby-server-state-idle::rudel-obby/obby_document/record):
+	use `rudel-dispatch' instead of `rudel-obby-dispatch'
+
+	* INSTALL (INSTALLING): link to REQUIREMENTS
+	(COMPILING): link to rudel-compile.el
+
 	* doc/notes-for-developers.org: new file; some notes which may be
 	relevant for Rudel developers
 
