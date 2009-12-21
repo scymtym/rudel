@@ -1,3 +1,22 @@
+2009-12-21  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel-session-initiation.el
+	(rudel-ask-protocol-backend::rudel-discover): pass partial info
+	list to `rudel-ask-connect-info' instead of append the lists
+	manually
+
+	* obby/rudel-obby.el (rudel-obby-user::rudel-display-string):
+	removed; now in obby/rudel-obby-display.el
+
+	* rudel-mode.el (require rudel-display): required for
+	`rudel-display-string'
+	* rudel-display.el (require rudel): required to ensure
+	`rudel-user' and `rudel-document' are defined
+	* obby/rudel-obby.el (require rudel-obby-display): make sure
+	`rudel-display-string' is defined for obby classes
+	* obby/rudel-obby-display.el (require rudel-obby): required to
+	ensure `rudel-obby-user' is defined
+
 2009-12-20  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* obby/rudel-obby-state.el (header): fixed history

@@ -280,10 +280,11 @@ required by the chosen backend.")
 			    (lambda (backend)
 			      (rudel-capable-of-p backend 'join))))
 	(transport-backend (rudel-backend-choose 'transport)))
-    (list (append (list :name              "asked"
-			:protocol-backend  protocol-backend
-			:transport-backend transport-backend)
-		  (rudel-ask-connect-info (cdr protocol-backend)))))
+    (list (rudel-ask-connect-info
+	   (cdr protocol-backend)
+	   (list :name              "asked"
+		 :protocol-backend  protocol-backend
+		 :transport-backend transport-backend))))
   )
 
 ;;;###autoload
