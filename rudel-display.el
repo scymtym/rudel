@@ -37,6 +37,8 @@
 ;;; Code:
 ;;
 
+(require 'rudel) ;; make sure `rudel-user' and `rudel-document' are
+		 ;; defined
 (require 'rudel-icons)
 
 

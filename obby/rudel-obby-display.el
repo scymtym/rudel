@@ -40,6 +40,8 @@
 (require 'rudel-display)
 (require 'rudel-icons)
 
+(require 'rudel-obby) ;; make sure `rudel-obby-user' is defined
+
 (defmethod rudel-display-string ((this rudel-obby-user)
 				 &optional use-images align)
   "Return a textual representation of THIS for user interface purposes."

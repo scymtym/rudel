@@ -53,6 +53,7 @@
 
 (require 'rudel)
 (require 'rudel-hooks)
+(require 'rudel-display)
 
 
 ;;; Customization Options

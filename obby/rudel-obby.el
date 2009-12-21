@@ -505,4 +505,8 @@ The resulting message is a string that looks like this:
 				    'start-tls 'obby))
 
 (provide 'rudel-obby)
+
+(require 'rudel-obby-display) ;; define `rudel-display-string'; this
+			      ;; is a circular dependency
+
 ;;; rudel-obby.el ends here
