@@ -539,26 +539,25 @@ When POSITION is nil `point-max' is used to determine the
 insertion position.
 Modification hooks are disabled during the insertion."
   (with-slots (buffer) this
-    (save-excursion
-      (set-buffer buffer)
+    (with-current-buffer buffer
 
       (unless position
 	(setq position (- (point-max) 1)))
 
-      (let ((inhibit-modification-hooks t))
-	(goto-char (+ position 1))
-	(insert data))))
+      (save-excursion
+	(let ((inhibit-modification-hooks t))
+	  (goto-char (+ position 1))
+	  (insert data)))))
   )
 
 (defmethod rudel-delete ((this rudel-document) position length)
   "Delete a region of LENGTH character at POSITION from the buffer attached to THIS.
 Modification hooks are disabled during the insertion."
   (with-slots (buffer) this
-    (save-excursion
-      (set-buffer buffer)
-
-      (let ((inhibit-modification-hooks t))
-	(delete-region (+ position 1) (+ position length 1)))))
+    (with-current-buffer buffer
+      (save-excursion
+	(let ((inhibit-modification-hooks t))
+	  (delete-region (+ position 1) (+ position length 1))))))
   )
 
 (defmethod rudel-local-operation ((this rudel-document) operation)
