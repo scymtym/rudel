@@ -46,9 +46,7 @@
 
 (defconst rudel-icons-directory
   (file-name-as-directory
-   (concat (file-name-directory
-	    (locate-library "rudel-icons.el"))
-	   "icons"))
+   (concat (file-name-directory load-file-name)  "icons"))
   "Directory that holds Rudel icon files.")
 
 
