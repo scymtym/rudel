@@ -79,4 +79,7 @@
 	(save-buffer))
       (kill-buffer))))
 
+;; Local Variables:
+;; no-byte-compile: t
+;; End:
 ;;; rudel-compile.el ends here
