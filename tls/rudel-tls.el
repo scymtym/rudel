@@ -232,7 +232,7 @@ capability.")
 
 ;;;###autoload
 (defclass rudel-start-tls-backend (rudel-transport-backend)
-  ((capabilities :initform (connect)))
+  ((capabilities :initform (connect encrypt)))
   "STARTTLS transport backend.
 The transport backend is a factory for transport objects that
 support STARTTLS behavior.")

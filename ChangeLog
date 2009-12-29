@@ -1,3 +1,28 @@
+2009-12-29  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* tls/rudel-tls.el (rudel-start-tls-backend): added capability
+	encrypt
+
+	* tls/rudel-tls.el (rudel-tls-make-process): stop the process
+	object after creation
+
+2009-12-28  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel-icons.el (rudel-icons-directory): compute icons directory
+	name based on load file name of rudel-icons.el
+
+2009-12-26  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* TODO (Milestone 0.4): new task integrate unit tests
+
+2009-12-24  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel.el (rudel-document::rudel-insert):
+	(rudel-document::rudel-delete): use `with-current-buffer' and
+	`save-excursion' instead of `save-excursion' and `set-buffer'
+	* rudel-backend.el (rudel-backend-dump): removed pointless use of
+	`save-excursion'
+
 2009-12-21  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* rudel-session-initiation.el
