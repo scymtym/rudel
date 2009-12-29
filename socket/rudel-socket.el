@@ -38,7 +38,7 @@
 ;;
 
 (eval-when-compile
-  (require 'cl)) ;; for `every'
+  (require 'cl)) ;; for `lexical-let' and `every'
 
 (require 'rudel-backend)
 (require 'rudel-transport)
@@ -55,35 +55,55 @@
 ;;
 
 (defclass rudel-socket-transport (rudel-transport)
-  ((socket :initarg :socket
-	   :type    process
-	   :documentation
-	   "The socket represented by this transport object."))
+  ((socket   :initarg  :socket
+	     :type     process
+	     :documentation
+	     "The socket represented by this transport object.")
+   (filter   :initarg  :filter
+	     :type     (or null function)
+	     :initform nil
+	     :reader   rudel-filter
+	     :writer   rudel-set-filter
+	     :documentation
+	     "The filter function. This function is not directly
+installed into the underlying process and therefore has to be
+stored separately.")
+   (sentinel :initarg  :sentinel
+	     :type     (or null function)
+	     :initform nil
+	     :reader   rudel-sentinel
+	     :writer   rudel-set-sentinel
+	     :documentation
+	     "The sentinel function. This function is not
+directly installed into the underlying process and therefore has
+to be stored separately."))
   "Objects of this class use sockets to transport data.")
 
-(defmethod rudel-filter ((this rudel-socket-transport))
-  "Return filter function of THIS."
+(defmethod initialize-instance :after ((this rudel-socket-transport) slots)
+  "Install process filter and sentinel for THIS."
   (with-slots (socket) this
-    (process-filter socket)))
+    (lexical-let ((this1 this))
+      (set-process-filter
+       socket (lambda (process data)
+		(with-slots (filter) this1
+		  (when filter
+		    (funcall filter data)))))
 
-(defmethod rudel-set-filter ((this rudel-socket-transport) filter)
-  "Install FILTER as dispatcher for messages received by THIS."
-  (with-slots (socket) this
-    (lexical-let ((filter1 filter))
-      (set-process-filter socket (lambda (process data)
-				   (funcall filter1 data))))))
+      (set-process-sentinel
+       socket (lambda (process message)
+		(with-slots (sentinel) this1
+		  (when sentinel
+		    (case (process-status process)
+		      ;; Nothing to do here.
+		      (run
+		       nil)
 
-(defmethod rudel-sentinel ((this rudel-socket-transport))
-  "Return sentinel function of THIS."
-  (with-slots (socket) this
-    (process-sentinel socket)))
-
-(defmethod rudel-set-sentinel ((this rudel-socket-transport) sentinel)
-  "Install SENTINEL as dispatcher for out-of-band events of THIS."
-  (with-slots (socket) this
-    (lexical-let ((sentinel1 sentinel))
-      (set-process-sentinel socket (lambda (process message)
-				     (funcall sentinel1 message))))))
+		      ;; Dispatch events which indicate the
+		      ;; termination of the connection to the
+		      ;; sentinel.
+		      ((closed failed exit)
+		       (funcall sentinel 'close)))))))))
+  )
 
 (defmethod rudel-send ((this rudel-socket-transport) data)
   "Send DATA through THIS."
