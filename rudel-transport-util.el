@@ -152,10 +152,10 @@ complete messages by calling an assembly function.")
   (when (next-method-p)
     (call-next-method))
 
-  ;; Install a handler for received data that assembles messages and
-  ;; passes them to the user-provided handler.
   (with-slots (transport) this
     (lexical-let ((this1 this))
+      ;; Install a handler for received data that assembles messages
+      ;; and passes them to the user-provided handler.
       (rudel-set-filter
        transport
        (lambda (data)
@@ -168,7 +168,14 @@ complete messages by calling an assembly function.")
 	 ;; Process all complete messages.
 	 (with-slots (filter) this1
 	   (when filter
-	     (mapc filter data)))))))
+	     (mapc filter data)))))
+
+      ;; Install a handler for sentinel events and pass them to the
+      ;; user-provided handler.
+      (rudel-set-sentinel transport (lambda (event)
+				      (with-slots (sentinel) this1
+					(when sentinel
+					  (funcall sentinel event)))))))
   )
 
 (defmethod rudel-send ((this rudel-assembling-transport-filter) data)
@@ -213,11 +220,11 @@ a pair of one parse and one generate function.")
   (when (next-method-p)
     (call-next-method))
 
-  ;; Install a handler for received data that parses messages into
-  ;; structured representations and passes those to the user-provided
-  ;; handler.
   (with-slots (transport) this
     (lexical-let ((this1 this))
+      ;; Install a handler for received data that parses messages into
+      ;; structured representations and passes those to the
+      ;; user-provided handler.
       (rudel-set-filter
        transport
        (lambda (message-data)
@@ -225,7 +232,14 @@ a pair of one parse and one generate function.")
 	 (with-slots (parse-function filter) this1
 	   (when filter
 	     (let ((message (funcall parse-function message-data)))
-	       (funcall filter message))))))))
+	       (funcall filter message))))))
+
+      ;; Install a handler for sentinel events and pass them to the
+      ;; user-provided handler.
+      (rudel-set-sentinel transport (lambda (event)
+				      (with-slots (sentinel) this1
+					(when sentinel
+					  (funcall sentinel event)))))))
   )
 
 (defmethod rudel-send ((this rudel-parsing-transport-filter) message)
@@ -282,11 +296,18 @@ incoming and outgoing data and process it later.")
   (when (next-method-p)
     (call-next-method))
 
-  ;; Install `rudel-handle-data' as filter in underlying transport.
   (with-slots (transport) this
     (lexical-let ((this1 this))
+      ;; Install `rudel-handle' as filter in underlying transport.
       (rudel-set-filter transport (lambda (data)
-				    (rudel-handle this1 data)))))
+				    (rudel-handle this1 data)))
+
+      ;; Install a handler for sentinel events and pass them to the
+      ;; user-provided handler.
+      (rudel-set-sentinel transport (lambda (event)
+				      (with-slots (sentinel) this1
+					(when sentinel
+					  (funcall sentinel event)))))))
   )
 
 (defmethod rudel-send ((this rudel-buffering-transport-filter) data)
