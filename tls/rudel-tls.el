@@ -95,6 +95,11 @@ for the network connection."
 			 rudel-tls-client-program
 			 (split-string arguments " "))))
 
+    ;; Immediately stop the process after creation. This is not early
+    ;; enough, but the best we can do. At least we hand out the
+    ;; process object in the correct state.
+    (stop-process process)
+
     ;; Store filter function and attach proxy filter to handle TLS
     ;; handshake.
     (when filter
