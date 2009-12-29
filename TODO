@@ -28,6 +28,11 @@
    + Type :: defect
    + Reporter :: jan
    + Assigned ::
+** TODO Backend factory hooks
+   + Component :: backend
+   + Type :: improved
+   + Reporter :: jan
+   + Assigned ::
 ** TODO Display error message property of join errors?
    + Component :: user-interface
    + Type :: task
@@ -151,6 +156,16 @@
 ** TODO Support for trees of documents
    + Component :: rudel-general
    + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+** NEW Publishing read-only buffers leads to problems
+   + Component :: multiple components affected
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+** NEW SRecode's field edit mode desyncs buffers
+   + Component :: obby
+   + Type :: defect
    + Reporter :: jan
    + Assigned ::
 ** NEW TLS transport does not start in stopped state

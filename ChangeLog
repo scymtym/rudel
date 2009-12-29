@@ -1,5 +1,23 @@
 2009-12-29  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	* TODO (Future): added backend factory hooks
+	(Milestone 0.3): added read-only buffer problem and srecode field
+	edit problem
+
+	* rudel-compile.el (local variables): prevent byte-compilation
+
+	* socket/rudel-socket.el (rudel-socket-transport::filter): new
+	slot; store original filter function
+	(rudel-socket-transport::sentinel): new slot; store original
+	sentinel function
+	(rudel-socket-transport::initialize-instance): new method; install
+	dispatch functions for filter and sentinel
+	(rudel-socket-transport::rudel-filter):
+	(rudel-socket-transport::rudel-set-filter):
+	(rudel-socket-transport::rudel-sentinel):
+	(rudel-socket-transport::rudel-set-sentinel): removed; we can use
+	automatic readers and writers now
+
 	* tls/rudel-tls.el (rudel-start-tls-backend): added capability
 	encrypt
 
