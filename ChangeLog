@@ -1,5 +1,14 @@
 2009-12-30  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	Use `process-put' and `process-get' instead
+	`rudel-set-process-object' and `rudel-process-object'
+	* tls/rudel-tls.el (rudel-tls-make-process):
+	(rudel-tls-start-tls):
+	(rudel-tls-wait-init):
+	(rudel-tls-wait-handshake):
+	(rudel-tls-established): use `process-put' and `process-get'
+	instead `rudel-set-process-object' and `rudel-process-object'
+
 	Better handling of session termination and connection aborts
 	* obby/rudel-obby.el (rudel-obby-backend::rudel-connect): new
 	error states we-finalized and disconnect; signal proper errors for
