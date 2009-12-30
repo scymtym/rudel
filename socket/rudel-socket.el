@@ -101,7 +101,7 @@ to be stored separately."))
 		      ;; Dispatch events which indicate the
 		      ;; termination of the connection to the
 		      ;; sentinel.
-		      ((closed failed exit)
+		      ((closed failed exit finished)
 		       (funcall sentinel 'close)))))))))
   )
 
