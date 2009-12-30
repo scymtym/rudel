@@ -1,5 +1,10 @@
 2009-12-30  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	Removed unused functions
+	* rudel-util.el (rudel-process-object):
+	(rudel-set-process-object): removed; this is handled by
+	`process-get' and `process-put'
+
 	Use `process-put' and `process-get' instead
 	`rudel-set-process-object' and `rudel-process-object'
 	* tls/rudel-tls.el (rudel-tls-make-process):
@@ -92,6 +97,20 @@
 	`save-excursion'
 
 2009-12-21  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel-speedbar.el (header): fixed history
+	(rudel-speedbar-key-map): updated documentation string
+	(rudel-speedbar-menu): renamed Compile -> Subscribed; dummy entry
+	for now
+	(rudel-find-nearest-file-line):
+	(rudel-session::eieio-speedbar-derive-line-path):
+	(rudel-session::eieio-speedbar-description):
+	(rudel-project::eieio-speedbar-object-buttonname):
+	(rudel-project::eieio-speedbar-object-children):
+	(rudel-file-find):
+	(rudel-create-tag-buttons):
+	(rudel-tag-expand):
+	(rudel-tag-find): removed; obsolete
 
 	* rudel-session-initiation.el
 	(rudel-ask-protocol-backend::rudel-discover): pass partial info

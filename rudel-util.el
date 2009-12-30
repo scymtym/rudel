@@ -151,22 +151,6 @@ methods."
     (apply method target (rest args))))
 
 
-;;; Networking helper functions and macros
-;;
-
-(defun rudel-process-object (process &optional key)
-  "Return the object attached to PROCESS using identifier KEY."
-  (unless key
-    (setq key :object))
-  (get (intern (process-name process)) key))
-
-(defun rudel-set-process-object (process object &optional key)
-  "Set object attached to PROCESS using identifier KEY to OBJECT."
-  (unless key
-    (setq key :object))
-  (put (intern (process-name process)) key object))
-
-
 ;;; Fragmentation and assembling functions.
 ;;
 
