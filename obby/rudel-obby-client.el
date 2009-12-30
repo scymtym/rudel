@@ -720,13 +720,59 @@ failure."))
     (call-next-method this (format " remaining: %d" remaining-bytes))))
 
 
+;;; Class rudel-obby-client-state-we-finalized
+;;
+
+(defclass rudel-obby-client-state-we-finalized
+  (rudel-obby-client-connection-state)
+  ((reason :initarg :reason
+	   :type    (or symbol string)
+	   :documentation
+	   "The reason for the finalization."))
+  "State used to indicate that we closed the connection.")
+
+(defmethod rudel-enter ((this rudel-obby-client-state-we-finalized)
+			&optional reason1)
+  "Close the underlying transport and switch to disconnected state."
+  (with-slots (reason) this
+    (setq reason reason1))
+
+  (with-slots (transport) (oref this :connection)
+    (rudel-close transport))
+
+  'disconnected)
+
+
 ;;; Class rudel-obby-client-state-they-finalized
 ;;
 
 (defclass rudel-obby-client-state-they-finalized
   (rudel-obby-client-connection-state)
-  ()
+  ((reason :initarg :reason
+	   :type    (or symbol string)
+	   :documentation
+	   "The reason for the finalization."))
   "State used to indicate that the connection was closed by the peer.")
+
+(defmethod rudel-enter ((this rudel-obby-client-state-they-finalized)
+			&optional reason1)
+  "Close the underlying transport and switch to disconnected state."
+  (with-slots (reason) this
+    (setq reason reason1))
+
+  (with-slots (transport) (oref this :connection)
+    (rudel-close transport))
+
+  'disconnected)
+
+
+;;; Class rudel-obby-client-state-disconnected
+;;
+
+(defclass rudel-obby-client-state-disconnected
+  (rudel-obby-client-connection-state)
+  ()
+  "State used to indicated that the connection is closed.")
 
 
 ;;; Client connection states.
@@ -743,7 +789,9 @@ failure."))
     (session-synching      . rudel-obby-client-state-session-synching)
     (subscribing           . rudel-obby-client-state-subscribing)
     (document-synching     . rudel-obby-client-state-document-synching)
-    (they-finalized        . rudel-obby-client-state-they-finalized))
+    (we-finalized          . rudel-obby-client-state-we-finalized)
+    (they-finalized        . rudel-obby-client-state-they-finalized)
+    (disconnected          . rudel-obby-client-state-disconnected))
   "Name symbols and classes of connection states.")
 
 
@@ -790,13 +838,21 @@ documents."))
     ;; + TRANSPORT
     (setq transport (rudel-obby-make-transport-filter-stack transport))
 
-    ;; Install `rudel-accept' as filter to dispatch messages to the
-    ;; current state machine state.
+    ;; Install process filter and sentinel.
     (lexical-let ((this1 this))
-      (rudel-set-filter
-       transport
-       (lambda (data)
-	 (rudel-accept this1 data)))))
+      ;; Install `rudel-accept' as filter to dispatch messages to the
+      ;; current state machine state.
+      (rudel-set-filter transport
+			(lambda (data)
+			  (rudel-accept this1 data)))
+
+      ;; Install a sentinel that calls `rudel-close' on THIS upon
+      ;; receiving a 'close' event.
+      (rudel-set-sentinel transport
+			  (lambda (event)
+			    (case event
+			      (close
+			       (rudel-close this1)))))))
   )
 
 (defmethod rudel-register-state ((this rudel-obby-connection)
@@ -816,12 +872,17 @@ documents."))
     (rudel-send transport args)))
 
 (defmethod rudel-disconnect ((this rudel-obby-connection))
-  ""
+  "Disconnect THIS from the remote endpoint."
+  ;; Switch to finalization state and wait until the connection
+  ;; reaches the disconnected state.
+  (rudel-switch this 'we-finalized)
+  (rudel-state-wait this '(disconnected) nil)
+
   (when (next-method-p)
     (call-next-method)))
 
 (defmethod rudel-close ((this rudel-obby-connection))
-  ""
+  "Cleanup after THIS has been disconnected."
   ;; Move the state machine into an error state.
   (rudel-switch this 'they-finalized)
 
@@ -912,7 +973,11 @@ documents."))
 	      (t
 	       (progress-reporter-force-update reporter 1.0 "Subscribing ")
 	       (progress-reporter-done reporter)))))
-      (rudel-state-wait this '(idle) '(they-finalized) #'display-progress)))
+      (rudel-state-wait
+       this
+       '(idle)
+       '(we-finalized they-finalized disconnected)
+       #'display-progress)))
 
   ;; We receive a notification of our own subscription from the
   ;; server. Consequently we do not add SELF to the list of subscribed

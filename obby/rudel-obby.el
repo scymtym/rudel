@@ -161,7 +161,8 @@ Return the connection object."
     (rudel-start transport)
 
     (rudel-state-wait connection
-		      '(waiting-for-join-info) nil
+		      '(waiting-for-join-info)
+		      '(we-finalized they-finalize disconnected)
 		      progress-callback)
 
     ;; Wait until we join the session.
@@ -184,9 +185,12 @@ Return the connection object."
 	      ;; When the connection enters state 'idle', the login
 	      ;; succeeded; Break out of the while loop then.
 	      (progn
-		(rudel-state-wait connection
-				  '(idle) '(join-failed they-finalized)
-				  progress-callback)
+		(rudel-state-wait
+		 connection
+		 '(idle)
+		 '(join-failed
+		   we-finalized they-finalized disconnected)
+		 progress-callback)
 		(throw 'connect t))
 
 	    ;; Connection entered error state
@@ -220,7 +224,12 @@ Return the connection object."
 				 switch-to (list 'joining info)))
 
 			  ;; Unknown error TODO should we signal?
-			  (t nil)))))
+			  (t nil))))
+
+		     ;; Error state is one of {we, they}-finalize
+		     ((we-finalized they-finalized)
+		      (with-slots (reason) state
+			(signal 'rudel-join-error (list reason)))))
 
 		 ;; For all other error states, we just give up.
 		 (signal 'rudel-join-error nil))))))))

@@ -1,4 +1,45 @@
+2009-12-30  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Better handling of session termination and connection aborts
+	* obby/rudel-obby.el (rudel-obby-backend::rudel-connect): new
+	error states we-finalized and disconnect; signal proper errors for
+	error states they-finalized and we-finalized
+	* obby/rudel-obby-server.el
+	(rudel-obby-client::initialize-instance): install a sentinel that
+	closes the connection
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-we-finalized): used to indicate that we
+	closed the connection
+	(rudel-obby-client-state-they-finalized::reason): new slot; stores
+	for finalization
+	(rudel-obby-client-state-they-finalized::rudel-enter): new method;
+	store reason and cleanup connection
+	(rudel-obby-client-state-disconnected): new class; used to
+	indicated that the connection is closed
+	(rudel-obby-client-connection-states): added `we-finalized' and
+	`disconnected'
+	(rudel-obby-connection::initialize-instance): install a sentinel
+	that closes the connection
+	(rudel-obby-connection::rudel-disconnect): switch to `we-finalize'
+	and wait for `disconnected'; added documentation string
+	(rudel-obby-connection::rudel-close): added documentation string
+	(rudel-obby-connection::rudel-subscribe-to): handle new error
+	states
+
+	* rudel-debug.el (require rudel-state-machine): required since
+	state machine methods are instrumented
+
+	* socket/rudel-socket.el
+	(rudel-socket-transport::initialize-instance): in sentinel,
+	include finished in the list of "close indicators"
+
 2009-12-29  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	* rudel-transport-util.el
+	(rudel-assembling-transport-filter::initialize-instance):
+	(rudel-parsing-transport-filter::initialize-instance):
+	(rudel-buffering-transport-filter::initialize-instance): forward
+	sentinel events to user-provided handler
 
 	* TODO (Future): added backend factory hooks
 	(Milestone 0.3): added read-only buffer problem and srecode field

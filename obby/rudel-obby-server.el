@@ -525,13 +525,21 @@ handled by the server.")
     ;; + TRANSPORT
     (setq transport (rudel-obby-make-transport-filter-stack transport))
 
-    ;; Install `rudel-accept' as filter to dispatch messages to the
-    ;; current state machine state.
+    ;; Install process filter and sentinel.
     (lexical-let ((this1 this))
-      (rudel-set-filter
-       transport
-       (lambda (data)
-	 (rudel-accept this1 data)))))
+      ;; Install `rudel-accept' as filter to dispatch messages to the
+      ;; current state machine state.
+      (rudel-set-filter transport
+			(lambda (data)
+			  (rudel-accept this1 data)))
+
+      ;; Install a sentinel that calls `rudel-close' on THIS upon
+      ;; receiving a 'close' event.
+      (rudel-set-sentinel transport
+			  (lambda (event)
+			    (case event
+			      (close
+			       (rudel-close this1)))))))
   )
 
 (defmethod rudel-register-state ((this rudel-obby-client) symbol state)
