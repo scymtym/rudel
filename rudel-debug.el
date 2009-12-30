@@ -40,6 +40,7 @@
 (require 'eieio-datadebug)
 
 (require 'rudel-util)
+(require 'rudel-state-machine)
 
 
 ;;; Customization
