@@ -51,7 +51,9 @@
 ;; autoload. This way, loading rudel-loaddefs.el is the only thing
 ;; users need to do.
 ;;;###autoload
-(let* ((rudel-dir (file-name-directory (or #$ (buffer-file-name))))
+(let* ((rudel-dir (file-name-directory (or #$
+					   load-file-name
+					   (buffer-file-name))))
        (subdirs   (mapcar
 		   (lambda (subdir)
 		     (concat rudel-dir subdir))
@@ -62,7 +64,7 @@
       (add-to-list 'load-path subdir)))
 
 (let* ((rudel-dir (file-name-directory
-		   (or (buffer-file-name) load-file-name)))
+		   (or load-file-name (buffer-file-name))))
        (subdirs   (mapcar
 		   (lambda (subdir)
 		     (concat rudel-dir subdir))

@@ -1,5 +1,11 @@
 2009-12-31  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	Load file name determination
+	* rudel-compile.el (top level autoload):
+	(top level): changed load file name determination
+
+	* TODO (Milestone 0.3): connection reset problem fixed
+
 	Autoload load path manipulation
 	* rudel-compile.el (top level): added autoloaded form that adds
 	Rudel directories to `load-path'
