@@ -181,13 +181,6 @@
    When requiring the Zeroconf backend and immediately asking for
    discovered sessions, none are returned, even if there are
    some. Retrying later returns these sessions.
-** NEW Connection resets are not handled properly with transports
-   + Component :: multiple components
-   + Type :: defect
-   + Reporter :: jan
-   + Assigned ::
-   The current session used to be terminated when the connection
-   dropped. This does not work when using transports.
 ** NEW Get rid of error calls in the server (#58)
    + Component :: obby-backend
    + Type :: defect
@@ -212,6 +205,13 @@
    + Type :: defect
    + Reporter :: jan
    + Assigned ::
+** FIXED Connection resets are not handled properly with transports
+   + Component :: multiple components
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+   The current session used to be terminated when the connection
+   dropped. This does not work when using transports.
 ** DONE Use transports
    + Component :: multiple components
    + Type :: task
