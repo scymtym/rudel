@@ -1,3 +1,9 @@
+2009-12-31  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Autoload load path manipulation
+	* rudel-compile.el (top level): added autoloaded form that adds
+	Rudel directories to `load-path'
+
 2009-12-30  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Removed unused functions

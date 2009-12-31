@@ -47,11 +47,25 @@
 (require 'eieio)
 (require 'bytecomp)
 
+;; This makes adding our directories to the load path into an
+;; autoload. This way, loading rudel-loaddefs.el is the only thing
+;; users need to do.
+;;;###autoload
+(let* ((rudel-dir (file-name-directory (or #$ (buffer-file-name))))
+       (subdirs   (mapcar
+		   (lambda (subdir)
+		     (concat rudel-dir subdir))
+		   '("." "jupiter" "socket" "tls" "obby" "zeroconf"))))
+    ;; Adjust load path. We need to have all Rudel subdirectories on
+    ;; the load path.
+    (dolist (subdir subdirs)
+      (add-to-list 'load-path subdir)))
+
 (let* ((rudel-dir (file-name-directory
 		   (or (buffer-file-name) load-file-name)))
        (subdirs   (mapcar
 		   (lambda (subdir)
-		     (concat rudel-dir "/" subdir))
+		     (concat rudel-dir subdir))
 		   '("." "jupiter" "socket" "tls" "obby" "zeroconf")))
        (loaddefs  (concat rudel-dir "rudel-loaddefs.el")))
 
