@@ -1,3 +1,15 @@
+2010-01-01  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Some cleanup in rudel-xml.el
+	* rudel-xml.el (header): started commentary section
+	(do-tag-children): use `nth' instead of `car' and `cadr'
+	(rudel-xml-toplevel-tag-positions):
+	(rudel-xml-toplevel-tags): added documentation string
+
+	Added rudel-xml.el
+	* Project.ede (target compile): added rudel-xml.el
+	* rudel-xml.el: new file; XML functions for Rudel
+
 2009-12-31  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Load file name determination

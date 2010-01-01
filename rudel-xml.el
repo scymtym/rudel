@@ -1,6 +1,6 @@
 ;;; rudel-xml.el --- XML processing functions used by Rudel
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, xml
@@ -24,6 +24,17 @@
 
 ;;; Commentary:
 ;;
+;; Conversion functions:
+;; + `xml->string'
+;; + `string->xml'
+;;
+;; XML Macros:
+;; + `with-tag-attrs'
+;; + `do-tag-children'
+;;
+;; Stream parsing functions:
+;; + `rudel-xml-toplevel-tag-positions'
+;; + `rudel-xml-toplevel-tags'
 
 
 ;;; History:
@@ -70,6 +81,7 @@ tag name. TYPE can be 'number."
 	  (mapcar
 	   (lambda (attr)
 	     (cond
+
 	      ;; Simple form
 	      ((symbolp attr)
 	       `(,attr (xml-get-attribute ,tag-var (quote ,attr))))
@@ -100,6 +112,7 @@ tag name. TYPE can be 'number."
 		      (name     (nth 1 attr))
 		      (value    `(xml-get-attribute ,tag-var (quote ,name))))
 		 `(,attr-var ,value)))
+
 	      ;; Invalid form
 	      (t (error "Invalid tag clause: %s" attr)))) ;; TODO define a proper condition or use signal?
 	   attrs)))
@@ -126,7 +139,7 @@ tag name. TYPE can be 'number."
 ;;
 
 (defun rudel-xml-toplevel-tag-positions (string)
-  ""
+  "Return positions of top-level XML tags in STRING."
   (let ((depth       0)
 	(tag-opening nil)
 	(start)
@@ -151,7 +164,7 @@ tag name. TYPE can be 'number."
     (nreverse tags)))
 
 (defun rudel-xml-toplevel-tags (string)
-  ""
+  "Parse STRING as partial XML document, return complete and partial tags."
   (let ((tags (rudel-xml-toplevel-tag-positions string)))
     (list
 
