@@ -181,5 +181,11 @@ tag name. TYPE can be 'number."
        string)))
   )
 
+(defun rudel-xml-assemble-tags (data)
+  "Assemble complete XML tags in DATA, return list of tags and a rest."
+  (destructuring-bind (tags buffer)
+      (rudel-xml-toplevel-tags (apply #'concat data))
+    (list tags (list buffer))))
+
 (provide 'rudel-xml)
 ;;; rudel-xml.el ends here

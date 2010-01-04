@@ -1,4 +1,35 @@
+2010-01-04  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added `rudel-xml-assemble-tags'
+	* rudel-xml.el (rudel-xml-assemble-tags): assemble complete XML
+	tags from strings
+
+	Added pretty-print argument to `xml->string'
+	* rudel-xml.el (xml->string): added optional argument pretty-print
+
 2010-01-01  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Include XMPP backend in compilation and autoload generation
+	* rudel-compile.el (top level autoload):
+	(top level): added xmpp directory
+
+	Initial import of XMPP backend
+	* ChangeLog: updated
+	* xmpp/rudel-xmpp.el: new file; XMPP transport backend
+	* xmpp/rudel-xmpp-tunnel.el: new file; XMPP tunnel transport
+	backend
+	* xmpp/rudel-xmpp-tls.el: new file; TLS encryption for XMPP
+	transport
+	* xmpp/rudel-xmpp-state.el: new file; base class for XMPP state
+	machine states
+	* xmpp/rudel-xmpp-socket-owner.el: new file; specialized XMPP
+	socket owner class
+	* xmpp/rudel-xmpp-sasl.el: new file; SALS authentication mechanisms
+	* xmpp/rudel-xmpp-debug.el: new file; XMPP debugging functions
+	* xmpp/doc/xmpp-states.cogre: new file; state transition diagram
+	* xmpp/doc/rfc3920: new file; XMPP RFC
+	* xmpp/Project.ede: new file; project file for xmpp subproject
+	* Project.ede (target autoloads): added directory xmpp
 
 	Some cleanup in rudel-xml.el
 	* rudel-xml.el (header): started commentary section
@@ -946,8 +977,6 @@
 
 	* rudel-session-initiation.el (rudel-configured-sessions):
 	improved documentation string
-
-2009-09-29  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	* INSTALL (REQUIREMENTS): wording
 	(INSTALLING): mention other things that cause rudel to be
