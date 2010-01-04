@@ -51,8 +51,9 @@
 ;;; Miscellaneous functions
 ;;
 
-(defun xml->string (xml)
-  "Convert infoset XML to string representation."
+(defun xml->string (xml &optional pretty-print)
+  "Convert infoset XML to string representation.
+PRETTY-PRINT is currently ignored."
   (with-temp-buffer
     (xml-print (list xml))
     (buffer-string)))
