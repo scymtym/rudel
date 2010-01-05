@@ -1,4 +1,12 @@
 * Future
+** TODO Allow users to insert comments
+   + Component :: multiple components affected
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   It should be possible to start a threaded comment discussion at any
+   point of a document. The comments should not be part of the buffer
+   content.
 ** NEW Handle messages spanning multiple frames
    + Component :: beep-transport
    + Type :: defect

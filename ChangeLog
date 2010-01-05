@@ -1,5 +1,8 @@
 2010-01-05  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	Added task for comment functionality
+	* TODO (Future): added task for comment functionality
+
 	Removed last traces of progress reporters
 	* rudel-state-machine.el (header): updated copyright
 	(require rudel-compat): removed; no longer required
