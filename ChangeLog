@@ -1,3 +1,24 @@
+2010-01-05  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Removed last traces of progress reporters
+	* rudel-state-machine.el (header): updated copyright
+	(require rudel-compat): removed; no longer required
+	(rudel-state-wait): mention callback instead of progress reporter
+	in comment
+
+	Do not detach documents that have no buffer
+	* rudel.el (header): updated copyright
+	(rudel-session::rudel-remove-document): use
+	`rudel-maybe-detach-from-buffer' instead of an explicit check
+	(rudel-client-session::rudel-end): use
+	`rudel-maybe-detach-from-buffer' instead of blindly detaching all
+	documents
+	(rudel-document::rudel-detach-from-buffer): do not check whether
+	buffer is non-nil; it is now an error to call this method when
+	buffer is nil
+	(rudel-document::rudel-maybe-detach-from-buffer): new method; call
+	`rudel-detach-from-buffer' is the document is attached
+
 2010-01-04  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added XMPP backend
@@ -31,24 +52,6 @@
 	Include XMPP backend in compilation and autoload generation
 	* rudel-compile.el (top level autoload):
 	(top level): added xmpp directory
-
-	Initial import of XMPP backend
-	* ChangeLog: updated
-	* xmpp/rudel-xmpp.el: new file; XMPP transport backend
-	* xmpp/rudel-xmpp-tunnel.el: new file; XMPP tunnel transport
-	backend
-	* xmpp/rudel-xmpp-tls.el: new file; TLS encryption for XMPP
-	transport
-	* xmpp/rudel-xmpp-state.el: new file; base class for XMPP state
-	machine states
-	* xmpp/rudel-xmpp-socket-owner.el: new file; specialized XMPP
-	socket owner class
-	* xmpp/rudel-xmpp-sasl.el: new file; SALS authentication mechanisms
-	* xmpp/rudel-xmpp-debug.el: new file; XMPP debugging functions
-	* xmpp/doc/xmpp-states.cogre: new file; state transition diagram
-	* xmpp/doc/rfc3920: new file; XMPP RFC
-	* xmpp/Project.ede: new file; project file for xmpp subproject
-	* Project.ede (target autoloads): added directory xmpp
 
 	Some cleanup in rudel-xml.el
 	* rudel-xml.el (header): started commentary section

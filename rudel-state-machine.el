@@ -1,6 +1,6 @@
 ;;; rudel-state-machine.el --- A simple state machine for Rudel
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, FSM
@@ -33,7 +33,7 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -45,7 +45,6 @@
 (require 'eieio)
 
 (require 'rudel-errors)
-(require 'rudel-compat) ;; for pulsing progress reporter
 
 
 ;;; Errors related to the state machine
@@ -347,7 +346,7 @@ symbol of the current state and STATE is the state object."
 	       (when (memq symbol error-states)
 		 (throw 'state-wait (cons 'error   (cons symbol state))))
 
-	       ;; Update progress indicator and sleep.
+	       ;; Run callback and sleep.
 	       (when callback
 		 (funcall callback (cons symbol state)))
 	       (sleep-for 0.05))))))
