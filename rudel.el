@@ -1,6 +1,6 @@
 ;;; rudel.el --- A collaborative editing framework for Emacs
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, collaboration
@@ -223,8 +223,7 @@ WHICH is compared to the result of KEY using TEST."
 (defmethod rudel-remove-document ((this rudel-session) document)
   "Remove DOCUMENT from THIS session, detaching it if necessary."
   ;; Detach document from its buffer when necessary.
-  (when (rudel-attached-p document)
-    (rudel-detach-from-buffer document))
+  (rudel-maybe-detach-from-buffer document)
 
   ;; Remove DOCUMENT from the list of documents in THIS session.
   (object-remove-from-list this :documents document)
@@ -277,8 +276,8 @@ client perspective.")
 (defmethod rudel-end ((this rudel-client-session))
   ;; Clean everything up
   (with-slots (connection users documents) this
-    ;; Detach all documents from their buffers
-    (mapc #'rudel-detach-from-buffer documents)
+    ;; Make sure all documents are detached from their buffers
+    (mapc #'rudel-maybe-detach-from-buffer documents)
 
     ;; Terminate the connection
     (when connection
@@ -473,43 +472,46 @@ Do nothing, if THIS is not attached to any buffer."
   (with-slots (buffer) this
     (let ((buffer-save buffer))
 
-      ;; Only try to detach from BUFFER, if it is non-nil. BUFFER can
-      ;; be nil, if the user did not subscribe to the document, or
-      ;; unsubscribed after subscribing.
-      (when buffer
+      (with-current-buffer buffer
+	;; Remove our handler function from the kill-buffer hook.
+	(remove-hook 'kill-buffer-hook
+		     #'rudel-unpublish-buffer
+		     t)
 
-	(with-current-buffer buffer
-	  ;; Remove our handler function from the kill-buffer hook.
-	  (remove-hook 'kill-buffer-hook
-		       #'rudel-unpublish-buffer
-		       t)
+	;; Remove our handler function from the after-change hook.
+	(remove-hook 'after-change-functions
+		     #'rudel-handle-buffer-change
+		     t)
 
-	  ;; Remove our handler function from the after-change hook.
-	  (remove-hook 'after-change-functions
-		       #'rudel-handle-buffer-change
-		       t)
+	;; Remove our handler function from the before-change hook.
+	(remove-hook 'before-change-functions
+		     #'rudel-buffer-change-workaround
+		     t)
 
-	  ;; Remove our handler function from the before-change hook.
-	  (remove-hook 'before-change-functions
-		       #'rudel-buffer-change-workaround
-		       t)
+	;; Remove all overlays.
+	(rudel-overlays-remove-all)
 
-	  ;; Remove all overlays.
-	  (rudel-overlays-remove-all)
+	;; Remove the major mode change handler.
+	(remove-hook 'change-major-mode-hook
+		     #'rudel-handle-major-mode-change
+		     t))
 
-	  ;; Remove the major mode change handler.
-	  (remove-hook 'change-major-mode-hook
-		       #'rudel-handle-major-mode-change
-		       t))
+      ;; Unset buffer slot of THIS and delete association of THIS with
+      ;; BUFFER.
+      (rudel-set-buffer-document nil buffer)
+      (setq buffer nil))
 
-	;; Unset buffer slot of THIS and delete association of THIS with
-	;; BUFFER.
-	(rudel-set-buffer-document nil buffer)
-	(setq buffer nil))
-
-      ;; Run the hook.
-      (object-run-hook-with-args this 'detach-hook buffer-save)))
+    ;; Run the hook.
+    (object-run-hook-with-args this 'detach-hook buffer-save))
   )
+
+(defmethod rudel-maybe-detach-from-buffer ((this rudel-document))
+  ""
+  ;; Only try to detach from BUFFER, if it is non-nil. BUFFER can be
+  ;; nil, if the user did not subscribe to the document, or
+  ;; unsubscribed after subscribing.
+  (when (rudel-attached-p this)
+    (rudel-detach-from-buffer this)))
 
 (defmethod rudel-add-user ((this rudel-document) user)
   "Add USER to the list of subscribed users of THIS.
