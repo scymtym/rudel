@@ -67,7 +67,10 @@ does not contains any incomplete stanzas."
 	 (list buffer))))) ;; TODO wrong
   )
 ;; One problem: peer can send
-;; <stream:stream xmlns:stream="http://etherx.jabber.org/streams" xmlns="jabber:client" version="1.0" from="gunhead">
+;; <stream:stream xmlns:stream="http://etherx.jabber.org/streams" 
+;;                xmlns="jabber:client" 
+;;                version="1.0" 
+;;                from="gunhead">
 ;; and then
 ;; <stream:features/>
 ;; we cannot assemble this properly; look into the RFC
