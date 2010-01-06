@@ -46,11 +46,12 @@
 ;;; TLS state list
 ;;
 
-(setq rudel-xmpp-states
-      (append
-       rudel-xmpp-states
-       '(;; TLS states
-	 start-tls . rudel-xmpp-state-tls-start)))
+(defvar rudel-xmpp-tls-states
+  '((start-tls . rudel-xmpp-start-tls-start))
+  "")
+
+(dolist (state rudel-xmpp-tls-states)
+  (add-to-list 'rudel-xmpp-states sate))
 
 (provide 'rudel-xmpp-tls)
 ;;; rudel-xmpp-tls.el ends here

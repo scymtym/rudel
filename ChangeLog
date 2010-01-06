@@ -1,3 +1,36 @@
+2010-01-06  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added state list to xmpp/rudel-xmpp-tls.el
+	* xmpp/rudel-xmpp-tls.el (rudel-xmpp-tls-states): new variable;
+	list of TLS-related states
+	(rudel-xmpp-states): use `add-to-list' to add the states
+
+	Renamed rudel-connect -> rudel-make-connection in xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-make-connection):
+	renamed `rudel-connect' -> `rudel-make-connection'
+	(rudel-xmpp-state-new): added documentation string
+	(rudel-xmpp-state-negotiate-stream): added documentation string
+	(rudel-xmpp-state-negotiate-stream::success-state): added
+	documentation string
+	(rudel-xmpp-state-negotiate-stream::rudel-enter): fixed stream
+
+	Cosmetic changes in xmpp/rudel-xmpp-sasl.el
+	* xmpp/rudel-xmpp-sasl.el
+        (rudel-xmpp-state-sasl-start::rudel-enter): added documentation
+	string; cosmetic changes
+        (rudel-xmpp-state-sasl-try-one::rudel-enter): added documentation
+	string
+        (rudel-xmpp-state-sasl-mechanism-step::rudel-enter): added
+	documentation string
+        (rudel-xmpp-state-sasl-mechanism-step::rudel-accept): added
+	documentation string; added some comments
+        (rudel-xmpp-sasl-states): new variable; list of states used by the
+	SASL implementation; states are added to `rudel-xmpp-states'
+
+	Added line breaks in long comment in rudel-xmpp-util.el
+	* xmpp/rudel-xmpp-util.el (rudel-xmpp-assemble-stream): added line
+	breaks in long comment
+
 2010-01-05  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added task for comment functionality
