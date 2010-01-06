@@ -1,5 +1,11 @@
 2010-01-06  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	Initial import of IRC transport backend
+	* Project.ede (target autoloads): added irc directory
+	* irc/Project.ede: new file; project file for IRC backend
+	* irc/rudel-irc-erc.el: new file; IRC transport backend
+	implementation based on ERC
+
 	Added state list to xmpp/rudel-xmpp-tls.el
 	* xmpp/rudel-xmpp-tls.el (rudel-xmpp-tls-states): new variable;
 	list of TLS-related states

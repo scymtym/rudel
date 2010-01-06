@@ -1,0 +1,13 @@
+;; Object irc
+;; EDE project file.
+(ede-proj-project "irc"
+  :name "irc"
+  :file "Project.ede"
+  :targets (list 
+   (ede-proj-target-elisp "irc"
+    :name "irc"
+    :path ""
+    :source '("rudel-irc-erc.el")
+    )
+   )
+  )
