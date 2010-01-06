@@ -47,7 +47,8 @@
 
 (defclass rudel-xmpp-tunnel-transport (rudel-xmpp-transport)
   ()
-  "")
+  "Transport backend that tunnels any kind of data (not
+necessarily XML) through an XMPP connection.")
 
 (defmethod rudel-send ((this rudel-xmpp-transport) data)
   ""
