@@ -66,9 +66,9 @@
 
   (oset this :version rudel-xmpp-transport-version))
 
-(defmethod rudel-connect ((this rudel-xmpp-backend)
-			  info info-callback
-			  &optional progress-callback)
+(defmethod rudel-make-connection ((this rudel-xmpp-backend)
+				  info info-callback
+				  &optional progress-callback)
   "Connect to an XMPP server using the information in INFO.
 INFO has to be a property list containing at least the keys :host
 and :port."
@@ -99,7 +99,7 @@ and :port."
 
 (defclass rudel-xmpp-state-new (rudel-xmpp-state)
   ()
-  "")
+  "Initial state of new XMPP connections.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-new))
   ""
@@ -113,14 +113,15 @@ and :port."
   ((success-state :initarg :success-state
 		  :type    symbol
 		  :documentation
-		  ""))
-  "")
+		  "State to switch to in case of successful
+negotiation."))
+  "Stream negotiation state.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-negotiate-stream)
 			success-state) ;; host)
   ""
-  ;; Store name of the successor state in case of successful stream
-  ;; negotiation for later.
+  ;; Store the name of the successor state in case of successful
+  ;; stream negotiation for later.
   (oset this :success-state success-state)
 
   ;; The first message we receive will be an incomplete <stream:stream
