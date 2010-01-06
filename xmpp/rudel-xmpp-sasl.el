@@ -52,9 +52,10 @@
 
 (defmethod rudel-enter ((this rudel-xmpp-state-sasl-start)
 			features)
-  ""
+  "Extract the list of supported mechanisms from FEATURES.
+Then switch to the try one state to try them in order."
   ;; Find mechanism tags
-  (let* ((mechanism-tags (remove* 'mechanisms features
+  (let ((mechanism-tags (remove* 'mechanisms features
 				  :test-not #'eq
 				  :key      #'xml-node-name))
 	 ;; XML -> alist
@@ -70,8 +71,8 @@
 			       (car (xml-node-children mechanism))))
 		       (xml-node-children mechanisms))))
 		  mechanism-tags))))
-    ;; Select those mechanism that Emacs supports.
 
+    ;; Try the first mechanism
     (list 'sasl-try-one mechanisms))
   )
 
@@ -86,7 +87,9 @@ start state for that mechanism.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-sasl-try-one)
 			mechanisms)
-  ""
+  "If Emacs support the first mechanism in MECHANISMS, try it, otherwise skip it.
+Mechanism are tried by switching to the mechanism start state.
+When no mechanisms are left, switch to the authentication failed state."
   ;; If there are mechanism on the list, try them, otherwise fail.
   (if mechanisms
       (destructuring-bind (schema mechanism-name) (car mechanisms)
@@ -172,7 +175,7 @@ mechanism.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-sasl-mechanism-step)
 			schema1 client1 step1 rest1)
-  ""
+  "Store SCHEMA1, CLIENT1, STEP1 and REST1 for later use."
   (with-slots (schema client step rest) this
     (setq schema schema1
 	  client client1
@@ -181,18 +184,24 @@ mechanism.")
   nil)
 
 (defmethod rudel-accept ((this rudel-xmpp-state-sasl-mechanism-step) xml)
-  ""
+  "Interpret XML to decide how to proceed with the authentication mechanism."
   (case (xml-node-name xml)
    (failure
+   ;; Authentication mechanism failed. Try next.
     (with-slots (rest) this
       (list 'sasl-try-one rest)))
    ;; TODO Handle <not-authorized/> differently? We could retry with
    ;; the same mechanism
 
    (success
+    ;; Authentication mechanism succeeded. Switch to authenticated
+    ;; state.
     'authenticated)
 
    (challenge
+    ;; Authentication mechanism requires a challenge-response
+    ;; step. The Emacs SASL implementation does the heavy lifting for
+    ;; us.
     ;; TODO is the challenge data always there?
     (with-slots (schema client step rest) this
       ;; TODO assert string= schema (xml-tag-attr xml "xmlns")
@@ -203,9 +212,8 @@ mechanism.")
 			       (car (xml-node-children xml)))))
 	  (sasl-step-set-data step challenge-data)))
 
-      ;; Proceed to next step
+      ;; Proceed to next step and send response.
       (setq step (sasl-next-step client step))
-
       (let* ((response-data-raw (sasl-step-data step))
 	     (response-data     (when response-data-raw
 				  (base64-encode-string
@@ -219,6 +227,7 @@ mechanism.")
 
       (list 'sasl-mechanism-step schema client step rest)))
 
+   ;; Unknown message.
    (t
     nil)) ;; TODO send error or call-next-method?
   )
@@ -267,15 +276,15 @@ mechanism.")
 ;;; SASL state list
 ;;
 
-(setq rudel-xmpp-states
-      (append
-       rudel-xmpp-states
-       '(;; SASL states
-	 (sasl-start           . rudel-xmpp-state-sasl-start)
-	 (sasl-try-one         . rudel-xmpp-state-sasl-try-one)
-	 (sasl-mechanism-start . rudel-xmpp-state-sasl-mechanism-start)
-	 (sasl-mechanism-step  . rudel-xmpp-state-sasl-mechanism-step))))
-;; TODO better update mechanism for the state list
+(defvar rudel-xmpp-sasl-states
+  '((sasl-start           . rudel-xmpp-state-sasl-start)
+    (sasl-try-one         . rudel-xmpp-state-sasl-try-one)
+    (sasl-mechanism-start . rudel-xmpp-state-sasl-mechanism-start)
+    (sasl-mechanism-step  . rudel-xmpp-state-sasl-mechanism-step))
+  "")
+
+(dolist (state rudel-xmpp-sasl-states)
+  (add-to-list 'rudel-xmpp-states state))
 
 (provide 'rudel-xmpp-sasl)
 ;;; rudel-xmpp-sasl.el ends here
