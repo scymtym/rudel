@@ -3,7 +3,7 @@
 ;; Copyright (C) 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: rudel, irc, transport, backend
+;; Keywords: rudel, irc, erc, transport, backend
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -44,6 +44,7 @@
 (require 'rudel-transport)
 (require 'rudel-transport-util)
 
+(require 'rudel-irc-erc-util)
 
 
 ;;; Constants
@@ -51,66 +52,6 @@
 
 (defconst rudel-irc-erc-version '(0 1)
   "Version of the ERC transport for Rudel.")
-
-
-;;; stuff for rudel-irc-erc-util
-;;
-
-(defclass rudel-irc-erc-base ()
-  ((buffer    :initarg :buffer
-	      :type    buffer
-	      :documentation
-	      "")
-   (peer-name :initarg :peer-name
-	      :type    string
-	      :initform "" ;; TODO temp
-	      :documentation
-	      "")
-   (self-name :initarg :self-name
-	      :type    string
-	      :documentation
-	      ""))
-  ""
-  :abstract t)
-
-(defmethod initialize-instance ((this rudel-irc-erc-base) slots)
-  ""
-  (when (next-method-p)
-    (call-next-method))
-
-  (with-slots (buffer peer-name self-name) this
-    (lexical-let ((this1      this)
-		  (peer-name1 peer-name)
-		  (self-name1 self-name))
-      (with-current-buffer buffer
-	;; TODO
-	(add-hook 'erc-server-PRIVMSG-functions
-		  (lambda (server response)
-		    (let ((args   (erc-response.command-args response))
-			  (sender (nth 0 (erc-parse-user
-					  (erc-response.sender response))))
-			  (data   (erc-response.contents response)))
-		      (message "sender: %s" sender)
-		      (when (and (or (string= peer-name1 "")
-				     (string= sender peer-name1))
-				 (string= (car args) self-name1))
-			(rudel-handle this1 data)))
-		    ;; Prevent other handlers from running?
-		    nil))
-
-	;; TODO
-	(add-hook 'erc-server-PART-functions
-		  (lambda (server response)
-		    nil)))))
-  )
-
-(defmethod rudel-send ((this rudel-irc-erc-base) data)
-  "Send DATA through THIS."
-  (with-slots (buffer peer-name) this
-    (with-current-buffer buffer
-      (erc-server-send (format "PRIVMSG %s :%s\n"
-			       peer-name
-			       (base64-encode-string data))))))
 
 
 ;;; Class rudel-irc-erc-transport
@@ -134,6 +75,12 @@
 	     ""))
   "")
 
+(defmethod rudel-close ((this rudel-irc-erc-transport))
+  "Nothing to do.")
+
+(defmethod rudel-start ((this rudel-irc-erc-transport))
+  "TODO.")
+
 (defmethod rudel-handle ((this rudel-irc-erc-transport) data)
   ""
   (with-slots (filter) this
@@ -143,12 +90,6 @@
 		    (error nil))))
 	(when data
 	  (funcall filter data))))))
-
-(defmethod rudel-close ((this rudel-irc-erc-transport))
-  "Nothing to do.")
-
-(defmethod rudel-start ((this rudel-irc-erc-transport))
-  "TODO.")
 
 
 ;;; Class rudel-irc-erc-listener

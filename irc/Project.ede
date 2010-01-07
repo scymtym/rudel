@@ -7,7 +7,7 @@
    (ede-proj-target-elisp "irc"
     :name "irc"
     :path ""
-    :source '("rudel-irc-erc.el")
+    :source '("rudel-irc-erc.el" "rudel-irc-erc-util.el")
     )
    )
   )
