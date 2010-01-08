@@ -1,7 +1,7 @@
 ;;; rudel-compile.el --- Byte-compile Rudel
 ;;
 ;; Copyright (C) 2009 Phil Hagelberg
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Phil Hagelberg <phil@enigma>
 ;;         Jan Moringen <scymtym@users.sourceforge.net>
@@ -57,7 +57,11 @@
        (subdirs   (mapcar
 		   (lambda (subdir)
 		     (concat rudel-dir subdir))
-		   '("." "jupiter" "socket" "tls" "xmpp" "obby" "zeroconf"))))
+		   '("."
+		     "jupiter"
+		     "socket" "tls" "xmpp" "irc"
+		     "obby"
+		     "zeroconf"))))
     ;; Adjust load path. We need to have all Rudel subdirectories on
     ;; the load path.
     (dolist (subdir subdirs)
@@ -68,7 +72,11 @@
        (subdirs   (mapcar
 		   (lambda (subdir)
 		     (concat rudel-dir subdir))
-		   '("." "jupiter" "socket" "tls" "xmpp" "obby" "zeroconf")))
+		   '("."
+		     "jupiter"
+		     "socket" "tls" "xmpp" "irc"
+		     "obby"
+		     "zeroconf")))
        (loaddefs  (concat rudel-dir "rudel-loaddefs.el")))
 
   (flet ((byte-compile-cl-warn (&rest) nil))
