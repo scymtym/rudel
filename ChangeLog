@@ -1,3 +1,16 @@
+2010-01-08  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added Rudel functions for ERC
+	* irc/Project.ede (target irc): added file
+	rudel-irc-erc-commands.el
+	* irc/rudel-irc-erc-commands.el: new file; interactive Rudel
+	functions for ERC
+
+	Added irc directory to compile script
+	* rudel-compile.el (header): updated copyright
+	(top level autoload):
+	(top level): added irc to directory list
+
 2010-01-07  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added IRC utility functions in irc/rudel-irc-erc-util.el
