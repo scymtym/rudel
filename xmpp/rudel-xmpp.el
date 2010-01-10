@@ -55,6 +55,7 @@
 ;;; Class rudel-xmpp-backend
 ;;
 
+;;;###autoload
 (defclass rudel-xmpp-backend (rudel-transport-backend)
   ()
   "")
