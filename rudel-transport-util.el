@@ -1,6 +1,6 @@
 ;;; rudel-transport-util.el --- Utility functions for Rudel transport functionality
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, backend, transport, utility, miscellaneous
@@ -31,6 +31,8 @@
 ;; + `rudel-transport-filter'
 ;;   + `rudel-assembling-transport-filter'
 ;;   + `rudel-parsing-transport-filter'
+;;   + `rudel-injecting-transport-filter'
+;;   + `rudel-buffering-transport-filter'
 ;;   + `rudel-progress-reporting-transport-filter'
 
 
@@ -383,6 +385,14 @@ multiple chunks.")
 
   (with-slots (reporter) this
     (setq reporter (make-progress-reporter "Sending data " 0.0 1.0)))
+
+  ;; Install a handler as filter in underlying transport.
+  (with-slots (transport) this
+    (lexical-let ((this1 this))
+      (rudel-set-filter transport (lambda (data)
+				    (with-slots (filter) this1
+				      (when filter
+					(funcall filter data)))))))
   )
 
 (defmethod rudel-send ((this rudel-progress-reporting-transport-filter)
