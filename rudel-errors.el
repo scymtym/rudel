@@ -1,9 +1,9 @@
 ;;; rudel-errors.el --- Error data used in Rudel
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Rudel, errors, conditions
+;; Keywords: rudel, errors, conditions
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -27,18 +27,30 @@
 ;; The following condition hierarchy is defined:
 ;;
 ;; error
-;; +- rudel-error
-;;    +- rudel-join-error
-;;    +- rudel-host-error
+;; + rudel-error
+;;   + rudel-incomplete-info
+;;   + rudel-join-error
+;;   + rudel-host-error
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision
+;; 0.1 - Initial version
 
 
 ;;; Code:
 ;;
+
+;; rudel-incomplete-info
+
+(intern "rudel-incomplete-info")
+
+(put 'rudel-incomplete-info 'error-conditions
+     '(error
+       rudel-error rudel-incomplete-info))
+
+(put 'rudel-incomplete-info 'error-message
+     "Required properties missing in property list")
 
 ;; rudel-join-error
 

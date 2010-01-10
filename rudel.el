@@ -814,6 +814,14 @@ will be prompted for."
 	    (setq info maybe-info))))
       info)))
 
+  ;; Some sanity checks on INFO.
+  (unless (member :name info)
+    (setq info (plist-put info :name "rudel session")))
+
+  (dolist (property '(:transport-backend :protocol-backend))
+    (unless (member property info)
+      (signal 'rudel-incomplete-info (list property))))
+
   ;; First, create the session object.
   (let* ((session-name      (plist-get info :name))
 	 (transport-backend (cdr (plist-get info :transport-backend)))
@@ -877,6 +885,11 @@ will be prompted for."
      (cdr protocol-backend)
      (list :transport-backend transport-backend
 	   :protocol-backend  protocol-backend)))))
+
+  ;; Some sanity checks on INFO.
+  (dolist (property '(:transport-backend :protocol-backend))
+    (unless (member property info)
+      (signal 'rudel-incomplete-info (list property))))
 
   ;; Create the session object.
   (let ((transport-backend (cdr (plist-get info :transport-backend)))
