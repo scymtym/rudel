@@ -1,6 +1,6 @@
 ;;; rudel-session-initiation.el --- Session discovery and advertising functions
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, session, initiation, service, discovery, advertising
@@ -202,7 +202,7 @@ priority."
   )
 
 (defun rudel-session-initiation-discover (&optional backend-name)
-  "Return a list of session using BACKEND-NAME when non-nil.
+  "Return a list of sessions using BACKEND-NAME when non-nil.
 BACKEND-NAME is a symbol. When it is non-nil, only the specified
 backend is used to discover session.
 
@@ -266,7 +266,7 @@ user select a suitable backend and asking for connect information
 required by the chosen backend.")
 
 (defmethod initialize-instance ((this rudel-ask-protocol-backend)
-				&rest slots)
+				slots)
   "Set backend version."
   (when (next-method-p)
     (call-next-method))
@@ -307,7 +307,7 @@ required by the chosen backend.")
 configured using customization.")
 
 (defmethod initialize-instance ((this rudel-configured-sessions-backend)
-				&rest slots)
+				slots)
   "Set backend version."
   (when (next-method-p)
     (call-next-method))
