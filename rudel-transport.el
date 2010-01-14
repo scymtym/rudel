@@ -1,6 +1,6 @@
 ;;; rudel-transport.el --- Rudel transport interface and backend
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, backend, transport
@@ -110,6 +110,12 @@ object representing the incoming connection.")
   ()
   "Interface implemented by transport backends."
   :abstract t)
+
+(defgeneric rudel-ask-connect-info ((this rudel-transport-backend)
+				    &optional info)
+  "Retrieve information for making a new connection.
+When INFO is non-nil, augment INFO to produce new list.
+Return a property list that contains the collected information.")
 
 (defgeneric rudel-make-connection ((this rudel-transport-backend)
 				   info info-callback

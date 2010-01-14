@@ -1,6 +1,6 @@
 ;;; rudel-session-initiation.el --- Session discovery and advertising functions
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, session, initiation, service, discovery, advertising
@@ -202,7 +202,7 @@ priority."
   )
 
 (defun rudel-session-initiation-discover (&optional backend-name)
-  "Return a list of session using BACKEND-NAME when non-nil.
+  "Return a list of sessions using BACKEND-NAME when non-nil.
 BACKEND-NAME is a symbol. When it is non-nil, only the specified
 backend is used to discover session.
 
@@ -215,8 +215,10 @@ The returned list is of the form (INFO-1 ... INFO-N FALLBACK-1
     ;; Retrieve session list from primary backend and fall back to
     ;; fallback backends if the list is empty.
     (if backend-name
-	(let ((backend (find backend-name fallback-backends :key #'car)))
-	  (rudel-discover (cdr backend)))
+	(let ((backend (or (find backend-name primary-backends :key #'car)
+			   (find backend-name fallback-backends :key #'car))))
+	  (when backend
+	    (rudel-discover (cdr backend))))
       (let ((primary-results
 	     (remove-if #'null
 			(apply #'append
@@ -266,7 +268,7 @@ user select a suitable backend and asking for connect information
 required by the chosen backend.")
 
 (defmethod initialize-instance ((this rudel-ask-protocol-backend)
-				&rest slots)
+				slots)
   "Set backend version."
   (when (next-method-p)
     (call-next-method))
@@ -280,11 +282,17 @@ required by the chosen backend.")
 			    (lambda (backend)
 			      (rudel-capable-of-p backend 'join))))
 	(transport-backend (rudel-backend-choose 'transport)))
-    (list (rudel-ask-connect-info
-	   (cdr protocol-backend)
-	   (list :name              "asked"
-		 :protocol-backend  protocol-backend
-		 :transport-backend transport-backend))))
+    (list
+     ;; Second, let the protocol backend do the same.
+     (rudel-ask-connect-info
+      (cdr protocol-backend)
+      ;; First, let the transport backend augment the information.
+      (rudel-ask-connect-info
+       (cdr transport-backend)
+       ;; Construct initial information list.
+       (list :name              "asked"
+	     :protocol-backend  protocol-backend
+	     :transport-backend transport-backend)))))
   )
 
 ;;;###autoload
@@ -307,7 +315,7 @@ required by the chosen backend.")
 configured using customization.")
 
 (defmethod initialize-instance ((this rudel-configured-sessions-backend)
-				&rest slots)
+				slots)
   "Set backend version."
   (when (next-method-p)
     (call-next-method))

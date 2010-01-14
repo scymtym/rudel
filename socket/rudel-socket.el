@@ -1,6 +1,6 @@
 ;;; rudel-tcp.el --- socket transport backend for Rudel
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, socket, transport, backend
@@ -131,17 +131,14 @@ to be stored separately."))
 	     :documentation
 	     "The server socket represented by this listener
 object.")
-   (dispatch :initarg :dispatch
-	     :type    (or null function)
+   (dispatch :initarg  :dispatch
+	     :type     (or null function)
+	     :writer   rudel-set-dispatcher
 	     :documentation
-	     ""))
+	     "Function called for incoming connections.
+The dispatch function has to accept a single argument which will
+be a transport object representing the incoming connection."))
   "")
-
-(defmethod rudel-set-dispatcher ((this rudel-socket-listener) handler)
-  "Install HANDLER as dispatch function for incoming connections.
-HANDLER has to accept a single argument which will be a transport
-object representing the incoming connection."
-  (oset this :dispatch handler))
 
 (defmethod rudel-close ((this rudel-socket-listener))
   "Make THIS stop listening for incoming connections."
@@ -180,9 +177,21 @@ The transport backend is a factory for TCP transport objects.")
 
   (oset this :version rudel-tcp-version))
 
-(defmethod rudel-make-connection
-  ((this rudel-tcp-backend) info
-   info-callback &optional progress-callback)
+(defmethod rudel-ask-connect-info ((this rudel-tcp-backend)
+				   &optional info)
+  "Augment INFO by read a hostname and a port number."
+  ;; Read server host and port.
+  (let ((host (or (plist-get info :host)
+		  (read-string "Server: ")))
+	(port (or (plist-get info :port)
+		  (read-number "Port: "))))
+    (append (list :host host
+		  :port port)
+	    info)))
+
+(defmethod rudel-make-connection ((this rudel-tcp-backend)
+				  info info-callback
+				  &optional progress-callback)
   "Connect to a TCP server using the information in INFO.
 INFO has to be a property list containing the keys :host
 and :port."

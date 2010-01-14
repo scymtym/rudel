@@ -55,6 +55,7 @@
 ;;; Class rudel-xmpp-backend
 ;;
 
+;;;###autoload
 (defclass rudel-xmpp-backend (rudel-transport-backend)
   ()
   "")
@@ -65,6 +66,18 @@
     (call-next-method))
 
   (oset this :version rudel-xmpp-transport-version))
+
+(defmethod rudel-ask-connect-info ((this rudel-xmpp-backend)
+				   &optional info)
+  "Augment INFO by read a hostname and a port number."
+  ;; Read server host and port.
+  (let ((host (or (plist-get info :host)
+		  (read-string "Server: ")))
+	(port (or (plist-get info :port)
+		  (read-number "Port: "))))
+    (append (list :host host
+		  :port port)
+	    info)))
 
 (defmethod rudel-make-connection ((this rudel-xmpp-backend)
 				  info info-callback

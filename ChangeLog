@@ -1,4 +1,65 @@
-2010-01-08  Jan Moringen  <scymtym@users.sourceforge.net>
+2010-01-14  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed call to object-run-hook... in rudel-detach-from-buffer
+	* rudel.el (rudel-document::rudel-detach-from-buffer): pass the
+	saved buffer to `object-run-hook-with-args' properly
+
+	Let transport ask for connect info in rudel-join-session
+	* rudel.el (rudel-join-session): use `rudel-ask-connect-info' as
+	info-callback when calling `rudel-make-connection'
+
+	Improved robustness of rudel-session-initiation-discover
+	* rudel-session-initiation.el (rudel-session-initiation-discover):
+	try to find specified backend in primary and fallback backend
+	lists
+
+	Let transport ask for connect info in rudel-ask-protocol-backend
+	* rudel-session-initiation.el
+	(rudel-ask-protocol-backend::rudel-discover): call
+	`rudel-ask-connect-info' of the transport backend in addition to
+	the protocol backend
+
+	Added rudel-ask-connect-info for transport backends
+	* rudel-transport.el (rudel-ask-connect-info): new generic
+	function; obtain required information for making a connection
+	* socket/rudel-socket.el
+	(rudel-tcp-backend::rudel-ask-connect-info):
+	* tls/rudel-tls.el (rudel-start-tls-backend::rudel-ask-connect-info):
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-ask-connect-info):
+	new method; ask for hostname and port
+
+2010-01-10  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added writer for rudel-set-dispatcher in socket/rudel-socket.el
+	* socket/rudel-socket.el (header): updated copyright
+	(rudel-socket-listener::dispatch): added writer
+	`rudel-set-dispatcher'
+	(rudel-socket-listener::rudel-set-dispatcher): removed; replaced
+	by automatic writer
+
+	Fix rudel-progress-reporting-transport-filter
+	* rudel-transport-util.el (header): updated copyright; updated
+	commentary section
+	(rudel-progress-reporting-transport-filter::initialize-instance):
+	install a handler in the underlying transport
+
+	Added autoload cookie to rudel-xmpp-backend
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend): added autoload cookie
+
+	Minor fixes in rudel-session-initiation.el
+	* rudel-session-initiation.el (header): updated copyright
+	(rudel-session-initiation-discover): fixed documentation string
+	(rudel-ask-protocol-backend::initialize-instance):
+	(rudel-configured-sessions-backend::initialize-instance): removed
+	&rest from slots argument
+
+	Added sanity check to rudel-{join, host}-session
+	* rudel-errors.el (rudel-incomplete-info): new error symbol
+	* rudel.el (rudel-join-session): added sanity checks for info
+	argument
+	(rudel-host-session): added sanity checks for info argument
+
+	2010-01-08  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added Rudel functions for ERC
 	* irc/Project.ede (target irc): added file

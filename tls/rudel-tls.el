@@ -1,6 +1,6 @@
 ;;; rudel-tls.el --- Start TLS protocol.
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, TLS, encryption, starttls, gnutls
@@ -242,6 +242,18 @@ support STARTTLS behavior.")
     (call-next-method))
 
   (oset this :version rudel-tls-version))
+
+(defmethod rudel-ask-connect-info ((this rudel-start-tls-backend)
+				   &optional info)
+  "Augment INFO by read a hostname and a port number."
+  ;; Read server host and port.
+  (let ((host (or (plist-get info :host)
+		  (read-string "Server: ")))
+	(port (or (plist-get info :port)
+		  (read-number "Port: "))))
+    (append (list :host host
+		  :port port)
+	    info)))
 
 (defmethod rudel-make-connection ((this rudel-start-tls-backend)
 				  info info-callback

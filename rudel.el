@@ -499,10 +499,10 @@ Do nothing, if THIS is not attached to any buffer."
       ;; Unset buffer slot of THIS and delete association of THIS with
       ;; BUFFER.
       (rudel-set-buffer-document nil buffer)
-      (setq buffer nil))
+      (setq buffer nil)
 
-    ;; Run the hook.
-    (object-run-hook-with-args this 'detach-hook buffer-save))
+      ;; Run the hook.
+      (object-run-hook-with-args this 'detach-hook buffer-save)))
   )
 
 (defmethod rudel-maybe-detach-from-buffer ((this rudel-document))
@@ -814,6 +814,14 @@ will be prompted for."
 	    (setq info maybe-info))))
       info)))
 
+  ;; Some sanity checks on INFO.
+  (unless (member :name info)
+    (setq info (plist-put info :name "rudel session")))
+
+  (dolist (property '(:transport-backend :protocol-backend))
+    (unless (member property info)
+      (signal 'rudel-incomplete-info (list property))))
+
   ;; First, create the session object.
   (let* ((session-name      (plist-get info :name))
 	 (transport-backend (cdr (plist-get info :transport-backend)))
@@ -831,7 +839,8 @@ will be prompted for."
 
     ;; Create transport object and connection
     (setq transport  (rudel-make-connection
-		      transport-backend info #'ignore
+		      transport-backend
+		      info #'rudel-ask-connect-info
 		      (rudel-make-state-progress-callback "Connecting ")))
     (setq connection (rudel-connect
 		      protocol-backend transport
@@ -877,6 +886,11 @@ will be prompted for."
      (cdr protocol-backend)
      (list :transport-backend transport-backend
 	   :protocol-backend  protocol-backend)))))
+
+  ;; Some sanity checks on INFO.
+  (dolist (property '(:transport-backend :protocol-backend))
+    (unless (member property info)
+      (signal 'rudel-incomplete-info (list property))))
 
   ;; Create the session object.
   (let ((transport-backend (cdr (plist-get info :transport-backend)))
