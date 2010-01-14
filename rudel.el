@@ -839,7 +839,8 @@ will be prompted for."
 
     ;; Create transport object and connection
     (setq transport  (rudel-make-connection
-		      transport-backend info #'ignore
+		      transport-backend
+		      info #'rudel-ask-connect-info
 		      (rudel-make-state-progress-callback "Connecting ")))
     (setq connection (rudel-connect
 		      protocol-backend transport
