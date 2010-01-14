@@ -215,8 +215,10 @@ The returned list is of the form (INFO-1 ... INFO-N FALLBACK-1
     ;; Retrieve session list from primary backend and fall back to
     ;; fallback backends if the list is empty.
     (if backend-name
-	(let ((backend (find backend-name fallback-backends :key #'car)))
-	  (rudel-discover (cdr backend)))
+	(let ((backend (or (find backend-name primary-backends :key #'car)
+			   (find backend-name fallback-backends :key #'car))))
+	  (when backend
+	    (rudel-discover (cdr backend))))
       (let ((primary-results
 	     (remove-if #'null
 			(apply #'append
