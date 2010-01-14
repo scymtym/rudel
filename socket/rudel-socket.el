@@ -177,9 +177,21 @@ The transport backend is a factory for TCP transport objects.")
 
   (oset this :version rudel-tcp-version))
 
-(defmethod rudel-make-connection
-  ((this rudel-tcp-backend) info
-   info-callback &optional progress-callback)
+(defmethod rudel-ask-connect-info ((this rudel-tcp-backend)
+				   &optional info)
+  "Augment INFO by read a hostname and a port number."
+  ;; Read server host and port.
+  (let ((host (or (plist-get info :host)
+		  (read-string "Server: ")))
+	(port (or (plist-get info :port)
+		  (read-number "Port: "))))
+    (append (list :host host
+		  :port port)
+	    info)))
+
+(defmethod rudel-make-connection ((this rudel-tcp-backend)
+				  info info-callback
+				  &optional progress-callback)
   "Connect to a TCP server using the information in INFO.
 INFO has to be a property list containing the keys :host
 and :port."
