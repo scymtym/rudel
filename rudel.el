@@ -499,10 +499,10 @@ Do nothing, if THIS is not attached to any buffer."
       ;; Unset buffer slot of THIS and delete association of THIS with
       ;; BUFFER.
       (rudel-set-buffer-document nil buffer)
-      (setq buffer nil))
+      (setq buffer nil)
 
-    ;; Run the hook.
-    (object-run-hook-with-args this 'detach-hook buffer-save))
+      ;; Run the hook.
+      (object-run-hook-with-args this 'detach-hook buffer-save)))
   )
 
 (defmethod rudel-maybe-detach-from-buffer ((this rudel-document))

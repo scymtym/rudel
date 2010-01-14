@@ -1,5 +1,13 @@
 2010-01-14  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	Fixed call to object-run-hook... in rudel-detach-from-buffer
+	* rudel.el (rudel-document::rudel-detach-from-buffer): pass the
+	saved buffer to `object-run-hook-with-args' properly
+
+	Let transport ask for connect info in rudel-join-session
+	* rudel.el (rudel-join-session): use `rudel-ask-connect-info' as
+	info-callback when calling `rudel-make-connection'
+
 	Improved robustness of rudel-session-initiation-discover
 	* rudel-session-initiation.el (rudel-session-initiation-discover):
 	try to find specified backend in primary and fallback backend
