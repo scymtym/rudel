@@ -1,5 +1,52 @@
 2010-01-15  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	Added irc/rudel-irc-erc-session-initiation.el
+	* irc/Project.ede (target irc): added
+	rudel-irc-erc-session-initiation.el
+	* irc/rudel-irc-erc-session-initiation.el: new file; Rudel session
+	initiation over the ERC IRC implementation
+
+	Extended Rudel ERC command and the completion of such
+	* irc/rudel-irc-erc-commands.el
+	(rudel-irc-erc-commands-subcommands): list of subcommands and
+	associated handler functions
+	(erc-cmd-RUDEL): use `rudel-irc-erc-commands-subcommands'; do not
+	call the handler if it is nil
+	(rudel-irc-erc-commands-host): renamed `rudel-irc-erc-host' ->
+	`rudel-irc-erc-commands-host'; made backend argument mandatory;
+	accept arbitrary keyword arguments
+	(rudel-irc-erc-commands-join): renamed
+	`rudel-irc-erc-join' -> `rudel-irc-erc-commands-join'; try to find
+	the named session and add extra keyword arguments when there are
+	any
+	(rudel-irc-erc-commands-join-manual): renamed
+	`rudel-irc-erc-join-manual' ->
+	`rudel-irc-erc-commands-join-manual'; accept mandatory backend
+	argument ; use `rudel-irc-erc-commands-parse-keyword-args' to
+	process keyword arguments
+	(pcomplete/erc-mode/RUDEL): use
+	`rudel-irc-erc-commands-subcommands' to provide completions; call
+	`rudel-irc-erc-commands-complete-{host,join,join-manual}' to do
+	the work
+	(rudel-irc-erc-commands-complete-host): new function; complete
+	host subcommand
+	(rudel-irc-erc-commands-complete-join): new function; complete
+	join subcommand
+	(rudel-irc-erc-commands-complete-join-manual): new function;
+	complete join-manual subcommand
+	(rudel-irc-erc-commands-complete-keyword-args): new function;
+	complete keyword arguments
+	(rudel-irc-erc-commands-capable-backends): renamed
+	`rudel-irc-erc-host-capable-backends' ->
+	`rudel-irc-erc-commands-capable-backends'; use specified
+	capabilities
+	(rudel-irc-erc-commands-named-backend): new function; return named
+	backend
+	(rudel-irc-erc-commands-named-session): new function; return named
+	session
+	(rudel-irc-erc-commands-parse-keyword-args): new function; parse
+	keyword arguments and their values
+
 	Switched to CTCP messages and some cleanup
 	* irc/rudel-irc-erc-util.el (rudel-irc-erc-base::ctcp-type): new
 	slot; message type used in CTCP messages
