@@ -1,3 +1,38 @@
+2010-01-15  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Switched to CTCP messages and some cleanup
+	* irc/rudel-irc-erc-util.el (rudel-irc-erc-base::ctcp-type): new
+	slot; message type used in CTCP messages
+	(rudel-irc-erc-base::initialize-instance): just store the current
+	nick name; handlers are registered in the :after method
+	(rudel-irc-erc-base::initialize-instance :after): new method;
+	install the handler stored in the message-handler slot
+	(rudel-irc-erc-base::rudel-send): send CTCP messages instead of
+	ordinary PRIVMSG messages
+	(rudel-irc-erc-make-handler): provide sender variable and remove
+	type part from data
+	* irc/rudel-irc-erc.el (rudel-irc-erc-transport-version): renamed
+	`rudel-irc-erc-version' -> `rudel-irc-erc-transport-version'
+	(rudel-irc-erc-transport::initialize-instance): new method;
+	construct message handler
+	(rudel-irc-erc-transport::rudel-send): new method; send
+	base64-encoded data
+	(rudel-irc-erc-transport::rudel-handle): check message type and
+	handle problems gracefully
+	(rudel-irc-erc-listener::ctcp-type): added initform
+	(rudel-irc-erc-listener::initialize-instance): new method;
+	construct message handler
+	(rudel-irc-erc-listener::rudel-handle): accept sender parameter;
+	check message type; add filter stack to constructed transport;
+	handle problems gracefully
+	(rudel-irc-erc-backend::initialize-instance): use
+	`rudel-irc-erc-transport-version'
+	(rudel-irc-erc-backend::rudel-make-connection): send a CTCP
+	command requesting the connection; add filter stack to constructed
+	transport
+	(rudel-irc-erc-backend::rudel-wait-for-connections): removed
+	channel argument
+
 2010-01-14  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Fixed call to object-run-hook... in rudel-detach-from-buffer

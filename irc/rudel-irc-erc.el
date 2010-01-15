@@ -50,7 +50,7 @@
 ;;; Constants
 ;;
 
-(defconst rudel-irc-erc-version '(0 1)
+(defconst rudel-irc-erc-transport-version '(0 1)
   "Version of the ERC transport for Rudel.")
 
 
@@ -75,6 +75,28 @@
 	     ""))
   "")
 
+(defmethod initialize-instance ((this rudel-irc-erc-transport) slots)
+  ""
+  ;;
+  (when (next-method-p)
+    (call-next-method))
+
+  (with-slots (peer-name self-name ctcp-type message-handler part-handler) this
+    ;; Construct handlers for PRIVMSG and PART messages. Store the
+    ;; handler function for later removal.
+    (lexical-let ((this1 this))
+      (setq message-handler
+	    (rudel-irc-erc-make-handler
+		(data sender peer-name self-name ctcp-type)
+		(rudel-handle this1 data)))))
+  )
+
+(defmethod rudel-send ((this rudel-irc-erc-transport) data)
+  ""
+  (when (next-method-p)
+    (call-next-method this "DATA" (base64-encode-string data t)))
+  )
+
 (defmethod rudel-close ((this rudel-irc-erc-transport))
   "Nothing to do.")
 
@@ -83,13 +105,29 @@
 
 (defmethod rudel-handle ((this rudel-irc-erc-transport) data)
   ""
-  (with-slots (filter) this
-    (when filter
-      (let ((data (condition-case error
-		      (base64-decode-string data)
-		    (error nil))))
-	(when data
-	  (funcall filter data))))))
+  (cond
+   ;; Handle DATA messages.
+   ((and (>= (length data) 5)
+	 (string= (substring data 0 4) "DATA"))
+    (with-slots (filter) this
+      (when filter
+	(let ((data (condition-case error
+			(base64-decode-string (substring data 5))
+		      (error nil))))
+	  (if data
+	      (funcall filter data)
+	    (display-warning
+	     '(rudel irc)
+	     (format "Could not decode data: %s" data)
+	     :warning))))))
+
+   ;; Warn if we do not understand the message.
+   (t
+    (display-warning
+     '(rudel irc)
+     (format "Message not understood: %s" data)
+     :warning)))
+  )
 
 
 ;;; Class rudel-irc-erc-listener
@@ -97,27 +135,69 @@
 
 (defclass rudel-irc-erc-listener (rudel-listener
 				  rudel-irc-erc-base)
-  ((dispatch :initarg :dispatch
-	     :type    (or null function)
-	     :reader  rudel-dispatcher
-	     :writer  rudel-set-dispatcher
-	     :documentation
-	     ""))
+  ((ctcp-type :initform "RUDEL-SETUP")
+   (dispatch  :initarg :dispatch
+	      :type    (or null function)
+	      :reader  rudel-dispatcher
+	      :writer  rudel-set-dispatcher
+	      :documentation
+	      ""))
   "")
+
+(defmethod initialize-instance ((this rudel-irc-erc-listener) slots)
+  ""
+  ;;
+  (when (next-method-p)
+    (call-next-method))
+
+  (with-slots (peer-name self-name ctcp-type message-handler part-handler) this
+    ;; Construct a handler for CTCP messages. Store the handler
+    ;; function for later removal.
+    (lexical-let ((this1 this))
+      (setq message-handler
+	    (rudel-irc-erc-make-handler
+		(data sender peer-name self-name ctcp-type)
+	      (rudel-handle this1 sender data)))))
+  )
 
 (defmethod rudel-close ((this rudel-irc-erc-listener))
   "TODO")
 
-(defmethod rudel-handle ((this rudel-irc-erc-listener) data)
+(defmethod rudel-handle ((this rudel-irc-erc-listener) sender data)
   ""
-  (with-slots (buffer dispatch) this
-    (when dispatch
-      (let ((transport (rudel-irc-erc-transport
-			"bla"
-			:buffer    buffer
-			:peer-name data
-			:self-name "scymtym"))) ;; TODO
-	(funcall dispatch transport)))))
+  (cond
+   ;; Handle CONNECT messages.
+   ((string= data "CONNECT")
+    ;; TODO (rudel-send this "OK" "RUDEL")
+    (with-slots (buffer ctcp-type) this
+      (with-current-buffer buffer
+	(erc-cmd-CTCP sender ctcp-type "OK" "RUDEL")))
+
+    (with-slots (buffer self-name dispatch) this
+      (when dispatch
+	(let ((transport (rudel-irc-erc-transport
+			  "bla"
+			  :buffer    buffer
+			  :peer-name sender
+			  :self-name self-name
+			  :ctcp-type "RUDEL"))) ;; TODO
+
+	  ;; TODO unify this
+	  (setq transport (rudel-transport-make-filter-stack
+			   transport
+			   '(
+			     (rudel-progress-reporting-transport-filter)
+			     (rudel-collecting-transport-filter)
+			     )))
+
+	  (funcall dispatch transport)))))
+
+   (t
+    (display-warning
+     '(rudel irc)
+     (format "Message not understood %s" data)
+     :warning)))
+  )
 
 
 ;;; Class rudel-irc-erc-backend
@@ -131,10 +211,12 @@ The transport backend is a factory for IRC-ERC transport objects.")
 
 (defmethod initialize-instance ((this rudel-irc-erc-backend) slots)
   "Initialize slots and set version of THIS."
+  ;; Initialize slots of THIS.
   (when (next-method-p)
     (call-next-method))
 
-  (oset this :version rudel-irc-erc-version))
+  ;; Set version slot.
+  (oset this :version rudel-irc-erc-transport-version))
 
 (defmethod rudel-make-connection ((this rudel-irc-erc-backend)
 				  info info-callback
@@ -144,22 +226,31 @@ INFO has to be a property list containing the keys :host
 and :port."
   ;; Ensure that INFO contains all necessary information.
   (unless (every (lambda (keyword) (member keyword info))
-		 '(:buffer :peer-name :self-name))
+		 '(:buffer :peer-name))
     (setq info (funcall info-callback this info)))
 
   ;; Extract information from INFO and create the socket.
-  (let* ((buffer    (plist-get info :buffer))
-	 (peer-name (plist-get info :peer-name))
-	 (self-name (plist-get info :self-name))
-	 (transport (rudel-irc-erc-transport
-		     "bla"
+  (let ((buffer    (plist-get info :buffer))
+	(peer-name (plist-get info :peer-name))
+	(transport))
+
+    ;;
+    (with-current-buffer buffer
+      (erc-cmd-CTCP peer-name "RUDEL-SETUP" "CONNECT"))
+
+    (setq transport (rudel-irc-erc-transport
+		     "bla" ;; TODO
 		     :buffer    buffer
 		     :peer-name peer-name
-		     :self-name self-name)))
+		     :ctcp-type "RUDEL"))
+
     ;; Create the transport
     (rudel-transport-make-filter-stack
      transport
-     '((rudel-progress-reporting-transport-filter)))
+     '(
+       (rudel-progress-reporting-transport-filter)
+       (rudel-collecting-transport-filter)
+       ))
     )
   )
 
@@ -169,19 +260,18 @@ and :port."
 INFO has to be a property list containing the key :port."
   ;; Ensure that INFO contains all necessary information.
   (unless (every (lambda (keyword) (member keyword info))
-		 '(:buffer :channel))
+		 '(:buffer))
     (setq info (funcall info-callback this info)))
 
   ;; Extract information from INFO and create the socket.
-  (let* ((buffer    (plist-get info :buffer))
-	 (channel   (plist-get info :channel))
+  (let* ((buffer   (plist-get info :buffer))
 	 ;; Create the listener object; without process for now.
 	 (listener (rudel-irc-erc-listener
-		    (format "on %s" channel)
-		    :buffer    buffer
-		    :self-name channel)))
+		    "TODO"
+		    :buffer buffer)))
     ;; Return the listener.
-    listener))
+    listener)
+  )
 
 
 ;;; Autoloading
