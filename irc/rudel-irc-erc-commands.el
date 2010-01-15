@@ -58,56 +58,67 @@
   (nil))
 
 
+;;; Constants
+;;
+
+(defconst rudel-irc-erc-commands-subcommands
+  '(("host"        . rudel-irc-erc-commands-host)
+    ("join"        . rudel-irc-erc-commands-join)
+    ("join-manual" . rudel-irc-erc-commands-join-manual))
+  "List of subcommands of the /rudel ERC command and
+corresponding implementing functions.")
+
+
 ;;; Commands
 ;;
 
 (defun erc-cmd-RUDEL (command &rest args)
   ""
   (let ((handler (cdr (assoc (downcase command)
-			     '(("host" . rudel-irc-erc-host)
-			       ("join" . rudel-irc-erc-join))))))
-    (unless handler
+			     rudel-irc-erc-commands-subcommands))))
+    (if handler
+	(apply handler args)
       (erc-display-message
        nil 'notice 'active
        (format
-	"RUDEL: %s undefined subcommand. Valid subcommands: HOST and JOIN."
-	command)))
-    (apply handler args))
+	"RUDEL: %s undefined subcommand. Valid subcommands: %s."
+	command
+	(mapconcat #'car rudel-irc-erc-commands-subcommands ", ")))))
   )
 
-(defun rudel-irc-erc-host (&optional protocol-backend &rest extra-properties)
+(defun rudel-irc-erc-commands-host (protocol-backend
+				    &rest extra-properties)
   ""
   (rudel-host-session
-   (list :transport-backend (rudel-backend-get 'transport 'irc-erc)
-	 :protocol-backend  (if protocol-backend
-				(rudel-backend-get
-				 'protocol
-				 (intern-soft protocol-backend))
-			      (car (rudel-irc-erc-host-capable-backends)))
-	 :buffer            (current-buffer)
-	 :channel           "#rudel-rudel"))
+   (append
+    (rudel-irc-erc-commands-parse-keyword-args extra-properties)
+    (list :transport-backend (rudel-backend-get 'transport 'irc-erc)
+	  :protocol-backend  (rudel-backend-get
+			      'protocol (intern-soft protocol-backend))
+	  :buffer            (current-buffer))))
   )
 
-;; (defun rudel-irc-erc-join (session-name)
-;;   )
+(defun rudel-irc-erc-commands-join (session-name
+				    &rest extra-properties)
+  ""
+  (let ((info (rudel-irc-erc-commands-named-session session-name)))
+    (rudel-join-session
+     (append
+      (rudel-irc-erc-commands-parse-keyword-args extra-properties)
+      info))))
 
-(defun rudel-irc-erc-join (nick &rest extra-properties)
+(defun rudel-irc-erc-commands-join-manual (nick protocol-backend
+					   &rest extra-properties)
   ""
   (rudel-join-session
    (append
-    (mapcar
-     (lambda (p)
-       (or (and (= (aref p 0) ?:)
-		(intern-soft p))
-	   (read-from-string p)))
-     extra-properties)
+    (rudel-irc-erc-commands-parse-keyword-args extra-properties)
     (list :transport-backend (rudel-backend-get 'transport 'irc-erc)
-	  :protocol-backend  (rudel-backend-get 'protocol  'obby)
+	  :protocol-backend  (rudel-backend-get
+			      'protocol (intern-soft protocol-backend))
 	  :buffer            (current-buffer)
 	  :peer-name         nick
-	  :self-name         (erc-current-nick) ;; TODO can change
-						;; later; handle in
-						;; transport?
+	  :self-name         (erc-current-nick)
 	  :encryption        nil
 	  :username          (erc-current-nick)
 	  :global-password   nil
@@ -121,32 +132,114 @@
 ;;;###autoload
 (defun pcomplete/erc-mode/RUDEL ()
   "Provides completion for the /RUDEL command."
-  (pcomplete-here '("host" "join"))
+  (pcomplete-here (mapcar #'car rudel-irc-erc-commands-subcommands))
 
-  (pcomplete-here
-   (case (intern (downcase (pcomplete-arg 1)))
+  (case (intern (downcase (pcomplete-arg 1)))
      (host
-      (mapcar
-       #'symbol-name
-       (mapcar #'car (rudel-irc-erc-host-capable-backends))))
-
-     ;; TODO We could also have a session initiation backend that
-     ;; knows announced sessions
-     ;;(join
-     ;;(mapcar (lambda (i) (plist-get :name i)) (rudel-discover 'erc))
+      (rudel-irc-erc-commands-complete-host))
 
      (join
-      erc-channel-users)))
+      (rudel-irc-erc-commands-complete-join))
+
+     (join-manual
+      (rudel-irc-erc-commands-complete-join-manual)))
   )
+
+(defun rudel-irc-erc-commands-complete-host ()
+  ""
+  ;; Name of the protocol backend to use.
+  (pcomplete-here
+   (mapcar
+    #'symbol-name
+    (mapcar #'car (rudel-irc-erc-commands-capable-backends 'host))))
+
+  ;;
+  (let ((backend (rudel-irc-erc-commands-named-backend
+		  (pcomplete-arg 'first 2))))
+    (rudel-irc-erc-commands-complete-keyword-args
+     '(:global-password)))
+  )
+
+(defun rudel-irc-erc-commands-complete-join ()
+  ""
+  ;; Names of advertised sessions.
+  (pcomplete-here
+   (mapcar (lambda (i) (plist-get i :name))
+	   (rudel-session-initiation-discover 'irc-erc)))
+
+  ;;
+  (let ((backend (plist-get
+		  (rudel-irc-erc-commands-named-session
+		   (pcomplete-arg 'first 2))
+		  :protocol-backend)))
+    (when backend
+      (rudel-irc-erc-commands-complete-keyword-args
+       '(:username :color))))
+  )
+
+(defun rudel-irc-erc-commands-complete-join-manual ()
+  ""
+  ;; Nick of hosting user.
+  (pcomplete-here
+   erc-channel-users)
+
+  ;; Name of the protocol backend to use.
+  (pcomplete-here
+   (mapcar
+    #'symbol-name
+    (mapcar #'car (rudel-irc-erc-commands-capable-backends 'join))))
+
+  ;; Keyword arguments for the protocol backend.
+  (let ((backend (rudel-irc-erc-commands-named-backend
+		  (pcomplete-arg 'first 3))))
+    (rudel-irc-erc-commands-complete-keyword-args
+     '(:username :color)))
+  )
+
+(defun rudel-irc-erc-commands-complete-keyword-args (keywords)
+  (let ((seen-keywords))
+    (while t
+      (push (pcomplete-arg 0) seen-keywords)
+
+      ;; Keyword
+      (pcomplete-here
+       (sort
+	(set-difference
+	 (mapcar #'symbol-name keywords)
+	 seen-keywords
+	 :test #'equal)
+	#'string<))
+
+      ;; Value
+      (pcomplete-here))))
 
 
 ;;; Utility functions
 ;;
 
-(defun rudel-irc-erc-host-capable-backends ()
+(defun rudel-irc-erc-commands-capable-backends (capability)
   ""
   (rudel-backend-suitable-backends
-   'protocol (lambda (b) (rudel-capable-of-p b 'host))))
+   'protocol (lambda (backend)
+	       (rudel-capable-of-p backend capability))))
+
+(defun rudel-irc-erc-commands-named-backend (name)
+  (rudel-backend-get 'protocol (intern-soft name)))
+
+(defun rudel-irc-erc-commands-named-session (name)
+  ""
+  (find name (rudel-session-initiation-discover 'irc-erc)
+	:key  (lambda (i) (plist-get i :name))
+	:test #'string=))
+
+(defun rudel-irc-erc-commands-parse-keyword-args (args)
+  ""
+  (mapcar
+   (lambda (p)
+     (or (and (= (aref p 0) ?:)
+	      (intern-soft p))
+	 (car (read-from-string p))))
+   args))
 
 (provide 'rudel-irc-erc-commands)
 ;;; rudel-irc-erc-commands.el ends here
