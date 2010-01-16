@@ -1,3 +1,11 @@
+2010-01-16  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	New collecting transport filter
+	* rudel-transport-util.el (header): mention collecting transport
+	filter in commentary and history section
+	(rudel-collecting-transport-filter): new class; queue data until a
+	certain amount is available for transmission
+
 2010-01-14  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Fixed call to object-run-hook... in rudel-detach-from-buffer
