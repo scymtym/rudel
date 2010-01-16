@@ -1,3 +1,11 @@
+2010-01-16  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	New collecting transport filter
+	* rudel-transport-util.el (header): mention collecting transport
+	filter in commentary and history section
+	(rudel-collecting-transport-filter): new class; queue data until a
+	certain amount is available for transmission
+
 2010-01-15  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added irc/rudel-irc-erc-session-initiation.el

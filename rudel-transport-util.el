@@ -33,10 +33,13 @@
 ;;   + `rudel-parsing-transport-filter'
 ;;   + `rudel-injecting-transport-filter'
 ;;   + `rudel-buffering-transport-filter'
+;;   + `rudel-collecting-transport-filter'
 ;;   + `rudel-progress-reporting-transport-filter'
 
 
 ;;; History:
+;;
+;; 0.3 - Collecting transport filter
 ;;
 ;; 0.2 - Progress reporting transport filter
 ;;
@@ -358,6 +361,112 @@ incoming and outgoing data and process it later.")
       (when filter
 	(funcall filter data))))
   )
+
+
+;;; Class rudel-collecting-transport-filter
+;;
+
+(defclass rudel-collecting-transport-filter (rudel-transport-filter)
+  ((queue        :initarg  :queue
+		 :type     list
+		 :initform nil
+		 :documentation
+		 "Data fragments queued for transmission in the
+next chunk.")
+   (queued-size  :initarg  :queued-size
+		 :type     integer
+		 :initform 0
+		 :documentation
+		 "The size of the queued data.")
+   (flush-size   :initarg  :flush-size
+		 :type     integer
+		 :initform 1024
+		 :documentation
+		 "Amount of queued data leading to an immediate
+transmission.")
+   (timer        :initarg  :timer
+		 :type     (or null timer)
+		 :initform nil
+		 :documentation
+	         "A timer used to trigger the transmission of
+queued data.")
+   (delay        :initarg  :delay
+		 :type     number
+		 :initfor  1
+		 :documentation
+		 "The maximum time to wait before transmitting
+queued data even if it is smaller than a complete chunk."))
+  "Object of this class are transport filters that queue data
+sent through them until certain amounts of data are available for
+transmission.")
+
+(defmethod initialize-instance ((this rudel-collecting-transport-filter)
+				slots)
+  "Initialize slots of THIS and setup filter of underlying transport."
+  ;; Initialize slots of THIS.
+  (when (next-method-p)
+    (call-next-method))
+
+  (with-slots (transport) this
+    (lexical-let ((this1 this))
+      ;; Install a filter in the underlying transport.
+      (rudel-set-filter transport (lambda (data)
+				    (with-slots (filter) this1
+				      (when filter
+					(funcall filter data)))))
+
+      ;; Install a handler for sentinel events and pass them to the
+      ;; user-provided handler.
+      (rudel-set-sentinel transport (lambda (event)
+				      (with-slots (sentinel) this1
+					(when sentinel
+					  (funcall sentinel event)))))))
+  )
+
+(defmethod rudel-send ((this rudel-collecting-transport-filter) data)
+  "Send or enqueue DATA."
+  (with-slots (transport queue queued-size flush-size) this
+    ;; Enqueue new data.
+    (push data queue)
+    (incf queued-size (length data))
+
+    ;; Transmit data immediately if necessary, otherwise ensure the
+    ;; timer is running.
+    (if (< queued-size flush-size)
+	(rudel-maybe-start-timer this)
+      (rudel-maybe-cancel-timer this)
+      (rudel-flush this)))
+  )
+
+(defmethod rudel-flush ((this rudel-collecting-transport-filter))
+  "Transmit all data queued in THIS immediately."
+  (with-slots (transport queue queued-size) this
+    (rudel-send transport (mapconcat #'identity (nreverse queue) ""))
+    (setq queue       nil
+	  queued-size 0)))
+
+(defmethod rudel-maybe-start-timer
+  ((this rudel-collecting-transport-filter))
+  "Start timer that runs `rudel-flush' when it expires."
+  ;; If necessary, create a timer that runs `rudel-flush' when it
+  ;; expires.
+  (with-slots (timer delay) this
+    (unless timer
+      (lexical-let ((this1 this))
+	(setq timer (run-at-time
+		     delay nil ;; no repeat
+		     (lambda ()
+		       (rudel-flush this1)
+		       (oset this1 :timer nil)))))))
+  )
+
+(defmethod rudel-maybe-cancel-timer
+  ((this rudel-collecting-transport-filter))
+  "Cancel the flush timer of this."
+  (with-slots (timer) this
+    (when timer
+      (cancel-timer timer)
+      (setq timer nil))))
 
 
 ;;; Class rudel-progress-reporting-transport-filter
