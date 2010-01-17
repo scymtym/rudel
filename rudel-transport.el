@@ -129,7 +129,7 @@ property list containing the current connection information and
 return a property list containing the augmented connection
 information.
 
-When non-nil, PROGRESS-CALLBACK has to accept to arguments: a
+When non-nil, PROGRESS-CALLBACK has to accept two arguments: a
 state string and a float in the range [0, 1] indicating the
 progress. PROGRESS-CALLBACK may be called repeatedly while the
 connection is established.
