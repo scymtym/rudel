@@ -392,7 +392,7 @@ transmission.")
 queued data.")
    (delay        :initarg  :delay
 		 :type     number
-		 :initfor  1
+		 :initform 1
 		 :documentation
 		 "The maximum time to wait before transmitting
 queued data even if it is smaller than a complete chunk."))
