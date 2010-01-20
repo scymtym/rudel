@@ -1,6 +1,6 @@
 ;;; rudel-obby-client.el --- Client functions of the Rudel obby backend
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, obby, backend, client
@@ -169,7 +169,7 @@ session.")
 	     (cond
 	      ;; Invalid username
 	      ((= reason rudel-obby-error-username-invalid)
-	       (cons 'rudel-obby-username-invalid nil))
+	       (cons 'rudel-obby-invalid-username nil))
 	      ;; Username in use
 	      ((= reason rudel-obby-error-username-in-use)
 	       (cons 'rudel-obby-username-in-use nil))
