@@ -213,12 +213,17 @@ Return the connection object."
 			   (setq info      (plist-put info :username nil)
 				 switch-to (list 'joining info)))
 
-			  ;; Username already in use; reset it
+			  ;; Username already in use; reset it.
 			  (rudel-obby-username-in-use
 			   (setq info      (plist-put info :username nil)
 				 switch-to (list 'joining info)))
 
-			  ;; Color already in use; reset it
+			  ;; Invalid color; reset it.
+			  (rudel-obby-invalid-color
+			   (setq info      (plist-put info :color nil)
+				 switch-to (list 'joining info)))
+
+			  ;; Color already in use; reset it.
 			  (rudel-obby-color-in-use
 			   (setq info      (plist-put info :color nil)
 				 switch-to (list 'joining info)))

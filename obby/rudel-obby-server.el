@@ -1,6 +1,6 @@
 ;;; rudel-obby-server.el --- Server component of the Rudel obby backend
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, obby, backend, server
@@ -756,6 +756,10 @@ user. COLOR has to be sufficiently different from used colors."
    ((rudel-find-user this username
 		     #'string= #'object-name-string)
     rudel-obby-error-username-in-use)
+
+   ;; Make sure COLOR is a valid color.
+   ((not (color-values color))
+    rudel-obby-error-color-invalid)
 
    ;; Make sure the color is sufficiently dissimilar to all used
    ;; colors.
