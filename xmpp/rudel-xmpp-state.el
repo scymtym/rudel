@@ -87,11 +87,5 @@ machine of which uses the state object."))
      (t 'we-finalize)))
   )
 
-(defmethod rudel-set-assembly-function ((this rudel-xmpp-state)
-					function)
-  "Install FUNCTION as assembly function in the transport object of THIS."
-  (with-slots (transport) this
-    (rudel-set-assembly-function transport function)))
-
 (provide 'rudel-xmpp-state)
 ;;; rudel-xmpp-state.el ends here
