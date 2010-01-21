@@ -76,9 +76,12 @@
   (let ((host (or (plist-get info :host)
 		  (read-string "Server: ")))
 	(port (or (plist-get info :port)
-		  (read-number "Port: "))))
+		  (read-number "Port: ")))
+	(jid  (or (plist-get info :jid)
+		  (read-string "Jabber ID (JID): "))))
     (append (list :host host
-		  :port port)
+		  :port port
+		  :jid  jid)
 	    info)))
 
 (defmethod rudel-make-connection ((this rudel-xmpp-backend)
@@ -89,6 +92,7 @@ INFO has to be a property list containing at least the keys :host
 and :port."
   (let* ((host          (plist-get info :host))
 	 (port          (plist-get info :port))
+	 (jid           (plist-get info :jid))
 	 (tcp-transport (rudel-make-connection
 			 (cdr (rudel-backend-get 'transport 'tcp))
 			 info info-callback progress-callback))
@@ -96,7 +100,8 @@ and :port."
 			 tcp-transport))
 	 (transport     (rudel-xmpp-transport
 			 host
-			 :transport stack)))
+			 :transport stack
+			 :start     (list 'new host jid))))
 
     ;; Now start receiving and wait until the connection has been
     ;; established.
@@ -116,9 +121,9 @@ and :port."
   ()
   "Initial state of new XMPP connections.")
 
-(defmethod rudel-enter ((this rudel-xmpp-state-new))
+(defmethod rudel-enter ((this rudel-xmpp-state-new) to jid)
   ""
-  '(negotiate-stream sasl-start))
+  (list 'negotiate-stream to jid 'sasl-start))
 
 
 ;;; Class rudel-xmpp-state-negotiate-stream
@@ -133,14 +138,14 @@ negotiation."))
   "Stream negotiation state.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-negotiate-stream)
-			success-state) ;; host)
-  ""
+			to jid success-state)
+  "Send opening stream tag constructed with TO and JID."
   ;; Store the name of the successor state in case of successful
   ;; stream negotiation for later.
   (oset this :success-state success-state)
 
-  ;; The first message we receive will be an incomplete <stream:stream
-  ;; ... > XML tree.
+  ;; The first message we receive will be an incomplete XML document
+  ;; with root <stream:stream ... >.
   (with-slots (transport) this
     (rudel-set-assembly-function transport #'rudel-xmpp-assemble-stream)
     (rudel-set-generate-function transport #'identity))
@@ -149,7 +154,13 @@ negotiation."))
   ;; since the document is incomplete. We construct it as a string
   ;; instead.
   (rudel-send this
-	      (format "<?xml version=\"1.0\" encoding=\"%s\"?><stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" xmlns=\"jabber:client\" version=\"%s\" to=\"%s\" id=\"%s\">"
+	      (format "<?xml version=\"1.0\" encoding=\"%s\"?>\
+                       <stream:stream
+                         xmlns:stream=\"http://etherx.jabber.org/streams\" \
+                         xmlns=\"jabber:client\" \
+                         version=\"%s\" \
+                         to=\"%s\" \
+                         id=\"%s\">"
 		      "UTF-8"
 		      (mapconcat #'identity
 				 (mapcar #'number-to-string
@@ -175,6 +186,8 @@ negotiation."))
 
    ;; Success
    (t
+    ;; Extract features from received message and pass them to success
+    ;; state.
     (with-slots (success-state) this
       (let ((features (xml-node-children
 		       (car (xml-get-children xml 'stream:features)))))
@@ -192,6 +205,8 @@ negotiation."))
 
 (defmethod rudel-enter ((this rudel-xmpp-state-authenticated))
   ""
+  ;; Switch to negotiate-stream telling it to switch to established in
+  ;; case the negotiation succeeds.
   (list 'negotiate-stream 'established))
 
 
@@ -282,8 +297,7 @@ negotiation."))
   ()
   "")
 
-(defmethod initialize-instance ((this rudel-xmpp-transport)
-				&rest slots)
+(defmethod initialize-instance ((this rudel-xmpp-transport) slots)
   "Initialize THIS and register states."
   ;; Initialize slots of THIS.
   (when (next-method-p)

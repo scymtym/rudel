@@ -1,3 +1,50 @@
+2010-01-21  Jan Moringen <scymtym@users.sourceforge.net>
+
+	Support specifying a host and JID in the XMPP transport
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-ask-connect-info):
+	ask for JID and return it
+	(rudel-xmpp-backend::rudel-make-connection): extract jid property;
+	pass host, jid and start state to transport constructor
+	(rudel-xmpp-state-new::rudel-enter): accept arguments to and jid;
+	pass to negotiate-stream state
+	(rudel-xmpp-state-negotiate-stream::rudel-enter): accept to and
+	jid arguments; use to and jid when constructing opening stream
+	tag; added documentation string; cleanup
+	(rudel-xmpp-state-negotiate-stream::rudel-accept): added comment
+	(rudel-xmpp-state-authenticated::rudel-enter): added comment
+	(rudel-xmpp-transport::initialize-instance): removed &rest from
+	slots argument
+
+	Fixed license of xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (header): fixed license
+
+	Added notes file to xmpp documentation
+	* xmpp/doc/notes.org: new file; notes concerning the XMPP backend
+
+	Minor cleanup in xmpp/rudel-xmpp-sasl.el
+	* xmpp/rudel-xmpp-sasl.el
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-accept): minor
+	cleanup
+
+	Added RFC 3921 to xmpp documentation
+	* xmpp/doc/rfc3921: new file; XMPP messaging and presence RFC
+
+	Fixed error in rudel-xmpp-state-sasl-start::rudel-enter
+	* xmpp/rudel-xmpp-sasl.el
+	(rudel-xmpp-state-sasl-start::rudel-enter): use `let*' instead of
+	`let'
+        (rudel-xmpp-sasl-states): added documentation string
+
+	New class rudel-xmpp-state-tls-start
+	* xmpp/rudel-xmpp-tls.el (header): added commentary
+	(require rudel-tls): removed; require it when needed
+	(rudel-xmpp-state-tls-start): new class; state used to enable TLS
+	encryption for a connection
+	(rudel-xmpp-state-tls-start::rudel-enter): new method; enable TLS
+	encryption for the associated connection and switch to
+	authenticated state
+	(add-to-list rudel-xmpp-states): fixed typo
+
 2010-01-20  Jan Moringen <scymtym@users.sourceforge.net>
 
 	Handle invalid color on the obby protocol level
@@ -1018,6 +1065,14 @@
 
 	* doc/card.tex (Session Initiation): mention configured sessions;
 	explain Zeroconf-advertised session in more detail
+
+	* rudel-transport-util.el: new file; utility functions for
+	implementing transport functionality
+	* Project.ede (target rudel): added rudel-transport-util.el
+
+	* obby/doc/rudel-obby-transport-layers.cogre: new file; layers
+	used when constructing transport filter chain for obby connections
+	* obby/doc/rudel-obby-transport-layers.png: new file; generated
 
 2009-10-06  Jan Moringen  <scymtym@users.sourceforge.net>
 
