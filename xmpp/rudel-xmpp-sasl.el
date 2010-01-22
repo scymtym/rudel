@@ -35,7 +35,6 @@
 ;;
 
 (require 'xml)
-(require 'base64)
 (require 'sasl)
 
 (require 'eieio)
@@ -192,50 +191,58 @@ mechanism.")
 (defmethod rudel-accept ((this rudel-xmpp-state-sasl-mechanism-step) xml)
   "Interpret XML to decide how to proceed with the authentication mechanism."
   (case (xml-node-name xml)
-   (failure
-   ;; Authentication mechanism failed. Try next.
-    (with-slots (name server rest) this
-      (list 'sasl-try-one name server rest)))
-   ;; TODO Handle <not-authorized/> differently? We could retry with
-   ;; the same mechanism
+    ;; Authentication mechanism failed.
+    (failure
+     (let ((child (car-safe (xml-node-children xml))))
+       (cond
+	;; The not-authorized failure means that the credentials we
+	;; provided were wrong.
+	((eq (xml-tag-name child) 'not-authorized)
+	 (with-slots (name server rest) this
+	   (list 'sasl-try-one name server rest)))
 
-   (success
+	;; Default behavior is to try next mechanism.
+	(t
+	 (with-slots (name server rest) this
+	   (list 'sasl-try-one name server rest))))))
+
     ;; Authentication mechanism succeeded. Switch to authenticated
     ;; state.
-    'authenticated)
+    (success
+     'authenticated)
 
-   (challenge
     ;; Authentication mechanism requires a challenge-response
     ;; step. The Emacs SASL implementation does the heavy lifting for
     ;; us.
-    ;; TODO is the challenge data always there?
-    (with-slots (name server schema client step rest) this
-      ;; TODO assert string= schema (xml-tag-attr xml "xmlns")
+    (challenge
+     ;; TODO is the challenge data always there?
+     (with-slots (name server schema client step rest) this
+       ;; TODO assert string= schema (xml-tag-attr xml "xmlns")
 
-      ;; Pass challenge data, if any, to current step.
-      (when (stringp (car-safe (xml-node-children xml)))
-	(let ((challenge-data (base64-decode-string
-			       (car (xml-node-children xml)))))
-	  (sasl-step-set-data step challenge-data)))
+       ;; Pass challenge data, if any, to current step.
+       (when (stringp (car-safe (xml-node-children xml)))
+	 (let ((challenge-data (base64-decode-string
+				(car (xml-node-children xml)))))
+	   (sasl-step-set-data step challenge-data)))
 
-      ;; Proceed to next step and send response.
-      (setq step (sasl-next-step client step))
-      (let* ((response-data-raw (sasl-step-data step))
-	     (response-data     (when response-data-raw
-				  (base64-encode-string
-				   response-data-raw t))))
-	(rudel-send this
-		    `(response
-		      ,@(when schema
-			  `(((xmlns . ,schema))))
-		      ,@(when response-data
-			  (list response-data)))))
+       ;; Proceed to next step and send response.
+       (setq step (sasl-next-step client step))
+       (let* ((response-data-raw (sasl-step-data step))
+	      (response-data     (when response-data-raw
+				   (base64-encode-string
+				    response-data-raw t))))
+	 (rudel-send this
+		     `(response
+		       ,@(when schema
+			   `(((xmlns . ,schema))))
+		       ,@(when response-data
+			   (list response-data)))))
 
-      (list 'sasl-mechanism-step name server schema client step rest)))
+       (list 'sasl-mechanism-step name server schema client step rest)))
 
-   ;; Unknown message.
-   (t
-    nil)) ;; TODO send error or call-next-method?
+    ;; Unknown message.
+    (t
+     nil)) ;; TODO send error or call-next-method?
   )
 
 ;; 6.4.  SASL Errors
