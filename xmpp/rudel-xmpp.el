@@ -65,7 +65,7 @@
 
 ;;;###autoload
 (defclass rudel-xmpp-backend (rudel-transport-backend)
-  ()
+  ((capabilities :initform '(connect)))
   "Transport backend works by transporting XMPP messages through
 XMPP connections.")
 
