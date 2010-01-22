@@ -37,8 +37,6 @@
 
 (require 'eieio)
 
-(require 'base64)
-
 (require 'rudel-xml)
 (require 'rudel-debug)
 
