@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: rudel, debugging
+;; Keywords: rudel, xmpp, debugging
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -24,7 +24,7 @@
 
 ;;; Commentary:
 ;;
-;; Debugging functions for Rudel XMPP transport backend.
+;; Debugging functions for the Rudel XMPP transport backend.
 
 
 ;;; History:
