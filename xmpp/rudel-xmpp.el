@@ -95,10 +95,16 @@ XMPP connections.")
 				  info info-callback
 				  &optional progress-callback)
   "Connect to an XMPP server using the information in INFO.
-INFO has to be a property list containing at least the keys :host,
-:port and :jid.
-If non-nil CALLBACK has to be a function which is called
-repeatedly to report progress."
+INFO has to be a property list containing at least the
+keys :host, :port and :jid.
+If non-nil, PROGRESS-CALLBACK has to be a function which is
+called repeatedly to report progress."
+  ;; Ensure that INFO contains all necessary information.
+  (unless (every (lambda (keyword) (member keyword info))
+		 '(:host :jid))
+    (setq info (funcall info-callback this info)))
+
+  ;; Extract information from INFO and connect.
   (let* ((host           (plist-get info :host))
 	 (jid            (plist-get info :jid))
 	 ;; Create the underlying transport.
@@ -123,7 +129,7 @@ repeatedly to report progress."
     (rudel-state-wait xmpp-transport
 		      '(established)
 		      '(we-finalize they-finalize disconnected)
-		      callback)
+		      progress-callback)
 
     ;; Return the usable transport object.
     xmpp-transport))

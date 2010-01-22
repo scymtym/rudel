@@ -1,3 +1,74 @@
+2010-01-22  Jan Moringen <scymtym@users.sourceforge.net>
+
+	Improved rudel-xmpp-backend::rudel-make-connection
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-make-connection):
+	call info-callback when info elements are missing; improved
+	documentation string; added comments
+
+	XMPP backend improvements
+	* xmpp/rudel-xmpp.el (header): added commentary section
+        (require rudel-state-machine): required for the state classes
+        (require rudel-tcp): required since the TCP transport underlies
+	the XMPP transport
+        (rudel-xmpp-transport-version): bumped to 0.2
+        (rudel-xmpp-backend): added documentation string
+        (rudel-xmpp-backend::initialize-instance): removed &rest from
+	slots; added documentation string
+        (rudel-xmpp-backend::rudel-make-connection): improved
+	documentation string; cosmetic changes
+        (rudel-xmpp-state-new::rudel-enter): pass jid and server name to
+	successor state; added documentation string
+        (rudel-xmpp-state-negotiate-stream::success-state): changed type
+	to include list
+        (rudel-xmpp-state-negotiate-stream::rudel-enter): some cleanup
+        (rudel-xmpp-state-negotiate-stream::rudel-leave): added
+	documentation string; improved comment
+        (rudel-xmpp-state-negotiate-stream::rudel-accept): handle symbol
+	and list successor state specification
+        (rudel-xmpp-state-authenticated::rudel-enter): pass server- and
+	username to successor state; hack
+        (rudel-xmpp-state-authentication-failed::rudel-enter): new method;
+	switch to we-finalize
+        (rudel-xmpp-states): added documentation string
+        (rudel-xmpp-transport::initialize-instance): some cleanup
+        (rudel-xmpp-transport::rudel-register-state): call next method in
+	a safe manner
+        (rudel-xmpp-transport::rudel-close): switch to closing state;
+	added documentation string
+        (rudel-xmpp-transport::rudel-disconnect): removed; obsolete
+
+	Removed function rudel-xmpp-state::rudel-set-assembly-function
+	* xmpp/rudel-xmpp-state.el
+	(rudel-xmpp-state::rudel-set-assembly-function): obsolete; removed
+
+	Improved XMPP SASL implementation
+	* xmpp/rudel-xmpp-sasl.el
+        (rudel-xmpp-state-sasl-start::rudel-enter): accept additional
+	arguments and pass them to sasl-try-one successor
+        (rudel-xmpp-state-sasl-try-one::rudel-enter): accept additional
+	arguments name and server and pass them to sasl-try-one when
+	self-transitioning
+        (rudel-xmpp-state-sasl-mechanism-start::rudel-enter): accept
+	additional arguments name and server and use them when calling
+	`sasl-make-client'; also pass them to sasl-mechanism-step
+        (rudel-xmpp-state-sasl-mechanism-step::name): new slot; stores
+	username
+        (rudel-xmpp-state-sasl-mechanism-step::server): new slot; stores
+	server name
+        (rudel-xmpp-state-sasl-mechanism-step::schema): added
+	documentation string
+        (rudel-xmpp-state-sasl-mechanism-step::client): added
+	documentation string
+        (rudel-xmpp-state-sasl-mechanism-step::step): added documentation
+	string
+        (rudel-xmpp-state-sasl-mechanism-step::rest): added documentation
+	string
+        (this rudel-xmpp-state-sasl-mechanism-step::rudel-enter): accept
+	arguments name and server and store them
+        (rudel-xmpp-state-sasl-mechanism-step::rudel-accept): pass name
+	and server to sasl-try-one and to sasl-mechanism-step when
+	self-transitioning
+
 2010-01-21  Jan Moringen <scymtym@users.sourceforge.net>
 
 	Support specifying a host and JID in the XMPP transport
