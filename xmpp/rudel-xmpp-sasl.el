@@ -296,8 +296,9 @@ mechanism.")
     (sasl-mechanism-step  . rudel-xmpp-state-sasl-mechanism-step))
   "States used during SASL authentication.")
 
-(dolist (state rudel-xmpp-sasl-states)
-  (add-to-list 'rudel-xmpp-states state))
+(eval-after-load "rudel-xmpp"
+  '(dolist (state rudel-xmpp-sasl-states)
+     (add-to-list 'rudel-xmpp-states state)))
 
 (provide 'rudel-xmpp-sasl)
 ;;; rudel-xmpp-sasl.el ends here
