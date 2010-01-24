@@ -42,7 +42,7 @@
 (require 'rudel-backend)
 (require 'rudel-transport)
 (require 'rudel-transport-util) ;; For `rudel-transport-filter'
-(require 'rudel-tcp) ;; We instantiate the TCP transport
+(require 'rudel-socket) ;; We instantiate the TCP transport
 
 (require 'rudel-util)
 
