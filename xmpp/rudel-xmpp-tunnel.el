@@ -34,8 +34,6 @@
 ;;; Code:
 ;;
 
-(require 'base64)
-
 (require 'rudel-backend)
 (require 'rudel-xml)
 
