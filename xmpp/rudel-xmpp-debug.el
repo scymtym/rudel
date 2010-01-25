@@ -154,4 +154,7 @@
   )
 
 (provide 'rudel-xmpp-debug)
+;; Local Variables:
+;; no-byte-compile: t
+;; End:
 ;;; rudel-xmpp-debug.el ends here
