@@ -207,7 +207,7 @@ negotiation."))
   ""
   (cond
    ;; Stream negotiation error.
-   ;;((string= (xml-tag-name xml) "stream:stream")
+   ;;((eq (xml-node-name xml) 'stream:stream)
    ;;nil) ;; TODO send error
 
    ;; Success
@@ -281,6 +281,11 @@ complete.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-we-finalize))
   ""
+  ;; We send the closing tag, </stream:stream>, of the stream
+  ;; document. This has be processed as string, not XML.
+  (with-slots (transport) this
+    (rudel-set-generate-function transport #'identity))
+
   (rudel-send this "</stream:stream>")
 
   ;; TODO (rudel-close connection))?
