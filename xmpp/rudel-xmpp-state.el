@@ -74,17 +74,19 @@ machine of which uses the state object."))
 
 (defmethod rudel-accept ((this rudel-xmpp-state) xml)
   ""
-  (let ((name (xml-tag-name xml)))
-    (cond
+  (let ((name (xml-node-name xml)))
+    (case name
      ;;
      ;; TODO example
      ;; <stream:error>
      ;; <not-authorized xmlns="urn:ietf:params:xml:ns:xmpp-streams"/>
      ;; </stream:error>
-     ("stream:error" 'they-finalize)
+     ('stream:error ;; TODO is this qualified
+      'they-finalize)
 
      ;; we do not accept unexpected messages.
-     (t 'we-finalize)))
+     (t
+      'we-finalize)))
   )
 
 (provide 'rudel-xmpp-state)
