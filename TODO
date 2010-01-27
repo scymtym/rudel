@@ -160,12 +160,6 @@
 
 
 * Milestone rudel-0.3
-** TODO Integrate new debugging framework
-   + Component :: multiple components affected
-   + Type :: task
-   + Priority :: major
-   + Reporter :: jan
-   + Assigned :: jan
 ** TODO Infinote client functionality
    + Component :: infinote-backend
    + Type :: task
@@ -225,6 +219,12 @@
    + Type :: defect
    + Reporter :: jan
    + Assigned ::
+** DONE Integrate new debugging framework
+   + Component :: multiple components affected
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned :: jan
 ** DONE Add XMPP transport backend
    + Component :: xmpp-backend
    + Type :: task

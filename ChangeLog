@@ -1,5 +1,70 @@
 2010-01-27  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	Integrated new debugging framework
+	* rudel-debug.el (header): updated copyright; fixed keywords;
+	extended commentary section; added 0.2 to history section
+	(require rudel-transport-util):
+	(require rudel-socket): now required, since we install methods
+	(rudel-debug-tag-faces): changed from constant to variable
+	(rudel-state-change :before):
+	(rudel-debug-stream-name):
+	(rudel-debug-stream-insert): removed; replaced by
+	`rudel-debug-write-to-stream' and `rudel-debug-write'
+	(rudel-debug-target): new generic function; determine debug stream
+	for an object
+	(rudel-debug-write-to-stream): new function; write information to
+	debug stream
+	(rudel-debug-write): new function; write information to debug
+	stream for a specific object
+	(rudel-debug-old-state):
+	(rudel-state-machine::rudel-switch :before):
+	(rudel-state-machine::rudel-switch :after): new variable/methods;
+	state machine debugging
+	(rudel-assembling-transport-filter::rudel-set-assembly-function	:before):
+	(rudel-assembling-transport-filter::rudel-set-filter):
+	(rudel-assembling-transport-filter::rudel-send :before): new
+	methods; debugging for `rudel-assembling-transport-filter'
+	(rudel-parsing-transport-filter::rudel-set-parse-function :before):
+	(rudel-parsing-transport-filter::rudel-set-generate-function :before):
+	(rudel-parsing-transport-filter::rudel-set-filter):
+	(rudel-parsing-transport-filter::rudel-send :before): new methods;
+	debugging for `rudel-parsing-transport-filter'
+	(rudel-socket-transport::rudel-set-filter):
+	(rudel-socket-transport::rudel-send :before): new methods;
+	debugging for `rudel-socket-transport'
+	* xmpp/rudel-xmpp-debug.el (header): fixed keywords; added 0.2 to
+	history section
+	(require rudel-xmpp-state): now required, since we install methods
+	(rudel-xmpp-debug-old-state):
+	(rudel-xmpp-transport::rudel-send :before):
+	(rudel-xmpp-transport::rudel-accept :before):
+	(rudel-xmpp-transport::rudel-switch :before):
+	(rudel-xmpp-transport::rudel-switch :after): removed; handled by
+	generic stuff in rudel-debug.el now
+	(rudel-xmpp-state::rudel-debug-target): new method; debug target
+	for XMPP states
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-send):
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-send :after):
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-accept :before):
+	rewritten for new debugging framework
+	* obby/rudel-obby-debug.el (header): updated copyright; added 0.2
+	to history section
+	(require eieio):
+	(require rudel-obby-util): removed; no longer needed
+	(require rudel-obby-server): now required, since we install
+	methods on server classes
+	(rudel-obby-debug-old-state):
+	(rudel-obby-connection::rudel-send :before):
+	(rudel-obby-connection::rudel-accept :before):
+	(rudel-obby-connection::rudel-switch :before):
+	(rudel-obby-connection::rudel-switch :after): removed; handled by
+	generic stuff in rudel-debug.el now
+	(rudel-obby-connection::rudel-debug-target): new method; debug
+	target for `rudel-obby-connection'
+	(rudel-obby-client::rudel-debug-target): new method; debug target
+	for `rudel-obby-client'
+	* TODO (Milestone 0.3): integrate new debugging framework is DONE
+
 	Updated TODO
 	* TODO (Future):
 	(Milestone 0.4): minor adjustments
