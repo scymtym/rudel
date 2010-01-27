@@ -133,11 +133,18 @@ When no mechanisms are left, switch to the authentication failed state."
 	   (step   (sasl-next-step client nil))
 	   (name   (sasl-mechanism-name mechanism)))
 
-      ;; Send initial 'auth' message.
-      (rudel-send this
-		  `(auth
-		    ((xmlns     . ,schema)
-		     (mechanism . ,name))))
+      ;; Send initial 'auth' message, possibly containing initial
+      ;; response data.
+      (let* ((response-data-raw (sasl-step-data step))
+	     (response-data     (when response-data-raw
+				  (base64-encode-string
+				   response-data-raw t))))
+	(rudel-send this
+		    `(auth
+		      ((xmlns     . ,schema)
+		       (mechanism . ,name))
+		      ,@(when response-data
+			  (list response-data)))))
 
       ;; Construct the initial SASL step for the mechanism and start
       ;; the challenge/response sequence.
@@ -195,13 +202,23 @@ mechanism.")
     (failure
      (let ((child (car-safe (xml-node-children xml))))
        (cond
+	;; The id chosen for identification was not accepted (example:
+	;; incorrectly formatted user id).
+	((eq (xml-node-name child) 'invalid-authzid)
+	 (with-slots (name server rest) this
+	   (list 'sasl-try-one name server rest))) ;; TODO how do we react?
+
 	;; The not-authorized failure means that the credentials we
 	;; provided were wrong.
-	((eq (xml-tag-name child) 'not-authorized)
+	((eq (xml-node-name child) 'not-authorized)
 	 (with-slots (name server rest) this
-	   (list 'sasl-try-one name server rest)))
+	   (list 'sasl-try-one name server rest))) ;; TODO how do we react?
 
 	;; Default behavior is to try next mechanism.
+	;;
+	;; Not handled explicitly: <aborted/>, <incorrect-encoding/>,
+	;; <invalid-mechanism/>, <mechanism-too-weak/>,
+	;; <temporary-auth-failure/>
 	(t
 	 (with-slots (name server rest) this
 	   (list 'sasl-try-one name server rest))))))
@@ -217,7 +234,7 @@ mechanism.")
     (challenge
      ;; TODO is the challenge data always there?
      (with-slots (name server schema client step rest) this
-       ;; TODO assert string= schema (xml-tag-attr xml "xmlns")
+       ;; TODO assert string= schema (xml-node-attr xml "xmlns")
 
        ;; Pass challenge data, if any, to current step.
        (when (stringp (car-safe (xml-node-children xml)))
@@ -225,65 +242,33 @@ mechanism.")
 				(car (xml-node-children xml)))))
 	   (sasl-step-set-data step challenge-data)))
 
-       ;; Proceed to next step and send response.
-       (setq step (sasl-next-step client step))
-       (let* ((response-data-raw (sasl-step-data step))
-	      (response-data     (when response-data-raw
-				   (base64-encode-string
-				    response-data-raw t))))
-	 (rudel-send this
-		     `(response
-		       ,@(when schema
-			   `(((xmlns . ,schema))))
-		       ,@(when response-data
-			   (list response-data)))))
+       ;; Proceed to next step and send response, possibly with
+       ;; response data.
+       (let ((next (sasl-next-step client step)))
+	 (if next
+	     ;; If there is another step, send a 'response' element,
+	     ;; possibly containing the response data.
+	     (progn
+	       (let* ((response-data-raw (sasl-step-data next))
+		      (response-data     (when response-data-raw
+					   (base64-encode-string
+					    response-data-raw t))))
+		 (rudel-send this
+			     `(response
+			       ,@(when schema
+				   `(((xmlns . ,schema))))
+			       ,@(when response-data
+				   (list response-data)))))
 
-       (list 'sasl-mechanism-step name server schema client step rest)))
+	       (list 'sasl-mechanism-step
+		     name server schema client next rest))
+	   ;; If there is no next step, try the next mechanism.
+	   (list 'sasl-try-one name server rest)))))
 
     ;; Unknown message.
     (t
      nil)) ;; TODO send error or call-next-method?
   )
-
-;; 6.4.  SASL Errors
-;;
-;;    The following SASL-related error conditions are defined:
-;;
-;;    o  <aborted/> -- The receiving entity acknowledges an <abort/>
-;;       element sent by the initiating entity; sent in reply to the
-;;       <abort/> element.
-;;
-;;    o  <incorrect-encoding/> -- The data provided by the initiating
-;;       entity could not be processed because the [BASE64] encoding is
-;;       incorrect (e.g., because the encoding does not adhere to the
-;;       definition in Section 3 of [BASE64]); sent in reply to a
-;;       <response/> element or an <auth/> element with initial response
-;;       data.
-;;
-;;    o  <invalid-authzid/> -- The authzid provided by the initiating
-;;       entity is invalid, either because it is incorrectly formatted or
-;;       because the initiating entity does not have permissions to
-;;       authorize that ID; sent in reply to a <response/> element or an
-;;       <auth/> element with initial response data.
-;;
-;;    o  <invalid-mechanism/> -- The initiating entity did not provide a
-;;       mechanism or requested a mechanism that is not supported by the
-;;       receiving entity; sent in reply to an <auth/> element.
-;;
-;;    o  <mechanism-too-weak/> -- The mechanism requested by the initiating
-;;       entity is weaker than server policy permits for that initiating
-;;       entity; sent in reply to a <response/> element or an <auth/>
-;;       element with initial response data.
-;;
-;;    o  <not-authorized/> -- The authentication failed because the
-;;       initiating entity did not provide valid credentials (this includes
-;;       but is not limited to the case of an unknown username); sent in
-;;       reply to a <response/> element or an <auth/> element with initial
-;;       response data.
-;;
-;;    o  <temporary-auth-failure/> -- The authentication failed because of
-;;       a temporary error condition within the receiving entity; sent in
-;;       reply to an <auth/> element or <response/> element.
 
 
 ;;; SASL state list
