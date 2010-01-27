@@ -1,4 +1,80 @@
+2010-01-27  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Updated TODO
+	* TODO (Future):
+	(Milestone 0.4): minor adjustments
+	(Milestone 0.3): new task, integrate new debugging framework; new
+	task, add XMPP transport backend; minor adjustments
+
+	Better error and response data handling in xmpp/rudel-xmpp-sasl.el
+	* xmpp/rudel-xmpp-sasl.el
+	(rudel-xmpp-state-sasl-mechanism-start::rudel-enter): send
+	"initial response" in auth element, if the mechanism wants that
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-accept): handle
+	invalid-authzid; use `xml-node-name' instead of `xml-tag-name'
+
+	Fix use of XML library in rudel-xmpp-state::rudel-accept
+	* xmpp/rudel-xmpp-state.el (rudel-xmpp-state::rudel-accept): use
+	`xml-node-name' instead of `xml-tag-name'; tag name is
+	'stream:error, not "stream:error"
+
+2010-01-26  Jan Moringen <scymtym@users.sourceforge.net>
+
+	Switch stream to string mode in rudel-xmpp-state-we-finalize
+	* xmpp/rudel-xmpp.el
+	(rudel-xmpp-state-negotiate-stream::rudel-accept): fixed a comment
+	(rudel-xmpp-state-we-finalize::rudel-enter): set generate function
+	to identity before trying to send a string
+
+	Repair filter in rudel-start-tls-transport::initialize-instance
+	* tls/rudel-tls.el
+	(rudel-start-tls-transport::initialize-instance): reinstall
+	`rudel-tls-wait-init' which get overwritten by the superclass
+
+	Prevent byte-compilation of xmpp/rudel-xmpp-debug.el
+	* xmpp/rudel-xmpp-debug.el (local variables): prevent byte-compilation
+
+2010-01-24  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed require for rudel-socket in xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (require rudel-socket): changed rudel-tcp ->
+	rudel-socket
+
+	Removed require base64 from xmpp/rudel-xmpp-tunnel.el
+	* xmpp/rudel-xmpp-tunnel.el (require base64): removed; fantasy
+	library does not exist
+
+2010-01-23  Jan Moringen <scymtym@users.sourceforge.net>
+
+	Add SASL XMPP states when rudel-xmpp gets loaded
+	* xmpp/rudel-xmpp-sasl.el (state registration): add SASL states to
+	state list after loading of rudel-xmpp
+
+	Minor improvement in xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-make-connection):
+	better object name for transport object
+	(rudel-xmpp-state-established): added documentation string
+	(rudel-xmpp-state-established::rudel-accept): use filter slot of
+	the transport object
+
+	Removed require base64 from xmpp/rudel-xmpp-debug.el
+	* xmpp/rudel-xmpp-debug.el (require base64): removed; fantasy
+	library does not exist
+
+	Updated header of xmpp/rudel-xmpp-debug.el
+	* xmpp/rudel-xmpp-debug.el (header): added xmpp keyword; fixed
+	commentary
+
+	Added connect capability to XMPP backend
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::capabilities): added
+	capability connect
+
 2010-01-22  Jan Moringen <scymtym@users.sourceforge.net>
+
+	Analyze XMPP failures in rudel-xmpp-state-sasl-mechanism-step
+	* xmpp/rudel-xmpp-sasl.el (require base64):removed; nonsense
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-accept): analyze
+	failure responses more thoroughly
 
 	Improved rudel-xmpp-backend::rudel-make-connection
 	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-make-connection):

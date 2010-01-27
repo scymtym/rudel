@@ -107,7 +107,7 @@
 ** TODO Send key presses as chat messages (#61)
    + Component :: rudel-general
    + Type :: task
-   + Reporter :: Jan
+   + Reporter :: jan
    + Assigned ::
    Sending key presses as chat messages could be really useful for
    somebody something using rudel.
@@ -116,7 +116,7 @@
    + Type :: task
    + Reporter :: jan
    + Assigned :: jan
-   In addition to the `README`, a proper reference manual would be
+   In addition to the [[file:README][README]], a proper reference manual would be
    nice. At some point, complete info documentation may be
    desirable. Docbook seems to be the best approach since we get (at
    least):
@@ -129,11 +129,13 @@
 ** TODO Integrate unit tests
    + Component :: multiple components affected
    + Type :: task
+   + Priority :: major
    + Reporter :: jan
    + Assigned ::
 ** TODO Telepathy transport
    + Component :: telepathy-backend
    + Type :: task
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
 ** TODO Only read color hue, not complete colors (#53)
@@ -146,26 +148,36 @@
 ** STARTED SubEthaEdit client functionality
    + Component :: subethaedit-backend
    + Type :: task
+   + Priority :: minor
    + Reporter :: jan
-   + Assigned ::
+   + Assigned :: jan
 ** STARTED BEEP transport
    + Component :: beep-transport
    + Type :: task
+   + Priority :: minor
    + Reporter :: jan
    + Assigned :: jan
 
 
 * Milestone rudel-0.3
+** TODO Integrate new debugging framework
+   + Component :: multiple components affected
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned :: jan
 ** TODO Infinote client functionality
    + Component :: infinote-backend
    + Type :: task
+   + Priority :: major
    + Reporter :: jan
-   + Assigned ::
+   + Assigned :: jan
 ** TODO Support for trees of documents
    + Component :: rudel-general
    + Type :: task
+   + Priority :: major
    + Reporter :: jan
-   + Assigned ::
+   + Assigned :: jan
 ** NEW Publishing read-only buffers leads to problems
    + Component :: multiple components affected
    + Type :: defect
@@ -213,16 +225,25 @@
    + Type :: defect
    + Reporter :: jan
    + Assigned ::
+** DONE Add XMPP transport backend
+   + Component :: xmpp-backend
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned :: jan
 ** FIXED Connection resets are not handled properly with transports
    + Component :: multiple components
    + Type :: defect
+   + Priority :: major
    + Reporter :: jan
-   + Assigned ::
+   + Assigned :: jan
+   + Resolution :: fixed
    The current session used to be terminated when the connection
    dropped. This does not work when using transports.
 ** DONE Use transports
    + Component :: multiple components
    + Type :: task
+   + Priority :: major
    + Reporter :: jan
    + Assigned :: jan
    All network communication should be done using transport objects
@@ -230,6 +251,7 @@
 ** DONE Multiple username/password attempts in one login attempt
    + Component :: rudel-general
    + Type :: task
+   + Priority :: major
    + Reporter :: jan
    + Assigned :: jan
 
