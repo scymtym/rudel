@@ -6,22 +6,27 @@
 ;; Keywords: rudel, xmpp, transport, backend
 ;; X-RCS: $Id:$
 ;;
-;; This program is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
+;; This file is part of Rudel.
+;;
+;; Rudel is free software: you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
 ;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-;; GNU General Public License for more details.
+;; Rudel is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+;; General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program. If not, see <http://www.gnu.org/licenses>.
+;; along with Rudel. If not, see <http://www.gnu.org/licenses>.
 
 
 ;;; Commentary:
 ;;
+;; This file contains the XMPP transport backend class
+;; `rudel-xmpp-backend', which implements transporting XML messages
+;; through XMPP connections.
 
 
 ;;; History:
@@ -32,20 +37,23 @@
 ;;; Code:
 ;;
 
+(require 'rudel-state-machine)
+
 (require 'rudel-backend)
 (require 'rudel-transport)
-(require 'rudel-transport-util)
+(require 'rudel-transport-util) ;; For `rudel-transport-filter'
+(require 'rudel-socket) ;; We instantiate the TCP transport
 
 (require 'rudel-util)
 
-(require 'rudel-xmpp-state)
 (require 'rudel-xmpp-util)
+(require 'rudel-xmpp-state)
 
 
 ;;; Constants
 ;;
 
-(defconst rudel-xmpp-transport-version '(0 1)
+(defconst rudel-xmpp-transport-version '(0 2)
   "Version of the XMPP transport backend for Rudel.")
 
 (defconst rudel-xmpp-protocol-version '(1 0)
@@ -57,11 +65,12 @@
 
 ;;;###autoload
 (defclass rudel-xmpp-backend (rudel-transport-backend)
-  ()
-  "")
+  ((capabilities :initform '(connect)))
+  "Transport backend works by transporting XMPP messages through
+XMPP connections.")
 
-(defmethod initialize-instance ((this rudel-xmpp-backend) &rest slots)
-  ""
+(defmethod initialize-instance ((this rudel-xmpp-backend) slots)
+  "Initialize slots and set version of THIS."
   (when (next-method-p)
     (call-next-method))
 
@@ -74,37 +83,56 @@
   (let ((host (or (plist-get info :host)
 		  (read-string "Server: ")))
 	(port (or (plist-get info :port)
-		  (read-number "Port: "))))
+		  (read-number "Port: ")))
+	(jid  (or (plist-get info :jid)
+		  (read-string "Jabber ID (JID): "))))
     (append (list :host host
-		  :port port)
+		  :port port
+		  :jid  jid)
 	    info)))
 
 (defmethod rudel-make-connection ((this rudel-xmpp-backend)
 				  info info-callback
 				  &optional progress-callback)
   "Connect to an XMPP server using the information in INFO.
-INFO has to be a property list containing at least the keys :host
-and :port."
-  (let* ((host          (plist-get info :host))
-	 (port          (plist-get info :port))
-	 (tcp-transport (rudel-make-connection
-			 (cdr (rudel-backend-get 'transport 'tcp))
-			 info info-callback progress-callback))
-	 (stack         (rudel-xmpp-make-transport-filter-stack
-			 tcp-transport))
-	 (transport     (rudel-xmpp-transport
-			 host
-			 :transport stack)))
+INFO has to be a property list containing at least the
+keys :host, :port and :jid.
+If non-nil, PROGRESS-CALLBACK has to be a function which is
+called repeatedly to report progress."
+  ;; Ensure that INFO contains all necessary information.
+  (unless (every (lambda (keyword) (member keyword info))
+		 '(:host :jid))
+    (setq info (funcall info-callback this info)))
+
+  ;; Extract information from INFO and connect.
+  (let* ((host           (plist-get info :host))
+	 (jid            (plist-get info :jid))
+	 ;; Create the underlying transport.
+	 ;; TODO handle errors
+	 (tcp-transport  (rudel-make-connection
+			  (cdr (rudel-backend-get 'transport 'tcp))
+			  info info-callback progress-callback))
+	 ;; Create a suitable stack of transport filters on top of the
+	 ;; underlying transport.
+	 (stack          (rudel-xmpp-make-transport-filter-stack
+			  tcp-transport))
+	 ;; Create the actual XMPP transport.
+	 (xmpp-transport (rudel-xmpp-transport
+			 (format "to %s as %s" host jid)
+			 :transport stack
+			 :start     (list 'new host jid))))
 
     ;; Now start receiving and wait until the connection has been
     ;; established.
-    (rudel-start tcp-transport)
-    (rudel-state-wait transport
-		      '(established) '(we-finalize they-finalize)
+    (rudel-start xmpp-transport) ;; Gets delegated to the TCP
+				 ;; transport
+    (rudel-state-wait xmpp-transport
+		      '(established)
+		      '(we-finalize they-finalize disconnected)
 		      progress-callback)
 
-    ;;
-    transport))
+    ;; Return the usable transport object.
+    xmpp-transport))
 
 
 ;;; Class rudel-xmpp-state-new
@@ -114,9 +142,9 @@ and :port."
   ()
   "Initial state of new XMPP connections.")
 
-(defmethod rudel-enter ((this rudel-xmpp-state-new))
-  ""
-  '(negotiate-stream sasl-start))
+(defmethod rudel-enter ((this rudel-xmpp-state-new) to jid)
+  "Switch to \"negotiate-stream\" state."
+  (list 'negotiate-stream to jid (list 'sasl-start jid to)))
 
 
 ;;; Class rudel-xmpp-state-negotiate-stream
@@ -124,21 +152,21 @@ and :port."
 
 (defclass rudel-xmpp-state-negotiate-stream (rudel-xmpp-state)
   ((success-state :initarg :success-state
-		  :type    symbol
+		  :type    (or list symbol)
 		  :documentation
 		  "State to switch to in case of successful
 negotiation."))
   "Stream negotiation state.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-negotiate-stream)
-			success-state) ;; host)
-  ""
+			to jid success-state)
+  "Send opening stream tag constructed with TO and JID."
   ;; Store the name of the successor state in case of successful
   ;; stream negotiation for later.
   (oset this :success-state success-state)
 
-  ;; The first message we receive will be an incomplete <stream:stream
-  ;; ... > XML tree.
+  ;; The first message we receive will be an incomplete XML document
+  ;; with root <stream:stream ... >.
   (with-slots (transport) this
     (rudel-set-assembly-function transport #'rudel-xmpp-assemble-stream)
     (rudel-set-generate-function transport #'identity))
@@ -146,20 +174,31 @@ negotiation."))
   ;; We cannot generate this message by serializing an XML infoset
   ;; since the document is incomplete. We construct it as a string
   ;; instead.
-  (rudel-send this
-	      (format "<?xml version=\"1.0\" encoding=\"%s\"?><stream:stream xmlns:stream=\"http://etherx.jabber.org/streams\" xmlns=\"jabber:client\" version=\"%s\" to=\"%s\" id=\"%s\">"
-		      "UTF-8"
-		      (mapconcat #'identity
-				 (mapcar #'number-to-string
-					 rudel-xmpp-protocol-version)
-				 ".")
-		      "jabber.org"
-		      "scymtym@jabber.org"))
+  (rudel-send
+   this
+   (format "<?xml version=\"1.0\" encoding=\"%s\"?>\
+            <stream:stream
+              xmlns:stream=\"http://etherx.jabber.org/streams\" \
+              xmlns=\"jabber:client\" \
+              version=\"%s\" \
+              to=\"%s\" \
+              id=\"%s\">" ;; TODO does this work? not all clients like
+			  ;; additional spaces
+	   "UTF-8"
+	   (mapconcat #'identity
+		      (mapcar #'number-to-string
+			      rudel-xmpp-protocol-version)
+		      ".") ;; TODO rudel-version->string. hm, Emacs
+			   ;; has version-to-list, maybe also
+			   ;; version-list-to-string?
+	   to
+	   jid))
   nil)
 
 (defmethod rudel-leave ((this rudel-xmpp-state-negotiate-stream))
-  ""
-  ;; TODO explain
+  "Stop assembling based on opening stream tag."
+  ;; One the stream is negotiated, assemble data based on complete XML
+  ;; trees rather than the opening stream tag.
   (with-slots (transport) this
     (rudel-set-assembly-function transport #'rudel-xml-assemble-tags)
     (rudel-set-generate-function transport #'xml->string)))
@@ -168,15 +207,19 @@ negotiation."))
   ""
   (cond
    ;; Stream negotiation error.
-   ;;((string= (xml-tag-name xml) "stream:stream")
+   ;;((eq (xml-node-name xml) 'stream:stream)
    ;;nil) ;; TODO send error
 
    ;; Success
    (t
+    ;; Extract features from received message and pass them to success
+    ;; state.
     (with-slots (success-state) this
       (let ((features (xml-node-children
 		       (car (xml-get-children xml 'stream:features)))))
-	(list success-state features)))))
+	(if (listp success-state)
+	    (append success-state (list features))
+	  (list success-state features))))))
   )
 
 
@@ -190,7 +233,10 @@ negotiation."))
 
 (defmethod rudel-enter ((this rudel-xmpp-state-authenticated))
   ""
-  (list 'negotiate-stream 'established))
+  ;; Switch to negotiate-stream telling it to switch to established in
+  ;; case the negotiation succeeds.
+  (list 'negotiate-stream "jabber.org" "scymtym" 'established))
+;; TODO use real server- and username
 
 
 ;;; Class rudel-xmpp-state-authentication-failed
@@ -200,13 +246,19 @@ negotiation."))
   ()
   "")
 
+(defmethod rudel-enter ((this rudel-xmpp-state-authentication-failed))
+  ""
+  'we-finalize)
+
 
 ;;; Class rudel-xmpp-state-established
 ;;
 
 (defclass rudel-xmpp-state-established (rudel-xmpp-state)
   ()
-  "")
+  "The XMPP connection enters this state when security
+negotiation and the negotiation of the actual stream are
+complete.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-established) features)
   ""
@@ -214,9 +266,9 @@ negotiation."))
 
 (defmethod rudel-accept ((this rudel-xmpp-state-established) xml)
   ""
-  (with-slots (handler) this
-    (when handler
-      (funcall handler xml)))
+  (with-slots (filter) this
+    (when filter
+      (funcall filter xml)))
   nil)
 
 
@@ -229,6 +281,11 @@ negotiation."))
 
 (defmethod rudel-enter ((this rudel-xmpp-state-we-finalize))
   ""
+  ;; We send the closing tag, </stream:stream>, of the stream
+  ;; document. This has be processed as string, not XML.
+  (with-slots (transport) this
+    (rudel-set-generate-function transport #'identity))
+
   (rudel-send this "</stream:stream>")
 
   ;; TODO (rudel-close connection))?
@@ -269,7 +326,8 @@ negotiation."))
     (we-finalize           . rudel-xmpp-state-we-finalize)
     (they-finalize         . rudel-xmpp-state-they-finalize)
     (disconnected          . rudel-xmpp-state-disconnected))
-  "")
+  "Basic states used in an XMPP connection.
+Authentication mechanisms can add more states to this list.")
 
 
 ;;; Class rudel-xmpp-transport
@@ -280,8 +338,7 @@ negotiation."))
   ()
   "")
 
-(defmethod initialize-instance ((this rudel-xmpp-transport)
-				&rest slots)
+(defmethod initialize-instance ((this rudel-xmpp-transport) slots)
   "Initialize THIS and register states."
   ;; Initialize slots of THIS.
   (when (next-method-p)
@@ -290,7 +347,8 @@ negotiation."))
   ;; Register states.
   (rudel-register-states this rudel-xmpp-states)
 
-  ;; Install a handler that passes received data to `rudel-accept'.
+  ;; Install a handler that passes received data to the user-provided
+  ;; handler.
   (with-slots (transport) this
     (lexical-let ((this1 this))
       (rudel-set-filter
@@ -306,14 +364,17 @@ negotiation."))
   (oset state :transport this)
 
   ;; Register the modified STATE.
-  (call-next-method)
+  (when (next-method-p)
+    (call-next-method))
   )
 
-(defmethod rudel-disconnect ((this rudel-xmpp-transport))
-  ""
-  (rudel-switch this 'we-finalize)
+(defmethod rudel-close ((this rudel-xmpp-transport))
+  "Close the XMPP connection used by THIS."
+  (unless (member (rudel-current-state this)
+		  '(we-finalize they-finalize disconnected))
+    (rudel-switch this 'we-finalize))
 
-  (rudel-state-wait this '(disconnected) nil)
+  (rudel-state-wait this '(disconnected))
 
   (when (next-method-p)
     (call-next-method)) ;; TODO does this call rudel-close again?

@@ -35,7 +35,6 @@
 ;;
 
 (require 'xml)
-(require 'base64)
 (require 'sasl)
 
 (require 'eieio)
@@ -51,11 +50,11 @@
   "Start state of the SASL negotiation.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-sasl-start)
-			features)
+			name server features)
   "Extract the list of supported mechanisms from FEATURES.
 Then switch to the try one state to try them in order."
   ;; Find mechanism tags
-  (let ((mechanism-tags (remove* 'mechanisms features
+  (let* ((mechanism-tags (remove* 'mechanisms features
 				  :test-not #'eq
 				  :key      #'xml-node-name))
 	 ;; XML -> alist
@@ -73,7 +72,7 @@ Then switch to the try one state to try them in order."
 		  mechanism-tags))))
 
     ;; Try the first mechanism
-    (list 'sasl-try-one mechanisms))
+    (list 'sasl-try-one name server mechanisms))
   )
 
 
@@ -86,7 +85,7 @@ Then switch to the try one state to try them in order."
 start state for that mechanism.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-sasl-try-one)
-			mechanisms)
+			name server mechanisms)
   "If Emacs support the first mechanism in MECHANISMS, try it, otherwise skip it.
 Mechanism are tried by switching to the mechanism start state.
 When no mechanisms are left, switch to the authentication failed state."
@@ -98,8 +97,8 @@ When no mechanisms are left, switch to the authentication failed state."
 	(let ((mechanism (sasl-find-mechanism (list mechanism-name))))
 	  (if mechanism
 	      (list 'sasl-mechanism-start
-		    schema mechanism (cdr mechanisms))
-	    (list 'sasl-try-one (cdr mechanisms)))))
+		    name server schema mechanism (cdr mechanisms))
+	    (list 'sasl-try-one name server (cdr mechanisms)))))
     'authentication-failed)
   )
 
@@ -123,30 +122,33 @@ When no mechanisms are left, switch to the authentication failed state."
   "Start state of the negotiation for the selected mechanism.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-sasl-mechanism-start)
-			schema1 mechanism1 rest1)
+			name1 server1 schema1 mechanism1 rest1)
   ""
   (with-slots (schema mechanism rest) this
     (setq schema    schema1
 	  mechanism mechanism1
 	  rest      rest1)
 
-    (let* ((client (sasl-make-client mechanism
-				     "scymtym" ;; TODO id
-				     "xmpp"
-				     "jabber.org";; TODO server
-				     ))
+    (let* ((client (sasl-make-client mechanism name1 "xmpp" server1))
 	   (step   (sasl-next-step client nil))
 	   (name   (sasl-mechanism-name mechanism)))
 
-      ;; Send initial 'auth' message.
-      (rudel-send this
-		  `(auth
-		    ((xmlns     . ,schema)
-		     (mechanism . ,name))))
+      ;; Send initial 'auth' message, possibly containing initial
+      ;; response data.
+      (let* ((response-data-raw (sasl-step-data step))
+	     (response-data     (when response-data-raw
+				  (base64-encode-string
+				   response-data-raw t))))
+	(rudel-send this
+		    `(auth
+		      ((xmlns     . ,schema)
+		       (mechanism . ,name))
+		      ,@(when response-data
+			  (list response-data)))))
 
       ;; Construct the initial SASL step for the mechanism and start
       ;; the challenge/response sequence.
-      (list 'sasl-mechanism-step schema client step rest)))
+      (list 'sasl-mechanism-step name1 server1 schema client step rest)))
   )
 
 
@@ -154,30 +156,40 @@ When no mechanisms are left, switch to the authentication failed state."
 ;;
 
 (defclass rudel-xmpp-state-sasl-mechanism-step (rudel-xmpp-state)
-  ((schema :initarg :schema
+  ((name   :initarg :name
 	   :type    string
 	   :documentation
-	   "")
+	   "Username used in SASL authentication mechanism.")
+   (server :initarg :server
+	   :type    string
+	   :documentation
+	   "Server name used in SASL authentication mechanism.")
+   (schema :initarg :schema
+	   :type    string
+	   :documentation
+	   "Schema URN identifying the SASL mechanism.")
    (client :initarg :client
 	   :type    vector
 	   :documentation
-	   "")
+	   "SASL mechanism data.")
    (step   :initarg :step
 	   :type    vector
 	   :documentation
-	   "")
+	   "SASL mechanism state data.")
    (rest   :initarg :rest
 	   :type    list
 	   :documentation
-	   ""))
+	   "List of remaining mechanisms to try."))
   "Intermediate step of the negotiation for the selected
 mechanism.")
 
 (defmethod rudel-enter ((this rudel-xmpp-state-sasl-mechanism-step)
-			schema1 client1 step1 rest1)
+			name1 server1 schema1 client1 step1 rest1)
   "Store SCHEMA1, CLIENT1, STEP1 and REST1 for later use."
-  (with-slots (schema client step rest) this
-    (setq schema schema1
+  (with-slots (name server schema client step rest) this
+    (setq name   name1
+	  server server1
+	  schema schema1
 	  client client1
 	  step   step1
 	  rest   rest1))
@@ -186,91 +198,77 @@ mechanism.")
 (defmethod rudel-accept ((this rudel-xmpp-state-sasl-mechanism-step) xml)
   "Interpret XML to decide how to proceed with the authentication mechanism."
   (case (xml-node-name xml)
-   (failure
-   ;; Authentication mechanism failed. Try next.
-    (with-slots (rest) this
-      (list 'sasl-try-one rest)))
-   ;; TODO Handle <not-authorized/> differently? We could retry with
-   ;; the same mechanism
+    ;; Authentication mechanism failed.
+    (failure
+     (let ((child (car-safe (xml-node-children xml))))
+       (cond
+	;; The id chosen for identification was not accepted (example:
+	;; incorrectly formatted user id).
+	((eq (xml-node-name child) 'invalid-authzid)
+	 (with-slots (name server rest) this
+	   (list 'sasl-try-one name server rest))) ;; TODO how do we react?
 
-   (success
+	;; The not-authorized failure means that the credentials we
+	;; provided were wrong.
+	((eq (xml-node-name child) 'not-authorized)
+	 (with-slots (name server rest) this
+	   (list 'sasl-try-one name server rest))) ;; TODO how do we react?
+
+	;; Default behavior is to try next mechanism.
+	;;
+	;; Not handled explicitly: <aborted/>, <incorrect-encoding/>,
+	;; <invalid-mechanism/>, <mechanism-too-weak/>,
+	;; <temporary-auth-failure/>
+	(t
+	 (with-slots (name server rest) this
+	   (list 'sasl-try-one name server rest))))))
+
     ;; Authentication mechanism succeeded. Switch to authenticated
     ;; state.
-    'authenticated)
+    (success
+     'authenticated)
 
-   (challenge
     ;; Authentication mechanism requires a challenge-response
     ;; step. The Emacs SASL implementation does the heavy lifting for
     ;; us.
-    ;; TODO is the challenge data always there?
-    (with-slots (schema client step rest) this
-      ;; TODO assert string= schema (xml-tag-attr xml "xmlns")
+    (challenge
+     ;; TODO is the challenge data always there?
+     (with-slots (name server schema client step rest) this
+       ;; TODO assert string= schema (xml-node-attr xml "xmlns")
 
-      ;; Pass challenge data, if any, to current step.
-      (when (stringp (car-safe (xml-node-children xml)))
-	(let ((challenge-data (base64-decode-string
-			       (car (xml-node-children xml)))))
-	  (sasl-step-set-data step challenge-data)))
+       ;; Pass challenge data, if any, to current step.
+       (when (stringp (car-safe (xml-node-children xml)))
+	 (let ((challenge-data (base64-decode-string
+				(car (xml-node-children xml)))))
+	   (sasl-step-set-data step challenge-data)))
 
-      ;; Proceed to next step and send response.
-      (setq step (sasl-next-step client step))
-      (let* ((response-data-raw (sasl-step-data step))
-	     (response-data     (when response-data-raw
-				  (base64-encode-string
-				   response-data-raw t)))) ;; "amFU"
-	(rudel-send this
-		    `(response
-		      ,@(when schema
-			  `(((xmlns . ,schema))))
-		      ,@(when response-data
-			  (list response-data)))))
+       ;; Proceed to next step and send response, possibly with
+       ;; response data.
+       (let ((next (sasl-next-step client step)))
+	 (if next
+	     ;; If there is another step, send a 'response' element,
+	     ;; possibly containing the response data.
+	     (progn
+	       (let* ((response-data-raw (sasl-step-data next))
+		      (response-data     (when response-data-raw
+					   (base64-encode-string
+					    response-data-raw t))))
+		 (rudel-send this
+			     `(response
+			       ,@(when schema
+				   `(((xmlns . ,schema))))
+			       ,@(when response-data
+				   (list response-data)))))
 
-      (list 'sasl-mechanism-step schema client step rest)))
+	       (list 'sasl-mechanism-step
+		     name server schema client next rest))
+	   ;; If there is no next step, try the next mechanism.
+	   (list 'sasl-try-one name server rest)))))
 
-   ;; Unknown message.
-   (t
-    nil)) ;; TODO send error or call-next-method?
+    ;; Unknown message.
+    (t
+     nil)) ;; TODO send error or call-next-method?
   )
-
-;; 6.4.  SASL Errors
-;;
-;;    The following SASL-related error conditions are defined:
-;;
-;;    o  <aborted/> -- The receiving entity acknowledges an <abort/>
-;;       element sent by the initiating entity; sent in reply to the
-;;       <abort/> element.
-;;
-;;    o  <incorrect-encoding/> -- The data provided by the initiating
-;;       entity could not be processed because the [BASE64] encoding is
-;;       incorrect (e.g., because the encoding does not adhere to the
-;;       definition in Section 3 of [BASE64]); sent in reply to a
-;;       <response/> element or an <auth/> element with initial response
-;;       data.
-;;
-;;    o  <invalid-authzid/> -- The authzid provided by the initiating
-;;       entity is invalid, either because it is incorrectly formatted or
-;;       because the initiating entity does not have permissions to
-;;       authorize that ID; sent in reply to a <response/> element or an
-;;       <auth/> element with initial response data.
-;;
-;;    o  <invalid-mechanism/> -- The initiating entity did not provide a
-;;       mechanism or requested a mechanism that is not supported by the
-;;       receiving entity; sent in reply to an <auth/> element.
-;;
-;;    o  <mechanism-too-weak/> -- The mechanism requested by the initiating
-;;       entity is weaker than server policy permits for that initiating
-;;       entity; sent in reply to a <response/> element or an <auth/>
-;;       element with initial response data.
-;;
-;;    o  <not-authorized/> -- The authentication failed because the
-;;       initiating entity did not provide valid credentials (this includes
-;;       but is not limited to the case of an unknown username); sent in
-;;       reply to a <response/> element or an <auth/> element with initial
-;;       response data.
-;;
-;;    o  <temporary-auth-failure/> -- The authentication failed because of
-;;       a temporary error condition within the receiving entity; sent in
-;;       reply to an <auth/> element or <response/> element.
 
 
 ;;; SASL state list
@@ -281,10 +279,11 @@ mechanism.")
     (sasl-try-one         . rudel-xmpp-state-sasl-try-one)
     (sasl-mechanism-start . rudel-xmpp-state-sasl-mechanism-start)
     (sasl-mechanism-step  . rudel-xmpp-state-sasl-mechanism-step))
-  "")
+  "States used during SASL authentication.")
 
-(dolist (state rudel-xmpp-sasl-states)
-  (add-to-list 'rudel-xmpp-states state))
+(eval-after-load "rudel-xmpp"
+  '(dolist (state rudel-xmpp-sasl-states)
+     (add-to-list 'rudel-xmpp-states state)))
 
 (provide 'rudel-xmpp-sasl)
 ;;; rudel-xmpp-sasl.el ends here

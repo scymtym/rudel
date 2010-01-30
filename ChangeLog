@@ -1,3 +1,305 @@
+2010-01-27  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Integrated new debugging framework
+	* rudel-debug.el (header): updated copyright; fixed keywords;
+	extended commentary section; added 0.2 to history section
+	(require rudel-transport-util):
+	(require rudel-socket): now required, since we install methods
+	(rudel-debug-tag-faces): changed from constant to variable
+	(rudel-state-change :before):
+	(rudel-debug-stream-name):
+	(rudel-debug-stream-insert): removed; replaced by
+	`rudel-debug-write-to-stream' and `rudel-debug-write'
+	(rudel-debug-target): new generic function; determine debug stream
+	for an object
+	(rudel-debug-write-to-stream): new function; write information to
+	debug stream
+	(rudel-debug-write): new function; write information to debug
+	stream for a specific object
+	(rudel-debug-old-state):
+	(rudel-state-machine::rudel-switch :before):
+	(rudel-state-machine::rudel-switch :after): new variable/methods;
+	state machine debugging
+	(rudel-assembling-transport-filter::rudel-set-assembly-function	:before):
+	(rudel-assembling-transport-filter::rudel-set-filter):
+	(rudel-assembling-transport-filter::rudel-send :before): new
+	methods; debugging for `rudel-assembling-transport-filter'
+	(rudel-parsing-transport-filter::rudel-set-parse-function :before):
+	(rudel-parsing-transport-filter::rudel-set-generate-function :before):
+	(rudel-parsing-transport-filter::rudel-set-filter):
+	(rudel-parsing-transport-filter::rudel-send :before): new methods;
+	debugging for `rudel-parsing-transport-filter'
+	(rudel-socket-transport::rudel-set-filter):
+	(rudel-socket-transport::rudel-send :before): new methods;
+	debugging for `rudel-socket-transport'
+	* xmpp/rudel-xmpp-debug.el (header): fixed keywords; added 0.2 to
+	history section
+	(require rudel-xmpp-state): now required, since we install methods
+	(rudel-xmpp-debug-old-state):
+	(rudel-xmpp-transport::rudel-send :before):
+	(rudel-xmpp-transport::rudel-accept :before):
+	(rudel-xmpp-transport::rudel-switch :before):
+	(rudel-xmpp-transport::rudel-switch :after): removed; handled by
+	generic stuff in rudel-debug.el now
+	(rudel-xmpp-state::rudel-debug-target): new method; debug target
+	for XMPP states
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-send):
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-send :after):
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-accept :before):
+	rewritten for new debugging framework
+	* obby/rudel-obby-debug.el (header): updated copyright; added 0.2
+	to history section
+	(require eieio):
+	(require rudel-obby-util): removed; no longer needed
+	(require rudel-obby-server): now required, since we install
+	methods on server classes
+	(rudel-obby-debug-old-state):
+	(rudel-obby-connection::rudel-send :before):
+	(rudel-obby-connection::rudel-accept :before):
+	(rudel-obby-connection::rudel-switch :before):
+	(rudel-obby-connection::rudel-switch :after): removed; handled by
+	generic stuff in rudel-debug.el now
+	(rudel-obby-connection::rudel-debug-target): new method; debug
+	target for `rudel-obby-connection'
+	(rudel-obby-client::rudel-debug-target): new method; debug target
+	for `rudel-obby-client'
+	* TODO (Milestone 0.3): integrate new debugging framework is DONE
+
+	Updated TODO
+	* TODO (Future):
+	(Milestone 0.4): minor adjustments
+	(Milestone 0.3): new task, integrate new debugging framework; new
+	task, add XMPP transport backend; minor adjustments
+
+	Better error and response data handling in xmpp/rudel-xmpp-sasl.el
+	* xmpp/rudel-xmpp-sasl.el
+	(rudel-xmpp-state-sasl-mechanism-start::rudel-enter): send
+	"initial response" in auth element, if the mechanism wants that
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-accept): handle
+	invalid-authzid; use `xml-node-name' instead of `xml-tag-name'
+
+	Fix use of XML library in rudel-xmpp-state::rudel-accept
+	* xmpp/rudel-xmpp-state.el (rudel-xmpp-state::rudel-accept): use
+	`xml-node-name' instead of `xml-tag-name'; tag name is
+	'stream:error, not "stream:error"
+
+2010-01-26  Jan Moringen <scymtym@users.sourceforge.net>
+
+	Switch stream to string mode in rudel-xmpp-state-we-finalize
+	* xmpp/rudel-xmpp.el
+	(rudel-xmpp-state-negotiate-stream::rudel-accept): fixed a comment
+	(rudel-xmpp-state-we-finalize::rudel-enter): set generate function
+	to identity before trying to send a string
+
+	Repair filter in rudel-start-tls-transport::initialize-instance
+	* tls/rudel-tls.el
+	(rudel-start-tls-transport::initialize-instance): reinstall
+	`rudel-tls-wait-init' which get overwritten by the superclass
+
+	Prevent byte-compilation of xmpp/rudel-xmpp-debug.el
+	* xmpp/rudel-xmpp-debug.el (local variables): prevent byte-compilation
+
+2010-01-24  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed require for rudel-socket in xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (require rudel-socket): changed rudel-tcp ->
+	rudel-socket
+
+	Removed require base64 from xmpp/rudel-xmpp-tunnel.el
+	* xmpp/rudel-xmpp-tunnel.el (require base64): removed; fantasy
+	library does not exist
+
+2010-01-23  Jan Moringen <scymtym@users.sourceforge.net>
+
+	Add SASL XMPP states when rudel-xmpp gets loaded
+	* xmpp/rudel-xmpp-sasl.el (state registration): add SASL states to
+	state list after loading of rudel-xmpp
+
+	Minor improvement in xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-make-connection):
+	better object name for transport object
+	(rudel-xmpp-state-established): added documentation string
+	(rudel-xmpp-state-established::rudel-accept): use filter slot of
+	the transport object
+
+	Removed require base64 from xmpp/rudel-xmpp-debug.el
+	* xmpp/rudel-xmpp-debug.el (require base64): removed; fantasy
+	library does not exist
+
+	Updated header of xmpp/rudel-xmpp-debug.el
+	* xmpp/rudel-xmpp-debug.el (header): added xmpp keyword; fixed
+	commentary
+
+	Added connect capability to XMPP backend
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::capabilities): added
+	capability connect
+
+2010-01-22  Jan Moringen <scymtym@users.sourceforge.net>
+
+	Analyze XMPP failures in rudel-xmpp-state-sasl-mechanism-step
+	* xmpp/rudel-xmpp-sasl.el (require base64):removed; nonsense
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-accept): analyze
+	failure responses more thoroughly
+
+	Improved rudel-xmpp-backend::rudel-make-connection
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-make-connection):
+	call info-callback when info elements are missing; improved
+	documentation string; added comments
+
+	XMPP backend improvements
+	* xmpp/rudel-xmpp.el (header): added commentary section
+        (require rudel-state-machine): required for the state classes
+        (require rudel-tcp): required since the TCP transport underlies
+	the XMPP transport
+        (rudel-xmpp-transport-version): bumped to 0.2
+        (rudel-xmpp-backend): added documentation string
+        (rudel-xmpp-backend::initialize-instance): removed &rest from
+	slots; added documentation string
+        (rudel-xmpp-backend::rudel-make-connection): improved
+	documentation string; cosmetic changes
+        (rudel-xmpp-state-new::rudel-enter): pass jid and server name to
+	successor state; added documentation string
+        (rudel-xmpp-state-negotiate-stream::success-state): changed type
+	to include list
+        (rudel-xmpp-state-negotiate-stream::rudel-enter): some cleanup
+        (rudel-xmpp-state-negotiate-stream::rudel-leave): added
+	documentation string; improved comment
+        (rudel-xmpp-state-negotiate-stream::rudel-accept): handle symbol
+	and list successor state specification
+        (rudel-xmpp-state-authenticated::rudel-enter): pass server- and
+	username to successor state; hack
+        (rudel-xmpp-state-authentication-failed::rudel-enter): new method;
+	switch to we-finalize
+        (rudel-xmpp-states): added documentation string
+        (rudel-xmpp-transport::initialize-instance): some cleanup
+        (rudel-xmpp-transport::rudel-register-state): call next method in
+	a safe manner
+        (rudel-xmpp-transport::rudel-close): switch to closing state;
+	added documentation string
+        (rudel-xmpp-transport::rudel-disconnect): removed; obsolete
+
+	Removed function rudel-xmpp-state::rudel-set-assembly-function
+	* xmpp/rudel-xmpp-state.el
+	(rudel-xmpp-state::rudel-set-assembly-function): obsolete; removed
+
+	Improved XMPP SASL implementation
+	* xmpp/rudel-xmpp-sasl.el
+        (rudel-xmpp-state-sasl-start::rudel-enter): accept additional
+	arguments and pass them to sasl-try-one successor
+        (rudel-xmpp-state-sasl-try-one::rudel-enter): accept additional
+	arguments name and server and pass them to sasl-try-one when
+	self-transitioning
+        (rudel-xmpp-state-sasl-mechanism-start::rudel-enter): accept
+	additional arguments name and server and use them when calling
+	`sasl-make-client'; also pass them to sasl-mechanism-step
+        (rudel-xmpp-state-sasl-mechanism-step::name): new slot; stores
+	username
+        (rudel-xmpp-state-sasl-mechanism-step::server): new slot; stores
+	server name
+        (rudel-xmpp-state-sasl-mechanism-step::schema): added
+	documentation string
+        (rudel-xmpp-state-sasl-mechanism-step::client): added
+	documentation string
+        (rudel-xmpp-state-sasl-mechanism-step::step): added documentation
+	string
+        (rudel-xmpp-state-sasl-mechanism-step::rest): added documentation
+	string
+        (this rudel-xmpp-state-sasl-mechanism-step::rudel-enter): accept
+	arguments name and server and store them
+        (rudel-xmpp-state-sasl-mechanism-step::rudel-accept): pass name
+	and server to sasl-try-one and to sasl-mechanism-step when
+	self-transitioning
+
+2010-01-21  Jan Moringen <scymtym@users.sourceforge.net>
+
+	Support specifying a host and JID in the XMPP transport
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-ask-connect-info):
+	ask for JID and return it
+	(rudel-xmpp-backend::rudel-make-connection): extract jid property;
+	pass host, jid and start state to transport constructor
+	(rudel-xmpp-state-new::rudel-enter): accept arguments to and jid;
+	pass to negotiate-stream state
+	(rudel-xmpp-state-negotiate-stream::rudel-enter): accept to and
+	jid arguments; use to and jid when constructing opening stream
+	tag; added documentation string; cleanup
+	(rudel-xmpp-state-negotiate-stream::rudel-accept): added comment
+	(rudel-xmpp-state-authenticated::rudel-enter): added comment
+	(rudel-xmpp-transport::initialize-instance): removed &rest from
+	slots argument
+
+	Fixed license of xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (header): fixed license
+
+	Added notes file to xmpp documentation
+	* xmpp/doc/notes.org: new file; notes concerning the XMPP backend
+
+	Minor cleanup in xmpp/rudel-xmpp-sasl.el
+	* xmpp/rudel-xmpp-sasl.el
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-accept): minor
+	cleanup
+
+	Added RFC 3921 to xmpp documentation
+	* xmpp/doc/rfc3921: new file; XMPP messaging and presence RFC
+
+	Fixed error in rudel-xmpp-state-sasl-start::rudel-enter
+	* xmpp/rudel-xmpp-sasl.el
+	(rudel-xmpp-state-sasl-start::rudel-enter): use `let*' instead of
+	`let'
+        (rudel-xmpp-sasl-states): added documentation string
+
+	New class rudel-xmpp-state-tls-start
+	* xmpp/rudel-xmpp-tls.el (header): added commentary
+	(require rudel-tls): removed; require it when needed
+	(rudel-xmpp-state-tls-start): new class; state used to enable TLS
+	encryption for a connection
+	(rudel-xmpp-state-tls-start::rudel-enter): new method; enable TLS
+	encryption for the associated connection and switch to
+	authenticated state
+	(add-to-list rudel-xmpp-states): fixed typo
+
+2010-01-20  Jan Moringen <scymtym@users.sourceforge.net>
+
+	Handle invalid color on the obby protocol level
+	* obby/rudel-obby.el (rudel-connect): check for
+	`rudel-obby-invalid-color' and reset the color value in that case
+	* obby/rudel-obby-server.el (header): updated copyright
+	(rudel-check-username-and-color): send value of
+	`rudel-obby-error-color' when the color is invalid
+	* obby/rudel-obby-errors.el (header): updated copyright
+	(rudel-obby-invalid-color): new condition symbol; used to
+	indicated an invalid color
+	(rudel-obby-error-color-invalid): new constant; proposed obby
+	protocol error code for invalid color
+	* obby/rudel-obby-client.el (rudel-obby/net6_login_failed): check
+	for reason rudel-obby-error-color-invalid and return appropriate
+	error
+
+	Fixed error symbol rudel-obby-username-invalid in obby client
+	* obby/rudel-obby.el (header): updated copyright
+	(rudel-obby-backend::rudel-connect): fixed error symbol
+	rudel-obby-username-invalid -> rudel-obby-invalid-username
+	* obby/rudel-obby-client.el (header): updated copyright
+	(rudel-obby-client-state-joining::rudel-obby/net6_login_failed):
+	fixed error symbol rudel-obby-username-invalid ->
+	rudel-obby-invalid-username
+
+2010-01-17  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed a typo in documentation string of rudel-make-connection
+	* rudel-transport.el
+	(rudel-transport-backend::rudel-make-connection): fixed a typo in
+	the documentation string
+
+	Fixed problems in rudel-after-major-mode-change
+	* rudel.el (rudel-after-major-mode-change): when repairing
+	document <-> buffer relations, ignore deleted buffers; reset
+	`rudel-mode-changed-buffers' after all buffers have been processed
+
+	Fixed typo in rudel-collecting-transport-filter::delay
+	* rudel-transport-util.el
+	(rudel-collecting-transport-filter::delay): fixed typo in
+	:initform
+
 2010-01-16  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	New collecting transport filter
@@ -1086,6 +1388,14 @@
 
 	* doc/card.tex (Session Initiation): mention configured sessions;
 	explain Zeroconf-advertised session in more detail
+
+	* rudel-transport-util.el: new file; utility functions for
+	implementing transport functionality
+	* Project.ede (target rudel): added rudel-transport-util.el
+
+	* obby/doc/rudel-obby-transport-layers.cogre: new file; layers
+	used when constructing transport filter chain for obby connections
+	* obby/doc/rudel-obby-transport-layers.png: new file; generated
 
 2009-10-06  Jan Moringen  <scymtym@users.sourceforge.net>
 

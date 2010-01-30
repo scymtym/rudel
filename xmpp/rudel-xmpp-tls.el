@@ -24,6 +24,8 @@
 
 ;;; Commentary:
 ;;
+;; This file contains the implementation of TLS encryption for XMPP
+;; connections.
 
 
 ;;; History:
@@ -34,13 +36,21 @@
 ;;; Code:
 ;;
 
-(require 'rudel-tls)
-
-(require 'rudel-xmpp)
+(require 'rudel-xmpp-state)
 
 
 ;;; Class rudel-xmpp-state-tls-start
 ;;
+
+(defclass rudel-xmpp-state-tls-start (rudel-xmpp-state)
+  ()
+  "State used to enable TLS encryption for a connection.")
+
+(defmethod rudel-enter ((this rudel-xmpp-state-tls-start))
+  "Enable TLS encryption for the connection associated with THIS."
+  (require 'rudel-tls)
+  ;; something like this: (rudel-tls-start-tls transport)
+  'authenticated)
 
 
 ;;; TLS state list
@@ -51,7 +61,7 @@
   "")
 
 (dolist (state rudel-xmpp-tls-states)
-  (add-to-list 'rudel-xmpp-states sate))
+  (add-to-list 'rudel-xmpp-states state))
 
 (provide 'rudel-xmpp-tls)
 ;;; rudel-xmpp-tls.el ends here

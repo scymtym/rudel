@@ -775,9 +775,11 @@ Ponce and Eric M. Ludlam."
 
   ;; Repair all buffers affected by the major mode change.
   (dolist (buffer rudel-mode-changed-buffers)
-    (let ((document (buffer-local-value 'rudel-buffer-document
-					buffer)))
-      (rudel-attach-to-buffer document buffer)))
+    (when (buffer-live-p buffer)
+      (let ((document (buffer-local-value
+		       'rudel-buffer-document buffer)))
+	(rudel-attach-to-buffer document buffer))))
+  (setq rudel-mode-changed-buffers nil)
   )
 
 

@@ -1,6 +1,6 @@
 ;;; rudel-obby.el --- An obby backend for Rudel
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, obby, backend, implementation
@@ -208,17 +208,22 @@ Return the connection object."
 				 error-symbol error-data)
 			(sleep-for 2)
 			(case error-symbol
-			  ;; Invalid username; reset it
-			  (rudel-obby-username-invalid
+			  ;; Invalid username; reset it.
+			  (rudel-obby-invalid-username
 			   (setq info      (plist-put info :username nil)
 				 switch-to (list 'joining info)))
 
-			  ;; Username already in use; reset it
+			  ;; Username already in use; reset it.
 			  (rudel-obby-username-in-use
 			   (setq info      (plist-put info :username nil)
 				 switch-to (list 'joining info)))
 
-			  ;; Color already in use; reset it
+			  ;; Invalid color; reset it.
+			  (rudel-obby-invalid-color
+			   (setq info      (plist-put info :color nil)
+				 switch-to (list 'joining info)))
+
+			  ;; Color already in use; reset it.
 			  (rudel-obby-color-in-use
 			   (setq info      (plist-put info :color nil)
 				 switch-to (list 'joining info)))

@@ -1,6 +1,6 @@
 ;;; rudel-obby-client.el --- Client functions of the Rudel obby backend
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, obby, backend, client
@@ -169,19 +169,28 @@ session.")
 	     (cond
 	      ;; Invalid username
 	      ((= reason rudel-obby-error-username-invalid)
-	       (cons 'rudel-obby-username-invalid nil))
+	       (cons 'rudel-obby-invalid-username nil))
+
 	      ;; Username in use
 	      ((= reason rudel-obby-error-username-in-use)
 	       (cons 'rudel-obby-username-in-use nil))
+
+	      ;; Invalid color
+	      ((= reason rudel-obby-error-color-invalid)
+	       (cons 'rudel-obby-invalid-color nil))
+
 	      ;; Color in use
 	      ((= reason rudel-obby-error-color-in-use)
 	       (cons 'rudel-obby-color-in-use nil))
+
 	      ;; Wrong global password
 	      ((= reason rudel-obby-error-wrong-global-password)
 	       (cons 'rudel-obby-wrong-global-password nil))
+
 	      ;; Wrong user password
 	      ((= reason rudel-obby-error-wrong-user-password)
 	       (cons 'rudel-obby-wrong-user-password nil))
+
 	      ;; Otherwise, signal a generic join error
 	      (t (cons 'rudel-join-error nil)))))
 

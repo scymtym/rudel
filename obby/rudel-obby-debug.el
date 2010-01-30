@@ -1,6 +1,6 @@
 ;;; rudel-obby-debug.el --- Debugging functions for obby backend
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, obby, debugging
@@ -27,81 +27,36 @@
 
 ;;; History:
 ;;
+;; 0.2 - New debug infrastructure
+;;
 ;; 0.1 - Initial version
 
 
 ;;; Code:
 ;;
 
-(require 'eieio)
-
 (require 'rudel-debug)
 
-(require 'rudel-obby-util)
 (require 'rudel-obby-client)
+(require 'rudel-obby-server)
 
 
-;;; Variables
+;;; Client connection debugging
 ;;
 
-(defvar rudel-obby-debug-old-state nil
-  "Saves state of state machines across one function call.")
-
-
-;;; Functions
-;;
-
-(defmethod rudel-send :before ((this rudel-obby-connection)
-			       name &rest arguments)
-  "Print NAME and ARGUMENTS to debug stream."
-  (let ((message (apply #'rudel-obby-assemble-message
-			name arguments)))
-
-    (with-slots (transport) this
-      (rudel-debug-stream-insert
-       (rudel-debug-stream-name transport)
-       :sent
-       (concat  (substring message 0 (min (length message) 100))
-		(when (> (length message) 100)
-		  "..."))
-       (append (list name) arguments))))
-    )
-
-(defmethod rudel-accept :before ((this rudel-obby-connection) data)
-  "Print DATA to debug stream."
+(defmethod rudel-debug-target ((this rudel-obby-connection))
+  "Return debug target of the transport as debug target for THIS."
   (with-slots (transport) this
-    (rudel-debug-stream-insert
-     (rudel-debug-stream-name transport)
-     :received
-     (concat (substring data 0 (min (length data) 100))
-	     (when (> (length data) 100)
-	       "..."))))
-  )
+    (rudel-debug-target transport)))
 
-(defmethod rudel-switch :before ((this rudel-obby-connection)
-				 state &rest arguments)
-  "Store name of STATE for later printing."
-  (with-slots (state) this
-    (setq rudel-obby-debug-old-state
-	  (if state
-	      (object-name-string state)
-	    "#start")))
-  )
+
+;;; Server connection debugging
+;;
 
-(defmethod rudel-switch :after ((this rudel-obby-connection)
-				state &rest arguments)
-  "Print STATE and ARGUMENTS to debug stream."
-  (with-slots (transport state) this
-    (let ((old-state rudel-obby-debug-old-state)
-	  (new-state (object-name-string state)))
-      (unless (string= old-state new-state)
-	(rudel-debug-stream-insert
-	 (rudel-debug-stream-name transport)
-	 :special
-	 (if arguments
-	     (format "%s -> %s %s" old-state new-state arguments)
-	   (format "%s -> %s" old-state new-state))))))
-  )
+(defmethod rudel-debug-target ((this rudel-obby-client))
+  "Return debug target of the transport as debug target for THIS."
+  (with-slots (transport) this
+    (rudel-debug-target transport)))
 
 (provide 'rudel-obby-debug)
 ;; Local Variables:

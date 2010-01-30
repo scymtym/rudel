@@ -1,6 +1,6 @@
 ;;; rudel-obby-errors.el --- Error data used in the obby Rudel backend
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, obby, errors
@@ -66,6 +66,18 @@
 (put 'rudel-obby-username-in-use 'error-message
      "Username is in use")
 
+;; rudel-obby-invalid-color
+
+(intern "rudel-obby-invalid-color")
+
+(put 'rudel-obby-invalid-color 'error-conditions
+     '(error
+       rudel-error rudel-join-error
+       rudel-obby-login-error rudel-obby-invalid-color))
+
+(put 'rudel-obby-color-in-use 'error-message
+     "Invalid color")
+
 ;; rudel-obby-color-in-use
 
 (intern "rudel-obby-color-in-use")
@@ -87,6 +99,9 @@
 
 (defconst rudel-obby-error-username-in-use #x0002
   "Error code for username already in use.")
+
+(defconst rudel-obby-error-color-invalid #x0200
+  "Error code for invalid color.")
 
 (defconst rudel-obby-error-color-in-use #x0100
   "Error code for color already in use.")

@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: rudel, debugging
+;; Keywords: rudel, xmpp, debug
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -24,10 +24,12 @@
 
 ;;; Commentary:
 ;;
-;; Debugging functions for Rudel XMPP transport backend.
+;; Debugging functions for the Rudel XMPP transport backend.
 
 
 ;;; History:
+;;
+;; 0.2 - New debugging infrastructure
 ;;
 ;; 0.1 - Initial version
 
@@ -37,123 +39,76 @@
 
 (require 'eieio)
 
-(require 'base64)
-
 (require 'rudel-xml)
 (require 'rudel-debug)
 
 (require 'rudel-xmpp)
 (require 'rudel-xmpp-util)
+(require 'rudel-xmpp-state)
 (require 'rudel-xmpp-sasl)
 
 
-;;; Variables
+;;; All XMPP states
 ;;
 
-(defvar rudel-xmpp-debug-old-state nil
-  "TODO")
-
-
-;;; Intercept methods of `rudel-xmpp-transport' for logging
-;;
-
-(defmethod rudel-send :before ((this rudel-xmpp-transport)
-			       string-or-xml)
-  ""
-  (let ((formatted (if (stringp string-or-xml)
-		       string-or-xml
-		     (condition-case nil
-			 (xml->string string-or-xml t)
-		       (error (format "<could not format XML infoset>\n%s"
-				      string-or-xml))))))
-    (with-slots (socket) this
-      (rudel-debug-stream-insert
-       (rudel-debug-stream-name socket)
-       :sent
-       formatted (unless (stringp string-or-xml)
-		   string-or-xml))))
-  )
-
-(defmethod rudel-accept :before ((this rudel-xmpp-transport)
-				 xml)
-  ""
-  (with-slots (socket) this
-    (let ((formatted (condition-case nil
-			 (xml->string xml)
-		       (error (format "<could not format XML infoset>\n%s"
-				      xml)))))
-      (rudel-debug-stream-insert
-       (rudel-debug-stream-name socket)
-       :received
-       formatted xml)))
-  )
-
-(defmethod rudel-switch :before ((this rudel-xmpp-transport)
-				 state &rest arguments)
-  ""
-  (with-slots (state) this
-    (setq rudel-xmpp-debug-old-state
-	  (if state
-	      (object-name-string state)
-	    "#start")))
-  )
-
-(defmethod rudel-switch :after ((this rudel-xmpp-transport)
-				state &rest arguments)
-  ""
-  (with-slots (socket state) this
-    (let ((old-state rudel-xmpp-debug-old-state)
-	  (new-state (object-name-string state)))
-      (unless (string= old-state new-state)
-	(rudel-debug-stream-insert
-	 (rudel-debug-stream-name socket)
-	 :special
-	 (if arguments
-	     (format "STATE %s -> %s %s" old-state new-state arguments)
-	   (format "STATE %s -> %s" old-state new-state))))))
-  )
+(defmethod rudel-debug-target ((this rudel-xmpp-state))
+  "Return debug target of the transport as debug target for THIS."
+  (with-slots (transport) this
+    (rudel-debug-target transport)))
 
 
 ;;; Handle base64 encoded data in SASL steps
 ;;
 
-(defmethod rudel-send :after ((this rudel-xmpp-state-sasl-mechanism-step)
-			       xml)
-  ""
-  (when (and (string= (xml-tag-name xml) "response")
-	     (car-safe (xml-tag-children xml)))
-    (with-slots (socket) (oref this :transport) ;; TODO temp impersonating-state solves this
-      (mapc
-       (lambda (pair)
-	 (rudel-debug-stream-insert
-	  (rudel-debug-stream-name socket)
-	  :sent
-	  (if (find ?= pair)
-	      (apply #'format "%-16s: %s" (split-string pair "="))
-	    pair)))
-       (split-string
-	(base64-decode-string (car (xml-tag-children xml)))
-	 ","))))
+(defmethod rudel-send ((this rudel-xmpp-state-sasl-mechanism-step)
+		       &rest args)
+  "Delegate sending ARGS to the transport associated with THIS."
+  ;; We need this primary method in order for the :after method below
+  ;; to work as intended. Without this method, the :after method would
+  ;; get called and `no-applicable-method' would not get called.
+  (with-slots (transport) this
+    (apply #'rudel-send transport args)))
+
+(defmethod rudel-send :after
+  ((this rudel-xmpp-state-sasl-mechanism-step) xml)
+  "Show base64-decoded version of XML."
+  (when (and (eq (xml-node-name xml) 'response)
+	     (car-safe (xml-node-children xml)))
+    (mapc
+     (lambda (pair)
+       (rudel-debug-write
+	this
+	:sent
+	"RESPDATA"
+	(if (find ?= pair)
+	    (apply #'format "%-16s: %s" (split-string pair "="))
+	  pair)))
+     (split-string
+      (base64-decode-string (car (xml-node-children xml)))
+      ",")))
   )
 
-(defmethod rudel-accept :before ((this rudel-xmpp-state-sasl-mechanism-step)
-				 xml)
-  ""
-  (when (and (string= (xml-tag-name xml) "challenge")
-	     (car-safe (xml-tag-children xml)))
-    (with-slots (socket) (oref this :transport) ;; TODO temp impersonating-state solves this
-      (mapc
-       (lambda (pair)
-	 (rudel-debug-stream-insert
-	  (rudel-debug-stream-name socket)
-	  :received
-	  (if (find ?= pair)
-	      (apply #'format "%-16s: %s" (split-string pair "="))
-	    pair)))
-       (split-string
-	  (base64-decode-string (car (xml-tag-children xml)))
-	  ","))))
+(defmethod rudel-accept :before
+  ((this rudel-xmpp-state-sasl-mechanism-step) xml)
+  "Show base64-decoded version of XML."
+  (when (and (eq (xml-node-name xml) 'challenge)
+	     (stringp (car-safe (xml-node-children xml))))
+    (mapc
+     (lambda (pair)
+       (rudel-debug-write
+	this
+	:received
+	"CHALDATA"
+	(if (find ?= pair)
+	    (apply #'format "%-16s: %s" (split-string pair "="))
+	  pair)))
+     (split-string
+      (base64-decode-string (car (xml-node-children xml)))
+      ",")))
   )
 
 (provide 'rudel-xmpp-debug)
+;; Local Variables:
+;; no-byte-compile: t
+;; End:
 ;;; rudel-xmpp-debug.el ends here

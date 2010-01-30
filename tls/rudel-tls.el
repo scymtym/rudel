@@ -220,6 +220,17 @@ This only works if PROCESS has been created by
   "Objects of this class provide socket transports with START TLS
 capability.")
 
+(defmethod initialize-instance :after
+  ((this rudel-start-tls-transport) slots)
+  "Repair filter of the process owned by THIS."
+  ;; The superclass `rudel-socket-transport' installs its filter
+  ;; directly onto the socket in its `initialize-instance' :after
+  ;; method. We have to repair this by putting that filter into the
+  ;; :old-filter property and reinstalling `rudel-tls-wait-init'.
+  (with-slots (socket) this
+    (process-put socket :old-filter (process-filter socket))
+    (set-process-filter socket #'rudel-tls-wait-init)))
+
 (defmethod rudel-enable-encryption ((this rudel-start-tls-transport))
   "Try to enable TLS encryption on THIS transport."
   (with-slots (socket) this
