@@ -1,3 +1,18 @@
+2010-01-31  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Initial import of Adopted algorithm
+	* Project.ede (autoloads): added adopted directory
+	* rudel-compile.el (header): updated copyright
+	(top level autoload):
+	(top level): added adopted directory
+	* adopted/Project.ede: new file; project file adopted subdirectory
+	* adopted/adopted.el: new file; Adopted algorithm entry point
+	* adopted/adopted-operation.el: new file; Adopted operation base class
+	* adopted/adopted-nop.el: new file; Adopted no operation class
+	* adopted/adopted-insert.el: new file; Adopted insert operation
+	* adopted/adopted-delete.el: new file; Adopted delete operation
+	* adopted/adopted-compound.el: new file Adapted compound operation
+
 2010-01-27  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Integrated new debugging framework
