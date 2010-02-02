@@ -57,7 +57,7 @@
        (subdirs   (mapcar
 		   (lambda (subdir)
 		     (concat rudel-dir subdir))
-		   '("." "jupiter" "adopted" "socket" "tls" "xmpp" "obby" "zeroconf"))))
+		   '("." "jupiter" "adopted" "socket" "tls" "xmpp" "obby" "infinote" "zeroconf"))))
     ;; Adjust load path. We need to have all Rudel subdirectories on
     ;; the load path.
     (dolist (subdir subdirs)
@@ -68,7 +68,7 @@
        (subdirs   (mapcar
 		   (lambda (subdir)
 		     (concat rudel-dir subdir))
-		   '("." "jupiter" "adopted" "socket" "tls" "xmpp" "obby" "zeroconf")))
+		   '("." "jupiter" "adopted" "socket" "tls" "xmpp" "obby" "infinote" "zeroconf")))
        (loaddefs  (concat rudel-dir "rudel-loaddefs.el")))
 
   (flet ((byte-compile-cl-warn (&rest) nil))

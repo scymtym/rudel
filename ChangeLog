@@ -1,3 +1,48 @@
+2010-02-02  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Initial import of infinote backend
+	* Project.ede (target autoloads): added infinote directory
+	* rudel-compile.el (top level autoload):
+	(top level): added infinote directory
+	* infinote/Project.ede: mew file; project file for
+	* infinote/rudel-infinote.el: new file; infinote backend main file
+	* infinote/rudel-infinote-util.el: new file; infinote backend
+	miscellaneous functions
+	* infinote/rudel-infinote-user.el: new file; infinote user class
+	* infinote/rudel-infinote-text-document.el: new file; infinote
+	text document class
+	* infinote/rudel-infinote-state.el: new file; infinote state base
+	classes
+	* infinote/rudel-infinote-group.el: new file; infinote
+	communication group base class
+	* infinote/rudel-infinote-group-text-document.el: new file; text
+	document communication group class
+	* infinote/rudel-infinote-group-document.el: new file; document
+	communication group class
+	* infinote/rudel-infinote-group-directory.el: new file; directory
+	communication group class
+	* infinote/rudel-infinote-document.el: new file; infinote document
+	class
+	* infinote/rudel-infinote-directory-document.el: new file;
+	infinote directory document class
+	* infinote/rudel-infinote-client.el: new file; infinote client
+	functionality
+
+	Added operation classes for point, range, cursor and selection
+	* rudel-operations.el (header): updated copyright; fixed and
+	extended commentary section; bumped version to 0.2
+	(rudel-point-operation): new abstract class; base class for
+	point-type operations
+	(rudel-range-operation): new abstract class; base class for
+	range-type operations
+	(rudel-insert-op): now subclass of rudel-point-operation
+	(rudel-delete-op): now subclass of rudel-range-operation
+	(rudel-delete-op::slot-missing): moved to `rudel-range-op'
+	(rudel-move-cursor-op): new class; objects represent cursor
+	movements
+	(rudel-move-selection-op): new class; objects represent movements
+	of the selection
+
 2010-01-31  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Initial import of Adopted algorithm
