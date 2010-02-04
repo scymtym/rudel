@@ -49,7 +49,7 @@
 (defclass rudel-infinote-directory-state-idle
   (rudel-infinote-group-state)
   ()
-  "")
+  "Idle state of the directory group.")
 
 (defmethod rudel-infinote/add-node
   ((this rudel-infinote-directory-state-idle) xml)
@@ -75,11 +75,11 @@
     nil))
 
 (defmethod rudel-infinote/sync-in
-  ((this rudel-infinote-directory-state-idle)
-   xml)
+  ((this rudel-infinote-directory-state-idle) xml)
   ""
   ;; TODO can contain child <subscribe group="group_name" method="method_name" />
-  (with-tag-attrs (id parent name type group method) xml) ;; optional? seq
+  (with-tag-attrs (id parent name type group method) xml ;; optional? seq
+    nil)
   )
 
 
@@ -92,7 +92,8 @@
 		       :type    (integer 0)
 		       :documentation
 		       ""))
-  "")
+  "Directory group state entered when the children of a node are
+explored.")
 
 (defmethod rudel-enter
   ((this rudel-infinote-directory-state-exploring) id)
@@ -141,7 +142,7 @@
 (defclass rudel-infinote-directory-state-subscribing
   (rudel-infinote-group-state)
   ()
-  "")
+  "Directory group state entered when subscribing to a session.")
 
 (defmethod rudel-enter
   ((this rudel-infinote-directory-state-subscribing) id)
@@ -175,7 +176,7 @@
 
 
 
-;;; states
+;;; Directory group states
 ;;
 
 (defvar rudel-infinote-group-directory-states
