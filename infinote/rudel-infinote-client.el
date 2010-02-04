@@ -4,7 +4,7 @@
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, infinote, client
-;; X-RCS: $Id:#
+;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
 ;;
@@ -169,22 +169,25 @@
 
 (defmethod rudel-receive ((this rudel-infinote-client-connection) xml)
   ""
-  ;; (case (xml-node-name xml)
-  ;;   ;;
-  ;;   (group
-  ;;     (let* ((name  (xml-node-attributes xml "name"))
-  ;; 	     (xml   (xml-node-children xml))
-  ;; 	     (group (rudel-get-group this name))) ;; TODO handle group not found
-  ;; 	(if group
-  ;; 	    (rudel-accept group (car xml))
-  ;; 	  (warn "Group not found: %s" name))) ;; TODO pass list or single element?
-  ;;     ;; Our own state does not change
-  ;;     nil)
+  (case (xml-node-name xml)
+    ;;
+    (group
+     (let* ((name  (xml-get-attribute xml 'name))
+	    (xml   (xml-node-children xml))
+	    (group (rudel-get-group this name)))
+       (if group
+	   (rudel-accept group (car xml))
+	 (display-warning
+	  '(rudel infinote)
+	  (format "Group not found: %s" "name")
+	  :warning))) ;; TODO pass list or single element?
+     ;; Our own state does not change
+     nil)
 
-  ;;   ;;
-  ;;   (t
-  ;;    (when (next-method-p)
-  ;;      (call-next-method)))) ;; TODO what is actually called here?
+    ;;
+    (t
+     (when (next-method-p)
+       (call-next-method)))) ;; TODO what is actually called here?
   )
 
 (defmethod rudel-disconnect ((this rudel-infinote-client-connection)) ;; TODO maybe we could automatically delegate to the transport
