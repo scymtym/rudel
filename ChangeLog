@@ -1,3 +1,28 @@
+2010-02-06  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed some comments in infinote/rudel-infinote-client.el
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-publish):
+	(rudel-infinote-client-connection::rudel-subscribe-to): fixed
+	comments
+
+2010-02-04  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Extended rudel-infinote-client-connection::rudel-receive
+	* infinote/rudel-infinote-client.el (header): fixed X-RCS field
+	(rudel-receive): enabled handler code; use `display-warning'
+	instead of `warn'
+
+	Added docstrings in infinote/rudel-infinote-group-directory.el
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-directory-state-idle): added documentation string
+	(rudel-infinote-directory-state-idle::rudel-infinote/sync-in):
+	return nil to avoid state switch
+	(rudel-infinote-directory-state-exploring): added documentation
+	string
+	(rudel-infinote-directory-state-subscribing): added documentation
+	string
+
 2010-02-02  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Initial import of infinote backend

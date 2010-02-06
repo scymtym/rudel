@@ -197,7 +197,7 @@
 
 (defmethod rudel-publish ((this rudel-infinote-client-connection) document)
   ""
-  ;; Create a new jupiter context for DOCUMENT.
+  ;; Create a new adopted context for DOCUMENT.
   ;(rudel-add-context this document)
 
   ;;<add-node
@@ -224,8 +224,8 @@
 (defmethod rudel-subscribe-to ((this rudel-infinote-client-connection)
 			       document)
   ""
-  ;; Create a new jupiter context for DOCUMENT.
-  ;(rudel-add-context this document)
+  ;; Create a new adopted context for DOCUMENT.
+  ;; TODO (rudel-add-context this document)
 
   ;;
   (let ((group (rudel-get-group this "InfDirectory"))) ;; TODO (with-group?
