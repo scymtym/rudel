@@ -220,6 +220,7 @@
 		    (type   . ,type)
 		    (name   . ,name))))))
     )
+;; TODO should be a method of the directory group
 
 (defmethod rudel-subscribe-to ((this rudel-infinote-client-connection)
 			       document)
@@ -227,20 +228,21 @@
   ;; Create a new adopted context for DOCUMENT.
   ;; TODO (rudel-add-context this document)
 
-  ;;
+  ;; Subscribe to DOCUMENT's group in the directory group and then
+  ;; join the session group associated to DOCUMENT.
+
+  ;; Announce the subscription to the server and wait until the
+  ;; subscription is finished
   (let ((group (rudel-get-group this "InfDirectory"))) ;; TODO (with-group?
-    ;; Announce the subscription to the server.
-    (with-slots (id) document
-      (rudel-switch group 'subscribing id))
+    (rudel-switch group 'subscribing (oref document :id))
+    (rudel-state-wait group '(idle) nil))
+  ;; TODO responsibility of the group?
 
-    ;; Wait until the subscription is finished
-    (rudel-state-wait group '(idle) nil "Subscribing"))
-
-  ;;
+  ;; Join the group of the document.
   (with-slots (group) document
     (rudel-switch group 'joining)
-
-    (rudel-state-wait group '(idle) nil "Joining"))
+    (rudel-state-wait group '(idle) nil))
+  ;; TODO responsibility of the document?
 
   ;; We receive a notification of our own subscription from the
   ;; server. TODO Or, do we? Consequently we do not add SELF to the
