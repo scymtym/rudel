@@ -49,6 +49,8 @@
 (require 'rudel-infinote-directory-document) ;; TODO temp
 (require 'rudel-infinote-text-document)
 
+(require 'rudel-infinote-user)
+
 (require 'adopted)
 
 
@@ -97,7 +99,7 @@
 
   ;;
   (with-slots (session) this
-    (let ((user (rudel-user "scymtym" :color "red"))) ;(plist-get info ;; TODO
+    (let ((user (rudel-infinote-user "scymtym" :color "red"))) ;(plist-get info ;; TODO
 
       (with-slots (self) session
 	(setq self user))) ;; TODO temp
