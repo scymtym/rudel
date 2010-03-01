@@ -42,7 +42,7 @@
 (require 'eieio-base) ;; for `eieio-named'
 
 (require 'rudel-state-machine)
-(require 'rudel-infinote-states)
+(require 'rudel-infinote-state)
 
 
 ;;; Class rudel-infinote-group-state
