@@ -60,7 +60,8 @@
 			     change-color
 			     chat
 			     track-subscriptions track-cursors
-			     track-selections track-viewports)))
+			     track-selections track-viewports
+			     group-undo)))
   "")
 
 (defmethod initialize-instance ((this rudel-infinote-backend) slots)
@@ -96,7 +97,7 @@ Return the connection object."
   (let* ((session    (plist-get info :session))
 	 (host       (plist-get info :host)) ;; Just as name
 	 (connection (rudel-infinote-client-connection
-		      host
+		      (format "to %s" host)
 		      :session   session
 		      :transport transport)))
 
