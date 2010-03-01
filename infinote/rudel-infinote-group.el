@@ -24,6 +24,10 @@
 
 ;;; Commentary:
 ;;
+;; This file contains the classes `rudel-infinote-group' which is a
+;; base class for other infinote group classes and
+;; `rudel-infinote-group-state' which is a base class for infinote
+;; group state classes.
 
 
 ;;; History:
