@@ -87,7 +87,7 @@
 (defmethod rudel-connect ((this rudel-infinote-backend) transport
 			  info info-callback
 			  &optional progress-callback)
-  "Connect to an obby server using the information INFO.
+  "Connect to an infinote server using the information INFO.
 Return the connection object."
   ;; Before we start, load the client functionality.
   (require 'rudel-infinote-client)
