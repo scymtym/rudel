@@ -1,6 +1,6 @@
 ;;; rudel-chat.el --- Handling of chat messages
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, chat, message
@@ -42,13 +42,17 @@
 ;;; Customization
 ;;
 
-(defcustom rudel-chat-handler-function #'rudel-chat-handle-buffer
+(defcustom rudel-chat-handler-function #'rudel-chat-handle-buffer-top
   "A function that is called when chat messages arrive."
   :group 'rudel
   :type  '(choice (const :tag "Display messages in the echo area"
 			 rudel-chat-handle-message)
-		  (const :tag "Log messages into a buffer"
-			 rudel-chat-handle-buffer)
+		  (const :tag "Log messages into a buffer, \
+inserting at the top"
+			 rudel-chat-handle-buffer-top)
+		  (const :tag "Log messages into a buffer, \
+inserting at the bottom"
+			 rudel-chat-handle-buffer-bottom)
 		  (function :tag "Other function"))
   )
 
@@ -78,13 +82,24 @@ inserted.")
 	   (rudel-chat-format-sender sender)
 	   text))
 
-(defun rudel-chat-handle-buffer (sender text)
-  "Insert SENDER and MESSAGE in a buffer."
+(defun rudel-chat-handle-buffer-top (sender text)
+  "Insert SENDER and MESSAGE at the beginning a buffer."
   (let ((buffer (or (get-buffer rudel-chat-buffer-name)
 		    (pop-to-buffer rudel-chat-buffer-name))))
     (with-current-buffer buffer
       (goto-char (point-min))
       (insert (format "%s: %s\n"
+		      (rudel-chat-format-sender sender)
+		      text))))
+  )
+
+(defun rudel-chat-handle-buffer-bottom (sender text)
+  "Insert SENDER and MESSAGE at the end of a buffer."
+  (let ((buffer (or (get-buffer rudel-chat-buffer-name)
+		    (pop-to-buffer rudel-chat-buffer-name))))
+    (with-current-buffer buffer
+      (goto-char (point-max))
+      (insert (format "\n%s: %s"
 		      (rudel-chat-format-sender sender)
 		      text))))
   )

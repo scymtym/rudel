@@ -1,4 +1,9 @@
 * Future
+** TODO Investigate use of XEP 0047 for xmpp tunnel
+   + Component :: xmpp transport
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
 ** TODO Allow users to insert comments
    + Component :: multiple components affected
    + Type :: task
