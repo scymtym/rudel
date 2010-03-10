@@ -181,7 +181,7 @@
 	   (rudel-accept group (car xml))
 	 (display-warning
 	  '(rudel infinote)
-	  (format "Group not found: %s" "name")
+	  (format "Could not find group: `%s'" name)
 	  :warning))) ;; TODO pass list or single element?
      ;; Our own state does not change
      nil)
@@ -278,7 +278,7 @@
 					    #'eq #'rudel-id))))
       (unless (or (null parent-id) parent)
 	;(signal
-	(error "could not find parent node %d" parent-id))
+	(error "Could not find parent node %d" parent-id))
 
       ;; TODO the backend should construct the appropriate document
       ;; object based on TYPE

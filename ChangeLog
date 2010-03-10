@@ -1,4 +1,85 @@
+2010-03-10  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Improved some error messages in infinote backend
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-receive):
+	(rudel-infinote-client-connection::rudel-add-document): improved
+	error messages
+
+	Added tasks concerning data queuing and new hooks to TODO
+	* TODO (Future): new task, provide additional hooks; new task,
+	always queue outgoing data first; new task, display queued data
+
+	Added draft of package diagram describing Rudel's architecture
+	* doc/architecture.svg: new draft of a package diagram;
+	architectural overview
+	* doc/architecture.png: generated
+
+	Improved some error messages in obby backend
+	* obby/rudel-obby-state.el (header): updated copyright
+	(rudel-obby-document-handler::rudel-obby/obby_document): improved
+	error message
+	* obby/rudel-obby-client.el (header): updated copyright
+	(rudel-obby-client-state-idle::rudel-obby/net6_client_part):
+	(rudel-obby-client-state-idle::rudel-obby/obby_document_remove):
+	(rudel-obby-client-state-idle::rudel-obby/obby_document/record):
+	improved error messages
+
+	Handle all object types when writing to debug streams
+	* rudel-debug.el (rudel-debug-write-to-stream): handle objects
+	types other than string and object by calling `prin1-to-string'
+
+2010-03-01  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Require rudel-infinote-state, not rudel-infinote-states
+	* infinote/rudel-infinote-group.el (require rudel-infinote-state):
+	fixed require rudel-infinote-states -> rudel-infinote-state
+
+	Infinote mock user has to be of class rudel-infinote-user
+	* infinote/rudel-infinote-client.el (require rudel-infinote-user):
+	required for mock user creation
+	(rudel-infinote-client-connection::initialize-instance): mock user
+	has to be an object of class rudel-infinote-user
+
+	Extended capability list of infinote backend
+	* infinote/rudel-infinote.el
+	(rudel-infinote-backend::capabilities): added group-undo
+	capability
+	(rudel-infinote-backend::rudel-connect): better object name for
+	the created connection object
+
+	Added "Commentary" comment to infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el (header): added a "Commentary"
+	comment
+
+	Added task to investigate XEP 0047 for xmpp tunnel to TODO
+	* TODO (Future): added task to investigate XEP 0047 for xmpp
+	tunnel
+
+	Added standard draft for XEP-0047: In-Band Bytestreams to xmpp/doc
+	* xmpp/doc/xep-0047.html: new file; standard draft for XEP-0047:
+	In-Band Bytestreams
+
+	Fixed docstring typo in infinote/rudel-infinote.el
+	* infinote/rudel-infinote.el (rudel-connect): fixed typo in
+	docstring obby -> infinote
+
+	Provide customization to append chat messages at top or bottom
+	* rudel-chat.el (header): updated copyright
+	(rudel-chat-handler-function): split "log into buffer" behavior
+	into "append at bottom" and "appending at top"
+	(rudel-chat-handle-buffer-top): renamed `rudel-chat-handle-buffer
+	-> `rudel-chat-handle-buffer-top
+	(rudel-chat-handle-buffer-bottom): new function; append chat
+	messages at bottom of target buffer
+
 2010-02-06  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed use of rudel-state-wait in infinote/rudel-infinote-client.el
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-publish): added a comment
+	(rudel-infinote-client-connection::rudel-subscribe-to): fixed use
+	of `rudel-state-wait'; added more comments
 
 	Fixed some comments in infinote/rudel-infinote-client.el
 	* infinote/rudel-infinote-client.el
