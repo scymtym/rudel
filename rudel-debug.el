@@ -193,7 +193,9 @@
 		       ((stringp data)
 			data)
 		       ((object-p data)
-			(object-print data)))))
+			(object-print data))
+		       (t
+			(prin1-to-string data)))))
     (save-excursion
       (set-buffer buffer)
       (goto-char 0)
