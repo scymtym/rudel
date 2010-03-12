@@ -622,7 +622,10 @@ failure."))
 (defmethod rudel-obby/obby_sync_final
   ((this rudel-obby-client-state-session-synching))
   "Handle obby 'sync_final' message."
-  'idle)
+  (with-slots (have-self) this
+    (if have-self
+	'idle
+      'we-finalized)))
 
 (defmethod object-print ((this rudel-obby-client-state-session-synching)
 			 &rest strings)
