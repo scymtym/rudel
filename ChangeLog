@@ -1,3 +1,39 @@
+2010-03-12  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added modes for auto-mode-setting, -publishing and -subscribing
+	* rudel-mode.el (header): updated copyright
+	(rudel-auto-publish-exclude-regexp): new customization option;
+	control which buffers are excluded from auto-publishing
+	(rudel-auto-publish-predicate): new customization option;
+	function called to decide whether to auto-publish buffers
+	(rudel-auto-subscribe-predicate): new customization option;
+	function called to decide whether to auto-subscribe to documents
+	(rudel-auto-adjust-mode): new function; automatically adjust major
+	mode of a buffer
+	(global-rudel-auto-choose-mode-minor-mode): new global minor mode;
+	adjust major mode of buffers after subscribing
+	(rudel-auto-publish-not-exluded-p): new function; predicate which
+	determines whether a buffer should be excluded from
+	auto-publishing
+	(rudel-auto-maybe-publish-buffer): new function; publish buffer if
+	appropriate
+	(rudel-publish-all-buffers): new function; publish all appropriate
+	buffers
+	(global-rudel-auto-publish-minor-mode): new global minor mode;
+	auto-publish appropriate buffers
+	(rudel-auto-subscribe-not-excluded-p): new function; predicate
+	which determines whether a document should be subscribed
+	(rudel-auto-maybe-subscribe-to-document): new function; subscribe
+	to a document if appropriate
+	(rudel-subscribe-to-all-documents): new function; subscribe to all
+	appropriate documents
+	(global-rudel-auto-subscribe-minor-mode): new global minor modes;
+	subscribe to all appropriate documents as they become available
+	(rudel-minor-menu): added entries for
+	`global-rudel-auto-choose-mode-minor-mode',
+	`global-rudel-auto-publish-minor-mode' and
+	`global-rudel-auto-subscribe-minor-mode'
+
 2010-03-10  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Improved some error messages in infinote backend
