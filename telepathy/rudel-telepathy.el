@@ -1,6 +1,6 @@
 ;;; rudel-telepathy.el --- A telepathy backend for Rudel
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, telepathy, backend
@@ -19,19 +19,19 @@
 ;; General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with rudel. If not, see <http://www.gnu.org/licenses>.
+;; along with Rudel. If not, see <http://www.gnu.org/licenses>.
 
 
 ;;; Commentary:
 ;;
 ;; This file contains a Rudel backend which realizes session
 ;; initiation and transport of Rudel data through freedesktop's
-;; Telepathy framework.
+;; Telepathy framework (http://telepathy.freedesktop.org).
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -57,7 +57,7 @@
   ((capabilities :initform '()))
   "Class rudel-telepathy-backend ")
 
-(defmethod initialize-instance ((this rudel-telepathy-backend) &rest slots)
+(defmethod initialize-instance ((this rudel-telepathy-backend) slots)
   "Initialize slots of THIS according to SLOTS."
   (when (next-method-p)
     (call-next-method))

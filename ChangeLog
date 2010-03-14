@@ -1,3 +1,31 @@
+2010-03-14  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Project files for telepathy backend
+	* Project.ede (target autoloads): added telepathy
+	* telepathy/Project.ede: new file; project file for telepathy
+	sub-directory
+	* telepathy/rudel-telepathy.el (header): updated copyright;
+	updated version
+	(rudel-telepathy-backend::initialize-instance): removed &rest from
+	slots argument
+	* rudel-compile.el (top level autoloads):
+	(top level): added telepathy sub-directory
+
+	Removed &rest from initialize-instance in obby/rudel-obby.el
+	* obby/rudel-obby.el (rudel-obby-backend::initialize-instance):
+	removed &rest from slots arguments
+
+2010-03-12  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Ensure self user is present in after sync in obby backend
+	* obby/rudel-obby-client.el (rudel-obby/obby_sync_final): switch
+	to we-finalized when the self user is missing
+
+	Updated copyright, year and version in reference card
+	* doc/card.tex (header): updated version and copyright
+        (constants): updated version and copyright
+	* doc/card.pdf: regenerated
+
 2010-03-10  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Improved some error messages in infinote backend
