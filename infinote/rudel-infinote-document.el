@@ -26,7 +26,7 @@
 ;;
 ;; This file contains the `rudel-infinote-document' class which is the
 ;; base class for different document classes used in the infinote
-;; backend.
+;; backend. (See rudel-infinote-node.el for an overview)
 
 
 ;;; History:
@@ -39,28 +39,19 @@
 
 (require 'eieio)
 
+(require 'rudel-infinote-node)
+
 
 ;;; Class rudel-infinote-document
 ;;
 
-(defclass rudel-infinote-document (rudel-document)
-  ((id       :initarg  :id
-	     :type     (integer 0)
-	     :accessor rudel-id
-	     :documentation
-	     "")
-   (parent   :initarg  :parent
-	     :type     (or null rudel-infinote-document)
-	     :documentation
-	     "")
-   (group    :initarg  :group
-	     ;:type    (or null rudel-infinote-group)
-	     :documentation
-	     ""))
+(defclass rudel-infinote-document (rudel-document
+				   rudel-infinote-node)
+  ()
   "")
 
 (defmethod rudel-unique-name ((this rudel-infinote-document))
-  "TODO"
+  "Return a unique name for THIS by forming a path from the root node."
   (with-slots (parent) this
     (concat
      (when parent

@@ -46,7 +46,7 @@
 (require 'rudel-infinote-group-directory)
 (require 'rudel-infinote-group-document)
 
-(require 'rudel-infinote-directory-document) ;; TODO temp
+(require 'rudel-infinote-node-directory) ;; TODO temp
 (require 'rudel-infinote-text-document)
 
 (require 'rudel-infinote-user)
@@ -110,9 +110,9 @@
 		  :publisher "you"))) ;; TODO use correct publisher name
       (rudel-add-group this group)
 
-      (require 'rudel-infinote-directory-document)
+      (require 'rudel-infinote-node-directory)
       (rudel-add-document session
-			  (rudel-infinote-directory-document
+			  (rudel-infinote-node-directory
 			   "root"
 			   :id     0
 			   :parent nil
@@ -295,7 +295,7 @@
 
 	   ;;
 	   ((string= type "InfSubdirectory")
-	    (cons (rudel-infinote-directory-document
+	    (cons (rudel-infinote-node-directory
 		   name
 		   :id     id
 		   :parent parent
