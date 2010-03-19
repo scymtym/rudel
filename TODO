@@ -1,5 +1,21 @@
 * Future
+** TODO Use auth-source or secrets.el for passwords
+   + Components ::
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+** TODO Set buffer filename
+   + Components ::
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   When subscribing to a document set the buffer filename of the
+   attached buffer
 ** TODO Provide additional hooks
+   + Components ::
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
    Hooks for
    + auth failure
    + username in use
