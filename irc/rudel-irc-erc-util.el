@@ -50,7 +50,8 @@
   ((buffer          :initarg  :buffer
 		    :type     buffer
 		    :documentation
-		    "")
+		    "ERC buffer the associated connection of
+which should be used to send and receive messages.")
    (peer-name       :initarg  :peer-name
 		    :type     (or null string)
 		    :initform nil
@@ -124,6 +125,14 @@ receiving messages.")
 
 ;;; Utility functions
 ;;
+
+(defun rudel-irc-erc-prin1-and-base64-encode-string (object)
+  "Return base64-encoded print representation of OBJECT."
+  (base64-encode-string (prin1-to-string object) t))
+
+(defun rudel-irc-erc-read-from-base64-encoded-string (string)
+  "Decode base64-encoded STRING, read and return object."
+  (car (read-from-string (base64-decode-string string))))
 
 (defun rudel-irc-erc-parse-response (response)
   ""
