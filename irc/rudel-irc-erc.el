@@ -165,15 +165,16 @@
 
 (defmethod rudel-handle ((this rudel-irc-erc-listener) sender data)
   ""
-  (cond
+  (case (intern-soft (downcase data))
    ;; Handle CONNECT messages.
-   ((string= data "CONNECT")
-    ;; TODO (rudel-send this "OK" "RUDEL")
-    (with-slots (buffer ctcp-type) this
+   (connect
+    (with-slots (buffer self-name ctcp-type dispatch) this
       (with-current-buffer buffer
-	(erc-cmd-CTCP sender ctcp-type "OK" "RUDEL")))
+	(erc-cmd-CTCP sender ctcp-type "OK" "RUDEL"))
 
-    (with-slots (buffer self-name dispatch) this
+      ;; TODO We should wait for another reply from the client
+      (sleep-for 1.0)
+
       (when dispatch
 	(let ((transport (rudel-irc-erc-transport
 			  "bla"
@@ -192,6 +193,7 @@
 
 	  (funcall dispatch transport)))))
 
+   ;; Do not handle other messages; Just display a warning.
    (t
     (display-warning
      '(rudel irc)
@@ -232,17 +234,21 @@ and :port."
   ;; Extract information from INFO and create the socket.
   (let ((buffer    (plist-get info :buffer))
 	(peer-name (plist-get info :peer-name))
+	(key)
 	(transport))
 
     ;;
     (with-current-buffer buffer
       (erc-cmd-CTCP peer-name "RUDEL-SETUP" "CONNECT"))
 
+    (setq key (rudel-wait-for-reply this progress-callback))
+
+    ;;
     (setq transport (rudel-irc-erc-transport
 		     "bla" ;; TODO
 		     :buffer    buffer
 		     :peer-name peer-name
-		     :ctcp-type "RUDEL"))
+		     :ctcp-type key))
 
     ;; Create the transport
     (rudel-transport-make-filter-stack
@@ -272,6 +278,28 @@ INFO has to be a property list containing the key :port."
     ;; Return the listener.
     listener)
   )
+
+(defmethod rudel-wait-for-reply ((this rudel-irc-erc-backend)
+				 &optional progress-callback)
+  "Wait for reply of client of THIS."
+  (let* ((key     nil)
+	 (handler (rudel-irc-erc-make-handler
+		      (data sender nil nil "RUDEL-SETUP")
+		    (when (and (> (length data) 3)
+			       (string= (substring data 0 2) "OK"))
+		      (setq key (substring data 3))))))
+
+    ;; Install HANDLER into the CTCP hook for RUDEL-SETUP messages,
+    ;; wait until an "OK" message arrives, then remove HANDLER.
+    (add-hook 'erc-ctcp-query-RUDEL-SETUP-hook handler)
+    (while (not key)
+      (when progress-callback
+	(funcall progress-callback (cons 'waiting-for-reply nil)))
+      (sleep-for 0.05))
+    (remove-hook 'erc-ctcp-query-RUDEL-SETUP-hook handler)
+
+    ;; Return KEY received from the peer.
+    key))
 
 
 ;;; Autoloading
