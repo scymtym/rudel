@@ -1,4 +1,153 @@
+2010-03-18  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added node base class rudel-infinote-node to infinote backend
+	* infinote/Project.ede (target infinote): added
+	rudel-infinote-node.el; renamed
+	rudel-infinote-directory-document.el to
+	rudel-infinote-node-directory.el
+	* infinote/rudel-infinote-node.el: new file; contains
+	`rudel-infinote-node' class which is the base class for all node
+	classes
+	* infinote/rudel-infinote-node-directory.el: renamed
+	`rudel-infinote-directory-document.el' ->
+	`rudel-infinote-node-directory.el'
+	(header): bumped version to 0.2
+	(rudel-infinote-directory-node): renamed
+	`rudel-infinote-directory-document' ->
+	`rudel-infinote-node'-directory; added documentation string
+	(rudel-infinote-node-directory::child-cache): added documentation
+	string
+	(provide rudel-infinote-node-directory): changed
+	rudel-infinote-directory-document -> rudel-infinote-node-directory
+	* infinote/rudel-infinote-document.el (rudel-infinote-document):
+	now derived from `rudel-document' and `rudel-infinote-node'
+	(rudel-infinote-document::id):
+	(rudel-infinote-document::parent):
+	(rudel-infinote-document::group): moved into `rudel-infinote-node'
+	(rudel-infinote-document::rudel-unique-name): added documentation
+	string
+	* infinote/rudel-infinote-client.el
+	(require rudel-infinote-node-directory): changed
+	rudel-infinote-directory-document -> rudel-infinote-node-directory
+	(rudel-infinote-client-connection::initialize-instance):
+	(rudel-infinote-client-connection::rudel-add-document):
+	instantiate `rudel-infinote-node-directory' instead of
+	`rudel-infinote-directory-document'
+
+	Removed invalid files from infinote/Project.ede
+	* infinote/Project.ede (target infinote): removed invalid files
+	rudel-infinote-server.el and rudel-infinote-document-group.el
+
+2010-03-14  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Project files for telepathy backend
+	* Project.ede (target autoloads): added telepathy
+	* telepathy/Project.ede: new file; project file for telepathy
+	sub-directory
+	* telepathy/rudel-telepathy.el (header): updated copyright;
+	updated version
+	(rudel-telepathy-backend::initialize-instance): removed &rest from
+	slots argument
+	* rudel-compile.el (top level autoloads):
+	(top level): added telepathy sub-directory
+
+	Removed &rest from initialize-instance in obby/rudel-obby.el
+	* obby/rudel-obby.el (rudel-obby-backend::initialize-instance):
+	removed &rest from slots arguments
+
+2010-03-12  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Ensure self user is present in after sync in obby backend
+	* obby/rudel-obby-client.el (rudel-obby/obby_sync_final): switch
+	to we-finalized when the self user is missing
+
+	Updated copyright, year and version in reference card
+	* doc/card.tex (header): updated version and copyright
+        (constants): updated version and copyright
+	* doc/card.pdf: regenerated
+
+2010-03-10  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Improved some error messages in infinote backend
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-receive):
+	(rudel-infinote-client-connection::rudel-add-document): improved
+	error messages
+
+	Added tasks concerning data queuing and new hooks to TODO
+	* TODO (Future): new task, provide additional hooks; new task,
+	always queue outgoing data first; new task, display queued data
+
+	Added draft of package diagram describing Rudel's architecture
+	* doc/architecture.svg: new draft of a package diagram;
+	architectural overview
+	* doc/architecture.png: generated
+
+	Improved some error messages in obby backend
+	* obby/rudel-obby-state.el (header): updated copyright
+	(rudel-obby-document-handler::rudel-obby/obby_document): improved
+	error message
+	* obby/rudel-obby-client.el (header): updated copyright
+	(rudel-obby-client-state-idle::rudel-obby/net6_client_part):
+	(rudel-obby-client-state-idle::rudel-obby/obby_document_remove):
+	(rudel-obby-client-state-idle::rudel-obby/obby_document/record):
+	improved error messages
+
+	Handle all object types when writing to debug streams
+	* rudel-debug.el (rudel-debug-write-to-stream): handle objects
+	types other than string and object by calling `prin1-to-string'
+
+2010-03-01  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Require rudel-infinote-state, not rudel-infinote-states
+	* infinote/rudel-infinote-group.el (require rudel-infinote-state):
+	fixed require rudel-infinote-states -> rudel-infinote-state
+
+	Infinote mock user has to be of class rudel-infinote-user
+	* infinote/rudel-infinote-client.el (require rudel-infinote-user):
+	required for mock user creation
+	(rudel-infinote-client-connection::initialize-instance): mock user
+	has to be an object of class rudel-infinote-user
+
+	Extended capability list of infinote backend
+	* infinote/rudel-infinote.el
+	(rudel-infinote-backend::capabilities): added group-undo
+	capability
+	(rudel-infinote-backend::rudel-connect): better object name for
+	the created connection object
+
+	Added "Commentary" comment to infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el (header): added a "Commentary"
+	comment
+
+	Added task to investigate XEP 0047 for xmpp tunnel to TODO
+	* TODO (Future): added task to investigate XEP 0047 for xmpp
+	tunnel
+
+	Added standard draft for XEP-0047: In-Band Bytestreams to xmpp/doc
+	* xmpp/doc/xep-0047.html: new file; standard draft for XEP-0047:
+	In-Band Bytestreams
+
+	Fixed docstring typo in infinote/rudel-infinote.el
+	* infinote/rudel-infinote.el (rudel-connect): fixed typo in
+	docstring obby -> infinote
+
+	Provide customization to append chat messages at top or bottom
+	* rudel-chat.el (header): updated copyright
+	(rudel-chat-handler-function): split "log into buffer" behavior
+	into "append at bottom" and "appending at top"
+	(rudel-chat-handle-buffer-top): renamed `rudel-chat-handle-buffer
+	-> `rudel-chat-handle-buffer-top
+	(rudel-chat-handle-buffer-bottom): new function; append chat
+	messages at bottom of target buffer
+
 2010-02-06  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed use of rudel-state-wait in infinote/rudel-infinote-client.el
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-publish): added a comment
+	(rudel-infinote-client-connection::rudel-subscribe-to): fixed use
+	of `rudel-state-wait'; added more comments
 
 	Fixed some comments in infinote/rudel-infinote-client.el
 	* infinote/rudel-infinote-client.el

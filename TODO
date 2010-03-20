@@ -1,4 +1,43 @@
 * Future
+** TODO Use auth-source or secrets.el for passwords
+   + Components ::
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+** TODO Set buffer filename
+   + Components ::
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   When subscribing to a document set the buffer filename of the
+   attached buffer
+** TODO Provide additional hooks
+   + Components ::
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   Hooks for
+   + auth failure
+   + username in use
+   + color in use
+   use cases include choosing alternate names or colors automatically
+** TODO Always queue outgoing data
+   + Components :: transport and protocol backends
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   Large amounts of outgoing data freeze emacs (well, there is a
+   progress reporter). Queue this data and using a timer for the
+   sending would solve this problem
+** TODO Add a queue monitor minor mode
+   + Components :: user interface
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   Queuing data before sending it has the disadvantage of allowing the
+   queue to grow arbitrarily large if more outgoing data is generated
+   than the link can handle. Therefore, there should be some
+   indication of the amount of queued data.
 ** TODO Investigate use of XEP 0047 for xmpp tunnel
    + Component :: xmpp transport
    + Type :: task

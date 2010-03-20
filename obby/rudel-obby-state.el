@@ -1,6 +1,6 @@
 ;;; rudel-obby-state.el --- Base class for states used in the obby backend
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, obby, state machine
@@ -166,7 +166,7 @@ obby 'document' messages."
 	(progn
 	  (display-warning
 	   '(rudel obby)
-	   (format "Document not found: %s" doc-id)
+	   (format "Could not find document: `%s'" doc-id)
 	   :debug)
 	  nil))))
   )

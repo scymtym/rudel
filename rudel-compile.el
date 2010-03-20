@@ -59,7 +59,7 @@
 		     (concat rudel-dir subdir))
 		   '("."
 		     "jupiter" "adopted"
-		     "socket" "tls" "xmpp" "irc"
+		     "socket" "tls" "xmpp" "telepathy" "irc"
 		     "obby" "infinote"
 		     "zeroconf"))))
     ;; Adjust load path. We need to have all Rudel subdirectories on
@@ -74,7 +74,7 @@
 		     (concat rudel-dir subdir))
 		   '("."
 		     "jupiter" "adopted"
-		     "socket" "tls" "xmpp" "irc"
+		     "socket" "tls" "xmpp" "telepathy" "irc"
 		     "obby" "infinote"
 		     "zeroconf")))
        (loaddefs  (concat rudel-dir "rudel-loaddefs.el")))

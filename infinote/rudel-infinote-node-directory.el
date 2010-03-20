@@ -1,4 +1,4 @@
-;;; rudel-infinote-directory-document.el ---
+;;; rudel-infinote-node-directory.el --- Infinote directory node class
 ;;
 ;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
@@ -28,32 +28,37 @@
 
 ;;; History:
 ;;
+;; 0.2 - Renamed from rudel-infinote-directory-document.el
+;;
 ;; 0.1 - Initial version
 
 
 ;;; Code:
 ;;
 
-(require 'rudel-infinote-document)
+(require 'rudel-infinote-node)
 
 
-;;; Class rudel-infinote-directory-document
+;;; Class rudel-infinote-node-directory
 ;;
 
-(defclass rudel-infinote-directory-document (rudel-infinote-document)
-  ((child-cache :initarg :child-cache
+(defclass rudel-infinote-node-directory (rudel-infinote-node)
+  (;(group       :type rudel-infinote-group-directory-child)
+   (child-cache :initarg :child-cache
 		:type    list
 		:documentation
-		""))
-  "")
+		"A list of child nodes. Backs the virtual
+slot :children. The value is computed on access."))
+  "Objects of this class represent directory (inner) nodes in the
+Infinote tree.")
 
-(defmethod rudel-add-child ((this rudel-infinote-directory-document)
+(defmethod rudel-add-child ((this rudel-infinote-node-directory)
 			    document)
   ""
   (with-slots (child-cache) this
     (push document child-cache))) ;; TODO object-add-to-list or add-to-list?
 
-(defmethod slot-missing ((this rudel-infinote-directory-document)
+(defmethod slot-missing ((this rudel-infinote-node-directory)
 			 slot-name operation &optional new-value) ;; TODO why not use slot-unbound?
   "Simulate slot :children. The value of the slot is fetched as
 necessary."
@@ -88,5 +93,5 @@ necessary."
     (call-next-method)))
   )
 
-(provide 'rudel-infinote-directory-document)
-;;; rudel-infinote-directory-document.el ends here
+(provide 'rudel-infinote-node-directory)
+;;; rudel-infinote-node-directory.el ends here

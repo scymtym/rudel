@@ -291,7 +291,7 @@ failure."))
 		(object-run-hook-with-args user 'change-hook))
 	    (display-warning
 	     '(rudel obby)
-	     (format "Cannot find user for client id: %d"
+	     (format "Could find user for client id: %d"
 		     client-id)
 	     :warning))))))
   nil)
@@ -356,7 +356,7 @@ failure."))
 		  (message "Document removed: %s" name)))
 	    (display-warning
 	     '(rudel obby)
-	     (format "Document not found: %s" doc-id)
+	     (format "Could not find document: `%s'" doc-id)
 	     :warning))))))
   nil)
 
@@ -430,7 +430,7 @@ failure."))
 	(progn
 	  (display-warning
 	   '(rudel obby)
-	   (format "User not found: %d" user-id)
+	   (format "Could not find User: `%d'" user-id)
 	   :warning)
 	  nil))))
   )
@@ -622,7 +622,10 @@ failure."))
 (defmethod rudel-obby/obby_sync_final
   ((this rudel-obby-client-state-session-synching))
   "Handle obby 'sync_final' message."
-  'idle)
+  (with-slots (have-self) this
+    (if have-self
+	'idle
+      'we-finalized)))
 
 (defmethod object-print ((this rudel-obby-client-state-session-synching)
 			 &rest strings)

@@ -88,7 +88,7 @@ multiple chunks.")
   "Main class of the Rudel obby backend. Creates obby client
 connections and creates obby servers.")
 
-(defmethod initialize-instance ((this rudel-obby-backend) &rest slots)
+(defmethod initialize-instance ((this rudel-obby-backend) slots)
   "Initialize slots of THIS with SLOTS."
   (when (next-method-p)
     (call-next-method))
@@ -148,7 +148,7 @@ Return the connection object."
 
   ;; Create the network process
   (let* ((session    (plist-get info :session))
-	 (host       (plist-get info :host))
+	 (host       (plist-get info :host)) ;; Just as name
 	 (encryption (plist-get info :encryption))
 	 (connection (rudel-obby-connection
 		      host
