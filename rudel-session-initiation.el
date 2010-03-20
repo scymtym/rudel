@@ -358,17 +358,17 @@ configured using customization.")
 			(if (stringp value)
 			    (intern value)
 			  value))))
-	  (push backend adjusted-info)
-	  (push key     adjusted-info)))
+	  (push key     adjusted-info)
+	  (push backend adjusted-info)))
        ;; Keep other arguments unmodified.
        (t
-	(push value adjusted-info)
-	(push key   adjusted-info)))
+	(push key   adjusted-info)
+	(push value adjusted-info)))
       ;; Advance to next key value pair.
       (setq key   (car  rest)
 	    value (cadr rest)))
     ;; Return the transformed session information.
-    adjusted-info)
+    (nreverse adjusted-info))
   )
 
 (provide 'rudel-session-initiation)
