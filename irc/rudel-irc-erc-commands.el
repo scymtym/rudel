@@ -24,9 +24,18 @@
 
 ;;; Commentary:
 ;;
-;; Provided commands
-;; + /rudel host
-;; + /rudel join NICK
+;; This library provides the following ERC commands:
+;;
+;; + /rudel host PROTOCOL (KEYWORD VALUE)*
+;;   Keyword arguments are optional here and can be omitted entirely
+;;
+;; + /rudel join SESSION (KEYWORD VALUE)*
+;;   Keyword arguments are optional here and can be omitted entirely
+;;
+;; + /rudel join-manual NICK PROTOCOL (KEYWORD VALUE)*
+;;   keyword arguments that should always work are
+;;   + :username
+;;   + :color
 
 
 ;;; History:
