@@ -24,8 +24,17 @@
 
 ;;; Commentary:
 ;;
-;; This contains an IRC transport backend for Rudel that uses ERC to
-;; do the heavy lifting.
+;; This file contains an IRC transport backend for Rudel (an
+;; implementation of the `rudel-transport-backend' interface) that
+;; transmits data via IRC connections and uses ERC to do the heavy
+;; lifting. All data is exchanged via CTCP messages of several
+;; different types:
+;;
+;; Category              | CTCP type   | implemented in file
+;; ----------------------+-------------+------------------------------
+;; connection management | RUDEL-SETUP | rudel-irc-erc.el
+;; data transport        | RUDEL       | rudel-irc-erc.el
+;; session management    | RUDEL-INIT  | rudel-irc-erc-session-initiation.el
 
 
 ;;; History:
@@ -136,10 +145,10 @@
 (defclass rudel-irc-erc-listener (rudel-listener
 				  rudel-irc-erc-base)
   ((ctcp-type :initform "RUDEL-SETUP")
-   (dispatch  :initarg :dispatch
-	      :type    (or null function)
-	      :reader  rudel-dispatcher
-	      :writer  rudel-set-dispatcher
+   (dispatch  :initarg  :dispatch
+	      :type     (or null function)
+	      :reader   rudel-dispatcher
+	      :writer   rudel-set-dispatcher
 	      :documentation
 	      ""))
   "")
@@ -219,6 +228,19 @@ The transport backend is a factory for IRC-ERC transport objects.")
 
   ;; Set version slot.
   (oset this :version rudel-irc-erc-transport-version))
+
+(defmethod rudel-ask-connect-info ((this rudel-irc-erc-backend)
+				   &optional info)
+  "Augment INFO by reading a buffer and a peer name if necessary."
+  (let ((buffer    (or (plist-get info :buffer)
+		       (get-buffer (read-buffer "ERC buffer: " nil t))))
+	(peer-name (or (plist-get info :peer-name)
+		       (read-string "Peer: "))))
+    (append
+     (list
+      :buffer    buffer
+      :peer-name peer-name)
+     info)))
 
 (defmethod rudel-make-connection ((this rudel-irc-erc-backend)
 				  info info-callback
