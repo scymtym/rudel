@@ -142,20 +142,18 @@
   ;; Set version slot.
   (oset this :version '(0 1)))
 
-(defmethod initialize-instance :after ((this rudel-irc-erc-session-initiation) slots)
-  ""
+(defmethod initialize-instance :after
+  ((this rudel-irc-erc-session-initiation) slots)
+  "Install handlers which send notifications to THIS."
+  ;; Add a handler to `erc-join-hook' that installs a
+  ;; `rudel-irc-erc-session-initiation-handler' for the joined
+  ;; channel.
   (lexical-let ((this1 this))
     (add-hook
-     'erc-after-connect
-     (lambda (server nick) ;; TODO proper function
-       (with-slots (handlers) this1
-	 (push
-	  (rudel-irc-erc-session-initiation-handler
-	   (format "server %s" server)
-	   :buffer    (current-buffer)
-	   :peer-name "rudel-server" ;; TODO figure this out
-	   :master    this1)
-	  handlers)))))
+     'erc-join-hook
+     (lambda ()
+       (rudel-add-handler
+	this1 erc-session-server (erc-server-buffer) (buffer-name)))))
   )
 
 (defmethod rudel-discover ((this rudel-irc-erc-session-initiation))
@@ -179,16 +177,33 @@
   (dolist (handler (oref this :handlers))
     (rudel-withdraw handler info)))
 
+(defmethod rudel-add-handler ((this rudel-irc-erc-session-initiation)
+			      server buffer target)
+  "Add a handler whose message go to TARGET to BUFFER."
+  (with-slots (handlers) this
+    (push
+     (rudel-irc-erc-session-initiation-handler
+      (format "server %s" server)
+      :buffer    buffer
+      :peer-name target
+      :master    this)
+     handlers))
+  )
+
 (defmethod rudel-add-session ((this rudel-irc-erc-session-initiation)
 			      info)
-  ""
+  "TODO
+This function is called by
+`rudel-irc-erc-session-initiation-handler' objects."
   (with-slots (sessions) this
     (let ((info (rudel-session-initiation-adjust-info info)))
       (push info sessions))))
 
 (defmethod rudel-remove-session ((this rudel-irc-erc-session-initiation)
 				 info)
-  ""
+  "TODO
+This function is called by
+`rudel-irc-erc-session-initiation-handler' objects."
   (with-slots (sessions) this
     (setq sessions (remove info sessions))))
 
