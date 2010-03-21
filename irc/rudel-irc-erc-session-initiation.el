@@ -193,18 +193,6 @@
     (setq sessions (remove info sessions))))
 
 
-;;; Utility functions
-;;
-
-(defun rudel-irc-erc-prin1-and-base64-encode-string (object)
-  ""
-  (base64-encode-string (prin1-to-string object)))
-
-(defun rudel-irc-erc-read-from-base64-encoded-string (string)
-  ""
-  (car (read-from-string (base64-decode-string string))))
-
-
 ;;; Autoloading
 ;;
 
