@@ -49,8 +49,8 @@
 (defclass rudel-irc-erc-session-initiation-handler
   (rudel-irc-erc-base)
   ((ctcp-type :initform "RUDEL-INIT")
-   (master    :initarg :master
-	      :type    object
+   (master    :initarg  :master
+	      :type     object
 	      :documentation
 	      ""))
   "")
@@ -58,6 +58,7 @@
 (defmethod initialize-instance
   ((this rudel-irc-erc-session-initiation-handler) slots)
   ""
+  ;; Initialize slots of THIS.
   (when (next-method-p)
     (call-next-method))
 
@@ -174,7 +175,8 @@
 		 "TODO"))
   "TODO")
 
-(defmethod initialize-instance ((this rudel-irc-erc-session-initiation) slots)
+(defmethod initialize-instance ((this rudel-irc-erc-session-initiation)
+				slots)
   ""
   ;; Initialize slots of THIS.
   (when (next-method-p)
@@ -186,6 +188,12 @@
 (defmethod initialize-instance :after
   ((this rudel-irc-erc-session-initiation) slots)
   "Install handlers which send notifications to THIS."
+  ;; Add handlers for all existing channels.
+  (dolist (channel (erc-channel-list nil))
+    (with-current-buffer channel
+      (rudel-add-handler
+       this erc-session-server (erc-server-buffer) (buffer-name))))
+
   ;; Add a handler to `erc-join-hook' that installs a
   ;; `rudel-irc-erc-session-initiation-handler' for the joined
   ;; channel.
@@ -195,6 +203,8 @@
      (lambda ()
        (rudel-add-handler
 	this1 erc-session-server (erc-server-buffer) (buffer-name)))))
+
+  ;; TODO remove handler when parting
   )
 
 (defmethod rudel-discover ((this rudel-irc-erc-session-initiation))
@@ -204,10 +214,11 @@
 (defmethod rudel-advertise ((this rudel-irc-erc-session-initiation)
 			    info)
   ""
-
+  ;; Ask all handlers to advertise the session described by INFO.
   (dolist (handler (oref this :handlers))
     (rudel-advertise handler info))
 
+  ;; Send an action message announcing the session.
   (erc-send-action
    (erc-default-target)
    (format "announces Rudel session %s" (plist-get info :name))))
@@ -215,6 +226,7 @@
 (defmethod rudel-withdraw ((this rudel-irc-erc-session-initiation)
 			    info)
   ""
+  ;; Ask all handlers to withdraw the session described by INFO.
   (dolist (handler (oref this :handlers))
     (rudel-withdraw handler info)))
 
@@ -233,7 +245,7 @@
 
 (defmethod rudel-add-session ((this rudel-irc-erc-session-initiation)
 			      info)
-  "TODO
+  "Add newly discovered session INFO to session list of THIS.
 This function is called by
 `rudel-irc-erc-session-initiation-handler' objects."
   (with-slots (sessions) this
@@ -242,7 +254,7 @@ This function is called by
 
 (defmethod rudel-remove-session ((this rudel-irc-erc-session-initiation)
 				 info)
-  "TODO
+  "Remove session INFO from session list of THIS.
 This function is called by
 `rudel-irc-erc-session-initiation-handler' objects."
   (with-slots (sessions) this
