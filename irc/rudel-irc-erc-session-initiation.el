@@ -71,45 +71,86 @@
 		(let* ((index   (position ?\s  data))
 		       (command (substring data 0 index))
 		       (args    (substring data (+ index 1))))
-		  (rudel-handle this1 command args))))))
+		  (rudel-handle this1 sender command args))))))
   )
 
 (defmethod rudel-advertise ((this rudel-irc-erc-session-initiation-handler)
 			    info)
   ""
-  (rudel-send this "ADVERTISE" (rudel-irc-erc-prin1-and-base64-encode-string info)))
+  (rudel-send
+   this
+   "ADVERTISE" (rudel-irc-erc-prin1-and-base64-encode-string info)))
 
 (defmethod rudel-withdraw ((this rudel-irc-erc-session-initiation-handler)
 			   info)
   ""
-  (rudel-send this "WITHDRAW" (rudel-irc-erc-prin1-and-base64-encode-string info)))
+  (rudel-send
+   this
+   "WITHDRAW" (rudel-irc-erc-prin1-and-base64-encode-string info)))
 
-(defmethod rudel-handle ((this rudel-irc-erc-session-initiation-handler) type
-			 &rest args)
+(defmethod rudel-handle ((this rudel-irc-erc-session-initiation-handler)
+			 sender type &rest args)
   ""
+  (case (intern-soft (downcase type))
+    ;; Handle ADVERTISE message.
+    (advertise
+     (rudel-handle-advertise this sender (car args))
+     t)
+
+    ;; Handle WITHDRAW message.
+    (withdraw
+     (rudel-handle-withdraw this sender (car args))
+     t)
+
+    ;; Do not handle other messages.
+    (t
+     nil))
+  )
+
+(defmethod rudel-handle-advertise
+  ((this rudel-irc-erc-session-initiation-handler) sender data)
+  "Add SENDER's session described by DATA to session list."
+  (with-slots (buffer master) this
+    (let ((info (condition-case error
+		    (rudel-irc-erc-read-from-base64-encoded-string data)
+		  (error
+		   (display-warning
+		    '(rudel irc)
+		    (format
+		     "Could not decode advertised session info: %s: %s "
+		     (car error) (cdr error))
+		    :warning)
+		   nil))))
+      (when info
+	(rudel-add-session
+	 master
+	 (append (list
+		  :name              (format
+				      "IRC session \"%s\" by \"%s\""
+				      (plist-get info :name)
+				      sender)
+		  :peer-name         sender
+		  :buffer            buffer
+		  :transport-backend 'irc-erc)
+		 info))))) ;; TODO handle buffer properly
+  )
+
+(defmethod rudel-handle-withdraw
+  ((this rudel-irc-erc-session-initiation-handler) sender data)
+  "Remove SENDER's session described by DATA from session list."
   (with-slots (master) this
-    (case (intern-soft (downcase type))
-      ;; Handle ADVERTISE message.
-      (advertise
-       ;; TODO make a method for this
-       (let ((info (rudel-irc-erc-read-from-base64-encoded-string
-		    (car args))))
-	 (rudel-add-session
-	  master (append (list :buffer            (current-buffer)
-			       :transport-backend 'irc-erc)
-			 info))) ;; TODO handle buffer properly
-       t)
-
-      ;; Handle WITHDRAW message.
-      (withdraw
-       (let ((info (rudel-irc-erc-read-from-base64-encoded-string
-		    (car args))))
-	 (rudel-remove-session master info))
-       t)
-
-      ;; Do not handle other messages.
-      (t
-       nil)))
+    (let ((info (condition-case error
+		    (rudel-irc-erc-read-from-base64-encoded-string data)
+		  (error
+		   (display-warning
+		    '(rudel irc)
+		    (format
+		     "Could not decode withdrawn session info: %s: %s "
+		     (car error) (cdr error))
+		    :warning)
+		   nil))))
+      (when info
+	(rudel-remove-session master info))))
   )
 
 
