@@ -1,4 +1,13 @@
 * Future
+** TODO Allow multiple transport listeners per server session
+   + Components :: multiple components affected
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   For protocol backends that work with multiple transports, it would
+   be convenient to create a single server with multiple transport
+   listeners. For example, This would be useful to create an obby over
+   IRC server with an additional TCP listener as a LAN gateway.
 ** TODO Use auth-source or secrets.el for passwords
    + Components ::
    + Type :: task

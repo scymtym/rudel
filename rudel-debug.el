@@ -87,6 +87,13 @@
 ;;; Data debug functions
 ;;
 
+(defun rudel-adebug-discover ()
+  "Analyze list of discoverable sessions in data debug buffer."
+  (interactive)
+
+  (with-current-buffer (data-debug-new-buffer "RUDEL-DISCOVERED-SESSIONS")
+    (data-debug-insert-stuff-list (rudel-session-initiation-discover) "# ")))
+
 (defun rudel-adebug-session ()
   "Analyze current session in data debug buffer."
   (interactive)

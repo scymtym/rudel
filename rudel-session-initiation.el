@@ -107,7 +107,7 @@ backend:
 
 The programmatic equivalent looks like this:
 
-(add-to-list
+\(add-to-list
  'rudel-configured-sessions
  (list :name              \"myserver\"
        :protocol-backend  'tcp
@@ -120,7 +120,7 @@ The programmatic equivalent looks like this:
        :port              6522
        ;; empty string means no password
        :global-password   \"\"
-       :user-password     \"\"))"
+       :user-password     \"\")\)"
   :group 'rudel
   :type  '(repeat :tag "Connections"
 		  (plist :tag "Connection"
