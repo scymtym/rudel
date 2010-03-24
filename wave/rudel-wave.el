@@ -1,6 +1,6 @@
 ;;; rudel-wave.el --- A Wave backend for Rudel
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, Wave protocol, backend
@@ -58,7 +58,7 @@
   "Main class of the Rudel Wave backend. Creates wave client
 connections.")
 
-(defmethod initialize-instance ((this rudel-wave-backend) &rest slots)
+(defmethod initialize-instance ((this rudel-wave-backend) slots)
   "Initialize slots of THIS with SLOTS."
   (when (next-method-p)
     (call-next-method))
