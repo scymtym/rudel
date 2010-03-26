@@ -260,11 +260,32 @@ negotiation."))
 negotiation and the negotiation of the actual stream are
 complete.")
 
-(defmethod rudel-enter ((this rudel-xmpp-state-established) features)
-  ""
+(defmethod rudel-accept ((this rudel-xmpp-state-established) xml)
+  "Store XML in buffer of THIS for later processing."
+  (with-slots (shelve-buffer) this
+    (push xml shelve-buffer))
   nil)
 
-(defmethod rudel-accept ((this rudel-xmpp-state-established) xml)
+
+;;; Class rudel-xmpp-state-idle
+;;
+
+(defclass rudel-xmpp-state-idle (rudel-xmpp-state)
+  ()
+  "The XMPP connection enters this state when security
+negotiation and the negotiation of the actual stream are
+complete.")
+
+(defmethod rudel-enter ((this rudel-xmpp-state-idle))
+  "Process data previously shelved in (the transport owning) THIS."
+  (with-slots (filter shelve-buffer) this
+    (when filter
+      (dolist (item shelve-buffer)
+	(funcall filter item)))
+    (setq shelve-buffer nil))
+  nil)
+
+(defmethod rudel-accept ((this rudel-xmpp-state-idle) xml)
   ""
   (with-slots (filter) this
     (when filter
@@ -323,6 +344,7 @@ complete.")
     (authenticated         . rudel-xmpp-state-authenticated)
     (authentication-failed . rudel-xmpp-state-authentication-failed)
     (established           . rudel-xmpp-state-established)
+    (idle                  . rudel-xmpp-state-idle)
     (we-finalize           . rudel-xmpp-state-we-finalize)
     (they-finalize         . rudel-xmpp-state-they-finalize)
     (disconnected          . rudel-xmpp-state-disconnected))
@@ -335,7 +357,12 @@ Authentication mechanisms can add more states to this list.")
 
 (defclass rudel-xmpp-transport (rudel-state-machine
 				rudel-transport-filter)
-  ()
+  ((shelve-buffer :initarg  :shelve-buffer
+		  :type     list
+		  :initform nil
+		  :documentation
+		  "Stores parsed data that cannot be processed in
+ the current for processing in a successor state."))
   "")
 
 (defmethod initialize-instance ((this rudel-xmpp-transport) slots)
@@ -367,6 +394,12 @@ Authentication mechanisms can add more states to this list.")
   (when (next-method-p)
     (call-next-method))
   )
+
+(defmethod rudel-start ((this rudel-xmpp-transport))
+  "Start processing by THIS.
+Starting the transport can lead to immediate processing of
+previously shelved data"
+  (rudel-switch this 'idle))
 
 (defmethod rudel-close ((this rudel-xmpp-transport))
   "Close the XMPP connection used by THIS."
