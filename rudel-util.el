@@ -1,6 +1,6 @@
 ;;; rudel-util.el --- Miscellaneous functions for Rudel
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, miscellaneous, util
@@ -206,7 +206,7 @@ the data."
 DATA has to be a cons-cell which contains a string of new data in
 its car and a list of old data strings in its cdr.
 The returned value is a list of the following form
-(COMPLETE INCOMPLETE)
+\(COMPLETE INCOMPLETE\)
 where complete COMPLETE is a list of complete lines and
 INCOMPLETE is a list of string fragments of not yet complete
 lines."
