@@ -78,7 +78,7 @@ XMPP connections.")
 
 (defmethod rudel-ask-connect-info ((this rudel-xmpp-backend)
 				   &optional info)
-  "Augment INFO by read a hostname and a port number."
+  "Augment INFO by reading a hostname and a port number."
   ;; Read server host and port.
   (let ((host (or (plist-get info :host)
 		  (read-string "Server: ")))
