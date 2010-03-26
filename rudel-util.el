@@ -283,7 +283,7 @@ it is a number."
 (defun rudel-dispatch (object prefix name arguments)
   "Call method (concat PREFIX NAME) of OBJECT with ARGUMENTS.
 If no such method can be found, the condition
-rudel-dispatch-error is signalled."
+rudel-dispatch-error is signaled."
   ;; Construct a matching symbol.
   (let* ((method (intern-soft (concat prefix name))))
     ;; If we found a suitable method, run it; Otherwise signal.
