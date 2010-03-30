@@ -1,4 +1,13 @@
 * Future
+** TODO Consolidate operations before sending
+   + Components :: protocol backends
+   + Type :: task
+   + Reporter :: jan
+   + Assigned :: 
+   For small successive edits, the overhead is large in most
+   protocols. Bandwidth can be conserved by queuing operations before
+   sending and merging adjacent operations when possible. This would
+   be most important for the IRC backend.
 ** TODO Allow multiple transport listeners per server session
    + Components :: multiple components affected
    + Type :: task

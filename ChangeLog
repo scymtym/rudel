@@ -1,3 +1,85 @@
+2010-03-31  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added idea consolidate operations before sending to TODO
+	* TODO (Future): new task; delay and consolidate operations before
+	sending in order to conserve bandwidth
+
+2010-03-26  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added idle state and shelving of data to XMPP transport
+	* xmpp/rudel-xmpp.el (rudel-xmpp-state-established::rudel-enter):
+	removed; handled by method specialized on base class
+	(rudel-xmpp-state-established::rudel-accept): new method; store
+	received data for later processing in successor states
+	(rudel-xmpp-state-idle): new class; idle state; the transport
+	enters this state after establishing the connection
+	(rudel-xmpp-state-idle::rudel-enter): new method; process stored
+	data
+	(rudel-xmpp-state-idle::rudel-accept): new method; pass received
+	data to filter function
+	(rudel-xmpp-states): added idle state
+	(rudel-xmpp-transport::shelve-buffer): new slot; used to store
+	data that cannot be processing in current state for later
+	processing
+	(rudel-xmpp-transport::rudel-start): new method; put the transport
+	into idle state; this can trigger processing of shelved data
+
+	Added &rest args to rudel-xmpp-state::rudel-enter
+	* xmpp/rudel-xmpp-state.el (rudel-xmpp-state::rudel-enter): added
+	&rest args
+
+2010-03-24  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed typo in a docstring in xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-ask-connect-info):
+	fixed typo in documentation string
+
+	Fixed spelling error in docstring in rudel-util.el
+	* rudel-util.el (rudel-dispatch): fixed spelling error in
+	documentation string
+
+	Escaped parens in a docstring in rudel-util.el
+	* rudel-util.el (header): updated copyright
+	(rudel-assemble-lines): Escaped top-level-looking parenthesis in
+	documentation string
+
+	Removed &rest from initialize-instance in wave/rudel-wave.el
+	* wave/rudel-wave.el (header): updated copyright
+	(rudel-wave-backend::initialize-instance): remove &rest from
+	arguments
+
+	Added rudel-adebug-discover to rudel-debug.el
+	* rudel-debug.el (rudel-adebug-discover): new function; analyze
+	discoverable session in a data debug buffer
+
+2010-03-22  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added idea multiple listeners to Future milestone in TODO
+	* TODO (Future): new task; allow multiple transport listeners to
+	be associated with a server session
+
+2010-03-20  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Escaped parentheses in docstring in rudel-session-initiation.el
+	* rudel-session-initiation.el (rudel-configured-sessions): escaped
+	parentheses in documentation string
+
+	Fixed error in rudel-session-initiation-adjust-info
+	* rudel-session-initiation.el
+	(rudel-session-initiation-adjust-info): push elements onto
+	intermediate result in reverse order, then reverse the whole list
+
+2010-03-19  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added ideas (passwords, buffer names) to Future milestone in TODO
+	* TODO (Future): new task; obtain password from auth-source.el or
+	secrets.el; new task; when subscribing to a document set the
+	buffer filename
+
+	Added directory infinote/doc for infinote backend documentation
+	* infinote/doc: new directory; for documentation concerning the
+	infinote backend
+
 2010-03-18  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added node base class rudel-infinote-node to infinote backend
