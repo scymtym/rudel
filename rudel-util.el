@@ -154,28 +154,6 @@ methods."
 ;;; Fragmentation and assembling functions.
 ;;
 
-(defmacro rudel-assemble-line-fragments (data storage)
-  "Find an return complete lines in DATA, store excess data in STORAGE.
-If STORAGE is non-nil when calling, consider content as leftover
-data from last and concatenate with DATA before processing."
-  (declare (debug (form form)))
-  (let ((index (make-symbol "index")))
-    `(progn
-       ;; If there are stored fragments, append them to the new data.
-       (when ,storage
-	 (setq ,data    (concat ,storage ,data))
-	 (setq ,storage nil))
-       ;; Try to find a line break in the augmented data.
-       (let ((,index (position ?\n ,data :from-end t)))
-	 (unless (and ,index (eq ,index (- (length ,data) 1)))
-	   (setq ,storage (if ,index
-			      (substring ,data (+ ,index 1))
-			    ,data))
-	   (setq ,data    (when ,index
-			    (substring ,data 0 (+ ,index 1))))))
-       ,data))
-  )
-
 (defmacro rudel-assemble-fragments (data storage function)
   "Return complete fragment in DATA, store excess data in STORAGE.
 If the value of STORAGE is non-nil when calling, consider content
@@ -186,22 +164,16 @@ the data."
   (declare (debug (symbolp symbolp form)))
   (let ((complete (make-symbol "complete"))
 	(partial  (make-symbol "partial")))
-    `(progn
-       ;; If there are stored fragments, append them to the new data.
-       (if ,storage
-	   (setq ,data    (cons ,data ,storage)
-		 ,storage nil)
-	 (setq ,data (list ,data)))
-       ;; Ask FUNCTION to find complete and partial fragments in the
-       ;; combined data. Store the results.
-       (multiple-value-bind (,complete ,partial)
-	   (funcall ,function ,data)
-	 (setq ,data    ,complete
-	       ,storage ,partial))
-       ,data))
+    ;; Ask FUNCTION to find complete and partial fragments in the
+    ;; combined data DATA and STORAGE. Store the results in DATA
+    ;; STORAGE.
+    `(multiple-value-bind (,complete ,partial)
+	 (funcall ,function ,data ,storage)
+       (setq ,storage ,partial
+	     ,data    ,complete)))
   )
 
-(defun rudel-assemble-lines (data)
+(defun rudel-assemble-lines (data storage)
   "Split DATA at line breaks and return complete and incomplete lines.
 DATA has to be a cons-cell which contains a string of new data in
 its car and a list of old data strings in its cdr.
@@ -211,30 +183,20 @@ where complete COMPLETE is a list of complete lines and
 INCOMPLETE is a list of string fragments of not yet complete
 lines."
   ;; Try to find a line break in data.
-  (let ((index (position ?\n (car data) :from-end t)))
+  (let ((index (position ?\n data :from-end t)))
     (list
      ;; Complete lines
      (when index
-       (let ((lines (split-string (substring (car data) 0 index) "\n")))
+       (let ((lines (split-string (substring data 0 index) "\n")))
 	 (setcar lines (concat
-			(mapconcat #'identity (reverse (cdr data)) "")
+			(mapconcat #'identity (reverse storage) "")
 			(car lines)))
 	 lines))
-     (unless (and index (eq index (- (length (car data)) 1)))
+     ;; Incomplete data
+     (unless (and index (eq index (- (length data) 1)))
        (if index
-	   (list (substring (car data) (+ index 1)))
-	 data))))
-  )
-
-(defmacro rudel-loop-lines (data var &rest forms)
-  "Execute FROMS with VAR subsequently bound to all lines in DATA."
-  (declare (indent 2)
-	   (debug (form symbolp &rest form)))
-  (let ((lines (make-symbol "lines")))
-    `(when ,data
-       (let ((,lines (split-string ,data "\n" t)))
-	 (dolist (,var ,lines)
-	   (progn ,@forms)))))
+	   (list (substring data (+ index 1)))
+	 (cons data storage)))))
   )
 
 (defmacro rudel-loop-fragments (data var &rest forms)
