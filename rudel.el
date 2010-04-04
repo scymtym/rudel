@@ -262,11 +262,13 @@ WHICH is compared to the result of KEY using TEST."
   ((connection :initarg  :connection
 	       :type     (or null rudel-connection-child)
 	       :initform nil
+	       :reader   rudel-connection
 	       :documentation
 	       "The connection used for communication by this
 session.")
    (self       :initarg  :self
 	       :type     rudel-user-child
+	       :reader   rudel-self
 	       :documentation
 	       "Points into USERS to the user object representing
 the local user"))
