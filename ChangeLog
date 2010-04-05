@@ -1,3 +1,111 @@
+2010-04-05  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed recursive equal problem in rudel-add-document in rudel.el
+	* rudel.el (require rudel-errors): new; `rudel-add-document' can
+	signal duplicate-element
+	(rudel-add-document): use `push' instead of `object-add-to-list';
+	signal error when document is already in list; added documentation
+	string
+	* rudel-errors.el (duplicate-element): new condition symbol;
+	indicates duplicate elements in lists
+
+2010-04-04  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added readers for slots of rudel-client-session in rudel.el
+	* rudel.el (rudel-client-session::connection): added reader
+	`rudel-connection'
+	(rudel-client-session::self): added reader `rudel-self'
+
+2010-03-22  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added sequence diagrams for connect/session initiate to irc/doc
+	* irc/doc/connect.dia: new file; sequence diagram of connecting
+	using the IRC transport
+	* irc/doc/connect.png: new file; generated
+	* irc/doc/session-initiation.dia: new file; sequence diagram of
+	initiating sessions using the IRC transport
+	* irc/doc/session-initiation.png: new file; generated
+
+	Handle existing channels in rudel-irc-erc-session-initiation.el
+	* irc/rudel-irc-erc-session-initiation.el
+	(rudel-irc-erc-session-initiation-handler): whitespace changes
+	(rudel-irc-erc-session-initiation-handler::initialize-instance):
+	added a comment
+	(rudel-irc-erc-session-initiation::initialize-instance :after):
+	add handlers for all existing channel buffers
+	(rudel-irc-erc-session-initiation::rudel-advertise):
+	(rudel-irc-erc-session-initiation::rudel-withdraw): added comments
+	(rudel-irc-erc-session-initiation::rudel-add-session):
+	(rudel-irc-erc-session-initiation::rudel-remove-session): added
+	documentation string
+
+	Better session message handling in rudel-irc-erc-session-initiation.el
+	* irc/rudel-irc-erc-session-initiation.el
+	(rudel-irc-erc-session-initiation-handler::initialize-instance):
+	pass sender to message handler
+	(rudel-irc-erc-session-initiation-handler::rudel-handle): dispatch
+	to new methods `rudel-handle-advertise' and
+	`rudel-handle-withdraw'
+	(rudel-irc-erc-session-initiation-handler::rudel-handle-advertise):
+	new method; parse and handle session advertise messages
+	(rudel-irc-erc-session-initiation-handler::rudel-handle-withdraw):
+	new method; parse and handle session withdraw messages
+
+2010-03-21  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added rudel-add-handler to rudel-irc-erc-session-initiation.el
+	* irc/rudel-irc-erc-session-initiation.el
+	(rudel-irc-erc-session-initiation::initialize-instance :after):
+	call new `rudel-add-handler' method to add handlers; add a handler
+	when a channel is joined instead of one handler for the whole
+	connection; added documentation string
+	(rudel-irc-erc-session-initiation::rudel-add-handler): new method;
+	create a `rudel-irc-erc-session-initiation-handler' object and it
+	to the list of handlers
+	(rudel-irc-erc-session-initiation::rudel-add-session):
+	(rudel-irc-erc-session-initiation::rudel-remove-session): added
+	documentation string
+
+	Remove base64 functions from irc/rudel-irc-erc-session-initiation.el
+	* irc/rudel-irc-erc-session-initiation.el
+	(rudel-irc-erc-prin1-and-base64-encode-string):
+	(rudel-irc-erc-read-from-base64-encoded-string): removed; now in
+	irc/rudel-irc-erc-util.el
+
+2010-03-20  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added rudel-ask-connect-info to irc/rudel-irc-erc.el
+	* irc/rudel-irc-erc.el (header): expanded commentary section to
+	contain description of used CTCP types
+	(rudel-irc-erc-backend::rudel-ask-connect-info): new method; ask
+	for buffer and peer name
+
+	Improved connection init via RUDEL-SETUP in irc/rudel-irc-erc.el
+	* irc/rudel-irc-erc.el (rudel-irc-erc-listener::rudel-handle): for
+	now, sleep instead of waiting for reply from client; cleanup
+	(rudel-irc-erc-backend::rudel-make-connection): wait for reply
+	from server containing CTCP key
+	(rudel-irc-erc-backend::rudel-wait-for-reply): new method; wait
+	until the "OK" message from the server has been received
+
+	Added base64-de- and -encoding functions to rudel-irc-erc-util.el
+	* irc/rudel-irc-erc-util.el (rudel-irc-erc-base::buffer): added
+	documentation string
+	(rudel-irc-erc-prin1-and-base64-encode-string): new function;
+	print an object and base64-encode print representation
+	(rudel-irc-erc-read-from-base64-encoded-string): new function;
+	base64-decode string and read print representation
+
+	Expanded Commentary section in irc/rudel-irc-erc-commands.el
+	* irc/rudel-irc-erc-commands.el (header): expanded explanation of
+	Rudel commands in Commentary section
+
+2010-03-19  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added directory irc/doc for irc backend documentation
+	* irc/doc: new directory; for documentation concerning the irc
+	backend
+
 2010-03-18  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added node base class rudel-infinote-node to infinote backend

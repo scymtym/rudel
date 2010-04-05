@@ -48,6 +48,7 @@
 
 (require 'eieio-speedbar) ;; TODO required for now
 
+(require 'rudel-errors)
 (require 'rudel-util)
 (require 'rudel-backend)
 (require 'rudel-session-initiation)
@@ -210,15 +211,24 @@ WHICH is compared to the result of KEY using TEST."
   )
 
 (defmethod rudel-add-document ((this rudel-session) document)
-  ""
+  "Add DOCUMENT to the document list of THIS session."
+  ;; Add DOCUMENT to the list of documents in THIS session, if it is
+  ;; not already in the list.
+  (with-slots (documents) this
+    (when (memq document documents)
+      (signal 'duplicate-element (list document)))
+
+    (push document documents))
+
+  ;; Store THIS in :session slot of DOCUMENT.
   (unless (slot-boundp document :session)
     (oset document :session this))
 
-  ;; Add DOCUMENT to the list of documents in THIS session.
-  (object-add-to-list this :documents document)
-
   ;; Run the hook.
-  (object-run-hook-with-args this 'add-document-hook document))
+  (object-run-hook-with-args this 'add-document-hook document)
+
+  ;; Return DOCUMENT.
+  document)
 
 (defmethod rudel-remove-document ((this rudel-session) document)
   "Remove DOCUMENT from THIS session, detaching it if necessary."

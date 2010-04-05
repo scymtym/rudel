@@ -41,6 +41,16 @@
 ;;; Code:
 ;;
 
+;; duplicate-element
+
+(intern "duplicate-element")
+
+(put 'duplicate-element 'error-conditions
+     '(error duplicate-element))
+
+(put 'duplicate-element 'error-message
+     "Duplicate element")
+
 ;; rudel-incomplete-info
 
 (intern "rudel-incomplete-info")
