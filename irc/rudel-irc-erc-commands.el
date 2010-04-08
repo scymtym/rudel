@@ -26,7 +26,7 @@
 ;;
 ;; This library provides the following ERC commands:
 ;;
-;; + /rudel host PROTOCOL (KEYWORD VALUE)*
+;; + /rudel host NAME PROTOCOL (KEYWORD VALUE)*
 ;;   Keyword arguments are optional here and can be omitted entirely
 ;;
 ;; + /rudel join SESSION (KEYWORD VALUE)*
@@ -95,13 +95,14 @@ corresponding implementing functions.")
 	(mapconcat #'car rudel-irc-erc-commands-subcommands ", ")))))
   )
 
-(defun rudel-irc-erc-commands-host (protocol-backend
+(defun rudel-irc-erc-commands-host (name protocol-backend
 				    &rest extra-properties)
   ""
   (rudel-host-session
    (append
     (rudel-irc-erc-commands-parse-keyword-args extra-properties)
-    (list :transport-backend (rudel-backend-get 'transport 'irc-erc)
+    (list :name              name
+	  :transport-backend (rudel-backend-get 'transport 'irc-erc)
 	  :protocol-backend  (rudel-backend-get
 			      'protocol (intern-soft protocol-backend))
 	  :buffer            (current-buffer))))
@@ -156,15 +157,20 @@ corresponding implementing functions.")
 
 (defun rudel-irc-erc-commands-complete-host ()
   ""
+  ;; Name of the session.
+  (when (= pcomplete-index 2)
+    (message "Enter session name (no spaces)"))
+  (pcomplete-here '(""))
+
   ;; Name of the protocol backend to use.
   (pcomplete-here
    (mapcar
     #'symbol-name
     (mapcar #'car (rudel-irc-erc-commands-capable-backends 'host))))
 
-  ;;
+  ;; Keyword arguments of the backend.
   (let ((backend (rudel-irc-erc-commands-named-backend
-		  (pcomplete-arg 'first 2))))
+		  (pcomplete-arg 'first 3))))
     (rudel-irc-erc-commands-complete-keyword-args
      '(:global-password)))
   )
