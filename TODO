@@ -222,6 +222,15 @@
 
 
 * Milestone rudel-0.3
+** TODO Enable modes by default?
+   + Component :: configuration
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
+   Modes
+   + global-rudel-header-subscriptions-mode
+   + global-rudel-mode-line-publish-state-mode
 ** TODO Infinote client functionality
    + Component :: infinote-backend
    + Type :: task
