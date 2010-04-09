@@ -82,6 +82,22 @@
 ;;; Miscellaneous functions
 ;;
 
+(defun rudel-infinote-parse-sequence-number (value)
+  "Parse the string VALUE into a cons cell.
+If string is of the form \"A/B\" the returned cell is (A . B)
+where A and B are then of type number."
+  (let ((values (split-string value "/")))
+    (cons (string-to-number (nth 0 values))
+	  (string-to-number (nth 1 values)))))
+
+(defun rudel-infinote-generate-sequence-number (values)
+  "Generate string representation of cons cell VALUES.
+For a cons cell (A . B), the generated string is of the form
+\"A/B\"."
+  (concat (number-to-string (car values))
+	  "/"
+	  (number-to-string (cdr values))))
+
 (defmacro rudel-infinote-embed-in-request (user &rest forms) ;; TODO duplicate?
   ""
   (declare (indent 1)
