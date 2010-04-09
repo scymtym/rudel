@@ -71,7 +71,7 @@
   "Serialize THIS compound operation."
   (with-slots (children) this
     (apply #'append
-	   (list split )
+	   '(split)
 	   (mapcar #'rudel-operation->xml children))))
 
 (defmethod rudel-operation->xml ((this adopted-nop))
