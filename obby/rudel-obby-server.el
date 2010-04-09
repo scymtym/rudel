@@ -651,21 +651,25 @@ connections to this server.")
 		   :type     list
 		   :initform nil
 		   :documentation
-		   "")
+		   "List of objects representing clients
+connected to the server.")
    (next-client-id :initarg  :next-client-id
 		   :type     integer
 		   :initform 1
 		   :documentation
-		   "")
+		   "An id that will be assigned to the next
+client that connects to the server.")
    (next-user-id   :initarg  :next-user-id
 		   :type     integer
 		   :initform 1
 		   :documentation
-		   "")
+		   "An id that will be assigned to the next user
+that joins the associated session.")
    (contexts       :initarg  :contexts
 		   :type     hash-table
 		   :documentation
-		   ""))
+		   "A hash table associating documents to jupiter
+transformation context objects."))
   "Class rudel-obby-server ")
 
 (defmethod initialize-instance ((this rudel-obby-server) slots)
