@@ -98,10 +98,10 @@ The function is called with the document name as the sole
 argument and has to return a buffer object which will be attached
 to the document in question."
   :group   'rudel
-  :type    '(choice (const :tag "Clear content of existing buffer"
-			   rudel-allocate-buffer-clear-existing )
-		    (const :tag "Create a new uniquely named buffer"
-			   rudel-allocate-buffer-make-unique )
+  :type    '(choice (const    :tag "Clear content of existing buffer"
+			      rudel-allocate-buffer-clear-existing)
+		    (const    :tag "Create a new uniquely named buffer"
+			      rudel-allocate-buffer-make-unique)
 		    (function :tag "Other function"))
   :require 'rudel-interactive)
 
