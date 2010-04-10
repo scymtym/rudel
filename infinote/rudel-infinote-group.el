@@ -41,6 +41,7 @@
 (require 'eieio)
 (require 'eieio-base) ;; for `eieio-named'
 
+(require 'rudel-util) ;; for `rudel-impersonator', `rudel-delegator'
 (require 'rudel-state-machine)
 (require 'rudel-infinote-state)
 
@@ -48,11 +49,15 @@
 ;;; Class rudel-infinote-group-state
 ;;
 
-(defclass rudel-infinote-group-state (rudel-infinote-state)
-  ((group :initarg :group
-	  :type    rudel-infinote-group-child
-	  :documentation
-	  ""))
+(defclass rudel-infinote-group-state (rudel-infinote-state
+				      rudel-impersonator
+				      rudel-delegator)
+  ((impersonation-target-slot :initform 'group)
+   (delegation-target-slot    :initform 'group)
+   (group                     :initarg :group
+			      :type    rudel-infinote-group-child
+			      :documentation
+			      ""))
   ""
   :abstract t)
 
