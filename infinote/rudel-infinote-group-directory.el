@@ -40,7 +40,38 @@
 
 (require 'eieio)
 
+(require 'xml)
+
+(require 'rudel-xml)
+
 (require 'rudel-infinote-group)
+
+
+;;; Class rudel-infinote-directory-state-new
+;;
+
+(defclass rudel-infinote-directory-state-new
+  (rudel-infinote-group-state)
+  ()
+  "New state of the directory group.
+Initial state of the state machine of the infinote directory
+group.")
+
+(defmethod rudel-infinote/welcome
+  ((this rudel-infinote-directory-state-new) xml)
+  "Handle infinote welcome message."
+  ;; TODO list of plugins belongs in the :plugins slot of the
+  ;; connection
+  (let ((plugins (mapcar
+		  (lambda (plugin)
+		    (xml-get-attribute plugin 'type))
+		  (xml-node-children
+		   (car (xml-get-children xml 'note-plugins))))))
+    (with-tag-attrs ((version  protocol-version number)
+		     (sequence sequence-id      number)) xml
+      ;; TODO
+      ))
+  'idle)
 
 
 ;;; Class rudel-infinote-directory-state-idle
@@ -98,11 +129,14 @@ explored.")
 (defmethod rudel-enter
   ((this rudel-infinote-directory-state-exploring) id)
   ""
-  (let ((sequence-number 0)) ;; TODO temp
+  (with-slots (sequence-number) this ;; transparently from group
+                                     ;; TODO but better increase it
+				     ;; automatically
+    ;; TODO add seq-num automatically
     (rudel-send this
-		`((explore-node
-		   ((seq . ,(format "%d" sequence-number))
-		    (id  . ,(format "%d" id)))))))
+		`(explore-node
+		  ((seq . ,(format "%d" sequence-number))
+		   (id  . ,(format "%d" id))))))
   nil)
 
 (defmethod rudel-infinote/explore-begin ;; TODO there should be another state
@@ -180,18 +214,26 @@ explored.")
 ;;
 
 (defvar rudel-infinote-group-directory-states
-  '((idle        . rudel-infinote-directory-state-idle)
+  '((new         . rudel-infinote-directory-state-new)
+    (idle        . rudel-infinote-directory-state-idle)
     (exploring   . rudel-infinote-directory-state-exploring)
     (subscribing . rudel-infinote-directory-state-subscribing))
-  "TODO")
+  "States of the state machine used by the directory group.")
 
 
 ;;; Class rudel-infinote-group-directory
 ;;
 
 (defclass rudel-infinote-group-directory (rudel-infinote-group)
-  ((method :initform 'central))
-  "")
+  ((method          :initform 'central)
+   (sequence-number :initarg  :sequence-number ;; TODO this belongs in the group class?
+		    :type     (integer 1)      ;; but which group class?
+		    :initform 1
+		    :documentation
+		    "Sequence number used when sending
+requests."))
+  "Objects of this class represent infinote directory
+communication groups.")
 
 (defmethod initialize-instance ((this rudel-infinote-group-directory)
 				slots)
