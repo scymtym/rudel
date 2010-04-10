@@ -1,3 +1,81 @@
+2010-04-10  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Warn for dispatch errors in infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-group-state::rudel-accept): handle dispatch errors
+	by displaying a warning
+
+	New state in infinote/rudel-infinote-group-directory.el
+	* infinote/rudel-infinote-group-directory.el (require xml):
+	(require rudel-xml): new require; used for XML processing
+	(rudel-infinote-directory-state-new): new class; initial state of
+	the infinote directory group
+	(rudel-infinote-directory-state-new::rudel-infinote/welcome): new
+	method; handle infinote welcome message
+	(rudel-infinote-directory-state-exploring::rudel-enter): use
+	sequence number of group object instead of local fake binding
+	(rudel-infinote-group-directory-states): added new state to state
+	list; added documentation string
+	(rudel-infinote-group-directory): added documentation string
+	(rudel-infinote-group-directory::sequence-number): new slot;
+	sequence number used when sending requests
+
+	Delegation for group states in infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el (require rudel-util): new
+	require; for rudel-impersonator and rudel-delegator
+	(rudel-infinote-group-state): added superclasses
+	`rudel-impersonator' and `rudel-delegator'
+	(rudel-infinote-group-state::impersonation-target-slot): new slot
+	specification; specify group as impersonation target
+	(rudel-infinote-group-state::delegation-target-slot): new slot
+	specification; specify group as delegation target
+
+	Check color on entering joining state in obby/rudel-obby-client.el
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-joining::rudel-enter): check color before
+	trying to login; switch to failure state if the color is invalid
+
+	Seq. number parsing/generation in infinote/rudel-infinote-util.el
+	* infinote/rudel-infinote-util.el
+	(rudel-infinote-parse-sequence-number): new function; parse
+	infinote sequence number
+	(rudel-infinote-generate-sequence-number): new function; generate
+	infinote sequence number
+
+	Quote in rudel-operation->xml in infinote/rudel-infinote-util.el
+	* infinote/rudel-infinote-util.el
+	(adopted-compound::rudel-operation->xml): fixed missing quote of
+	split element in XML generation
+
+	Added idea enable modes by default? in TODO
+	* TODO (Milestone 0.3): new task; enable modes by default?
+
+	Minor whitespace cleanup in rudel.el
+	* rudel.el (rudel-allocate-buffer-function): whitespace cleanup
+
+	Added docstrings to rudel-obby-server in obby/rudel-obby-server.el
+	* obby/rudel-obby-server.el (rudel-obby-server::clients):
+	(rudel-obby-server::next-client-id):
+	(rudel-obby-server::next-user-id):
+	(rudel-obby-server::contexts): added documentation strings
+
+2010-04-03  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Updated fragment assembling and looping functions
+	* rudel-util.el (rudel-assemble-line-fragments): removed; replaced
+	by generic `rudel-assemble-fragments'
+	(rudel-assemble-fragments): simplified; call function with two
+	arguments instead of a list
+	(rudel-assemble-lines): take two arguments, data and storage
+	(rudel-loop-lines): removed; replaced by generic
+	`rudel-loop-fragments'
+	* rudel-xml.el (rudel-xml-assemble-tags): take two arguments, data
+	and storage; extended documentation string
+	* xmpp/rudel-xmpp-util.el (rudel-xmpp-assemble-stream): take two
+	arguments, data and storage; handle cases in which the initial
+	chuck contains other elements than stream and features; added some
+	comments
+
 2010-03-31  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added idea consolidate operations before sending to TODO
