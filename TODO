@@ -1,4 +1,13 @@
 * Future
+** TODO Consolidate operations before sending
+   + Components :: protocol backends
+   + Type :: task
+   + Reporter :: jan
+   + Assigned :: 
+   For small successive edits, the overhead is large in most
+   protocols. Bandwidth can be conserved by queuing operations before
+   sending and merging adjacent operations when possible. This would
+   be most important for the IRC backend.
 ** TODO Allow multiple transport listeners per server session
    + Components :: multiple components affected
    + Type :: task
@@ -213,6 +222,15 @@
 
 
 * Milestone rudel-0.3
+** TODO Enable modes by default?
+   + Component :: configuration
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
+   Modes
+   + global-rudel-header-subscriptions-mode
+   + global-rudel-mode-line-publish-state-mode
 ** TODO Infinote client functionality
    + Component :: infinote-backend
    + Type :: task

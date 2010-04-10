@@ -60,7 +60,7 @@
 machine of which uses the state object."))
   "Base class for XMPP state classes.")
 
-(defmethod rudel-enter ((this rudel-xmpp-state))
+(defmethod rudel-enter ((this rudel-xmpp-state) &rest args)
   "Default behavior is to stay in the newly entered state."
   nil)
 

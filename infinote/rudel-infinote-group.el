@@ -41,6 +41,7 @@
 (require 'eieio)
 (require 'eieio-base) ;; for `eieio-named'
 
+(require 'rudel-util) ;; for `rudel-impersonator', `rudel-delegator'
 (require 'rudel-state-machine)
 (require 'rudel-infinote-state)
 
@@ -48,11 +49,15 @@
 ;;; Class rudel-infinote-group-state
 ;;
 
-(defclass rudel-infinote-group-state (rudel-infinote-state)
-  ((group :initarg :group
-	  :type    rudel-infinote-group-child
-	  :documentation
-	  ""))
+(defclass rudel-infinote-group-state (rudel-infinote-state
+				      rudel-impersonator
+				      rudel-delegator)
+  ((impersonation-target-slot :initform 'group)
+   (delegation-target-slot    :initform 'group)
+   (group                     :initarg :group
+			      :type    rudel-infinote-group-child
+			      :documentation
+			      ""))
   ""
   :abstract t)
 
@@ -60,23 +65,39 @@
   ""
   (let ((type (xml-node-name xml)))
     (case type
-	;;
-	;;<request-failed domain="error_domain" code="error_code" seq="seq_id">
-	;; <text>Human-readable text</text>
-	;;</request-failed>
-	;; domain example: INF_DIRECTORY_ERROR
-	(request-failed
-	 ;; TODO handle the problem
-	 (with-tag-attrs (domain
-			  (code            code number)
-			  (sequence-number seq  number)) xml
-	   )
-	 'idle)
+      ;;
+      ;;<request-failed domain="error_domain" code="error_code" seq="seq_id">
+      ;; <text>Human-readable text</text>
+      ;;</request-failed>
+      ;; domain example: INF_DIRECTORY_ERROR
+      (request-failed
+       ;; TODO handle the problem
+       (with-tag-attrs (domain
+			(code            code number)
+			(sequence-number seq  number)) xml
+			)
+       'idle)
 
       ;; Dispatch all normal message to appropriate methods
       ;; automatically.
       (t
-       (rudel-dispatch this "rudel-infinote/" type (list xml)))))
+       (let ((name (symbol-name type)))
+	 (condition-case error
+	     ;; Try to dispatch
+	     (rudel-dispatch this
+			     "rudel-infinote/" name
+			     (list xml))
+	   ;; Warn if we failed to locate or execute the method. Return
+	   ;; nil in this case, so we remain in the current state.
+	   (rudel-dispatch-error
+	    (progn
+	      (display-warning
+	       '(rudel infinote)
+	       (format "%s: no method (%s: %s): `%s/%s'; arguments: %s"
+		       (object-print this) (car error) (cdr error)
+		       "rudel-infinote" name arguments)
+	       :debug)
+	      nil)))))))
   )
 
 ;; TODO can all groups receive <session-close/> or just document groups?

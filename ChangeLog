@@ -1,3 +1,64 @@
+2010-04-10  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Warn for dispatch errors in infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-group-state::rudel-accept): handle dispatch errors
+	by displaying a warning
+
+	New state in infinote/rudel-infinote-group-directory.el
+	* infinote/rudel-infinote-group-directory.el (require xml):
+	(require rudel-xml): new require; used for XML processing
+	(rudel-infinote-directory-state-new): new class; initial state of
+	the infinote directory group
+	(rudel-infinote-directory-state-new::rudel-infinote/welcome): new
+	method; handle infinote welcome message
+	(rudel-infinote-directory-state-exploring::rudel-enter): use
+	sequence number of group object instead of local fake binding
+	(rudel-infinote-group-directory-states): added new state to state
+	list; added documentation string
+	(rudel-infinote-group-directory): added documentation string
+	(rudel-infinote-group-directory::sequence-number): new slot;
+	sequence number used when sending requests
+
+	Delegation for group states in infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el (require rudel-util): new
+	require; for rudel-impersonator and rudel-delegator
+	(rudel-infinote-group-state): added superclasses
+	`rudel-impersonator' and `rudel-delegator'
+	(rudel-infinote-group-state::impersonation-target-slot): new slot
+	specification; specify group as impersonation target
+	(rudel-infinote-group-state::delegation-target-slot): new slot
+	specification; specify group as delegation target
+
+	Check color on entering joining state in obby/rudel-obby-client.el
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-joining::rudel-enter): check color before
+	trying to login; switch to failure state if the color is invalid
+
+	Seq. number parsing/generation in infinote/rudel-infinote-util.el
+	* infinote/rudel-infinote-util.el
+	(rudel-infinote-parse-sequence-number): new function; parse
+	infinote sequence number
+	(rudel-infinote-generate-sequence-number): new function; generate
+	infinote sequence number
+
+	Quote in rudel-operation->xml in infinote/rudel-infinote-util.el
+	* infinote/rudel-infinote-util.el
+	(adopted-compound::rudel-operation->xml): fixed missing quote of
+	split element in XML generation
+
+	Added idea enable modes by default? in TODO
+	* TODO (Milestone 0.3): new task; enable modes by default?
+
+	Minor whitespace cleanup in rudel.el
+	* rudel.el (rudel-allocate-buffer-function): whitespace cleanup
+
+	Added docstrings to rudel-obby-server in obby/rudel-obby-server.el
+	* obby/rudel-obby-server.el (rudel-obby-server::clients):
+	(rudel-obby-server::next-client-id):
+	(rudel-obby-server::next-user-id):
+	(rudel-obby-server::contexts): added documentation strings
+
 2010-04-05  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Fixed recursive equal problem in rudel-add-document in rudel.el
@@ -15,6 +76,77 @@
 	* rudel.el (rudel-client-session::connection): added reader
 	`rudel-connection'
 	(rudel-client-session::self): added reader `rudel-self'
+
+2010-04-03  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Updated fragment assembling and looping functions
+	* rudel-util.el (rudel-assemble-line-fragments): removed; replaced
+	by generic `rudel-assemble-fragments'
+	(rudel-assemble-fragments): simplified; call function with two
+	arguments instead of a list
+	(rudel-assemble-lines): take two arguments, data and storage
+	(rudel-loop-lines): removed; replaced by generic
+	`rudel-loop-fragments'
+	* rudel-xml.el (rudel-xml-assemble-tags): take two arguments, data
+	and storage; extended documentation string
+	* xmpp/rudel-xmpp-util.el (rudel-xmpp-assemble-stream): take two
+	arguments, data and storage; handle cases in which the initial
+	chuck contains other elements than stream and features; added some
+	comments
+
+2010-03-31  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added idea consolidate operations before sending to TODO
+	* TODO (Future): new task; delay and consolidate operations before
+	sending in order to conserve bandwidth
+
+2010-03-26  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added idle state and shelving of data to XMPP transport
+	* xmpp/rudel-xmpp.el (rudel-xmpp-state-established::rudel-enter):
+	removed; handled by method specialized on base class
+	(rudel-xmpp-state-established::rudel-accept): new method; store
+	received data for later processing in successor states
+	(rudel-xmpp-state-idle): new class; idle state; the transport
+	enters this state after establishing the connection
+	(rudel-xmpp-state-idle::rudel-enter): new method; process stored
+	data
+	(rudel-xmpp-state-idle::rudel-accept): new method; pass received
+	data to filter function
+	(rudel-xmpp-states): added idle state
+	(rudel-xmpp-transport::shelve-buffer): new slot; used to store
+	data that cannot be processing in current state for later
+	processing
+	(rudel-xmpp-transport::rudel-start): new method; put the transport
+	into idle state; this can trigger processing of shelved data
+
+	Added &rest args to rudel-xmpp-state::rudel-enter
+	* xmpp/rudel-xmpp-state.el (rudel-xmpp-state::rudel-enter): added
+	&rest args
+
+2010-03-24  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed typo in a docstring in xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-ask-connect-info):
+	fixed typo in documentation string
+
+	Fixed spelling error in docstring in rudel-util.el
+	* rudel-util.el (rudel-dispatch): fixed spelling error in
+	documentation string
+
+	Escaped parens in a docstring in rudel-util.el
+	* rudel-util.el (header): updated copyright
+	(rudel-assemble-lines): Escaped top-level-looking parenthesis in
+	documentation string
+
+	Removed &rest from initialize-instance in wave/rudel-wave.el
+	* wave/rudel-wave.el (header): updated copyright
+	(rudel-wave-backend::initialize-instance): remove &rest from
+	arguments
+
+	Added rudel-adebug-discover to rudel-debug.el
+	* rudel-debug.el (rudel-adebug-discover): new function; analyze
+	discoverable session in a data debug buffer
 
 2010-03-22  Jan Moringen  <scymtym@users.sourceforge.net>
 
@@ -50,6 +182,10 @@
 	new method; parse and handle session advertise messages
 	(rudel-irc-erc-session-initiation-handler::rudel-handle-withdraw):
 	new method; parse and handle session withdraw messages
+
+	Added idea multiple listeners to Future milestone in TODO
+	* TODO (Future): new task; allow multiple transport listeners to
+	be associated with a server session
 
 2010-03-21  Jan Moringen  <scymtym@users.sourceforge.net>
 
@@ -100,11 +236,29 @@
 	* irc/rudel-irc-erc-commands.el (header): expanded explanation of
 	Rudel commands in Commentary section
 
+	Escaped parentheses in docstring in rudel-session-initiation.el
+	* rudel-session-initiation.el (rudel-configured-sessions): escaped
+	parentheses in documentation string
+
+	Fixed error in rudel-session-initiation-adjust-info
+	* rudel-session-initiation.el
+	(rudel-session-initiation-adjust-info): push elements onto
+	intermediate result in reverse order, then reverse the whole list
+
 2010-03-19  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added directory irc/doc for irc backend documentation
 	* irc/doc: new directory; for documentation concerning the irc
 	backend
+
+	Added ideas (passwords, buffer names) to Future milestone in TODO
+	* TODO (Future): new task; obtain password from auth-source.el or
+	secrets.el; new task; when subscribing to a document set the
+	buffer filename
+
+	Added directory infinote/doc for infinote backend documentation
+	* infinote/doc: new directory; for documentation concerning the
+	infinote backend
 
 2010-03-18  Jan Moringen  <scymtym@users.sourceforge.net>
 
