@@ -142,15 +142,20 @@ session.")
 	(color           (plist-get info :color))
 	(global-password (plist-get info :global-password))
 	(user-password   (plist-get info :user-password)))
-    (apply #'rudel-send
-	   this
-	   "net6_client_login"
-	   username (rudel-obby-format-color color)
-	   (append (when global-password
-		     (list global-password))
-		   (when (and global-password user-password)
-		     (list user-password)))))
-  nil)
+    ;; Check COLOR and try to login if it is valid.
+    (if (color-values color)
+	(progn
+	  (apply #'rudel-send
+		 this
+		 "net6_client_login"
+		 username (rudel-obby-format-color color)
+		 (append (when global-password
+			   (list global-password))
+			 (when (and global-password user-password)
+			   (list user-password))))
+	  nil)
+      (list 'join-failed (cons 'rudel-obby-invalid-color nil))))
+  )
 
 (defmethod rudel-obby/obby_sync_init
   ((this rudel-obby-client-state-joining) count)
