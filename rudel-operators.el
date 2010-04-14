@@ -1,6 +1,6 @@
 ;;; rudel-operators.el --- Sets of modification operators for Rudel objects
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, operators
@@ -72,6 +72,13 @@ applied."))
   (with-slots (document) this
     (rudel-delete document position length)))
 
+(defmethod rudel-handle ((this rudel-document-operators) operation
+			 &optional context)
+  "Handle OPERATION, possibly using information from CONTEXT.
+Operation is an instance of a subclass of `rudel-operation'.
+CONTEXT is a property list."
+  (rudel-apply operation this))
+
 
 ;;; Class rudel-connection-operators
 ;;
@@ -98,6 +105,15 @@ connection.")
   "Notify the connection associated to THIS of a deletion of LENGTH at POSITION."
   (with-slots (connection document) this
     (rudel-local-delete connection document position length)))
+
+(defmethod rudel-handle ((this rudel-connection-operators) operation
+			 &optional context)
+  "Handle OPERATION, possibly using information from CONTEXT.
+Operation is an instance of a subclass of `rudel-operation'.
+CONTEXT is a property list."
+  ;; TODO temporarily storing the connection like this is not optimal
+  (oset this :connection (plist-get context :connection))
+  (rudel-apply operation this))
 
 
 ;;; Class rudel-overlay-operators
@@ -127,7 +143,6 @@ buffer.")
       (unless position
 	(with-current-buffer buffer
 	  (setq position (- (point-max) (length data) 1))))
-	
 
       (rudel-update-author-overlay-after-insert
        buffer (+ position 1) (length data) user)))
@@ -140,6 +155,15 @@ buffer.")
       (rudel-update-author-overlay-after-delete
        buffer (+ position 1) length user))))
 
+(defmethod rudel-handle ((this rudel-overlay-operators) operation
+			 &optional context)
+  "Handle OPERATION, possibly using information from CONTEXT.
+Operation is an instance of a subclass of `rudel-operation'.
+CONTEXT is a property list."
+  ;; TODO temporarily setting the user like this is not optimal
+  (oset this :user (plist-get context :user))
+  (rudel-apply operation this))
+
 
 ;;; Class rudel-hook-operators
 ;;
@@ -148,7 +172,7 @@ buffer.")
   ((document :initarg  :document
 	     :type     rudel-document-child
 	     :documentation
-	     "The document object to which operations refer.")   
+	     "The document object to which operations refer.")
    (user     :initarg  :user
 	     :type     rudel-user-child
 	     :documentation
@@ -167,6 +191,15 @@ be called.")
   (with-slots (document user) this
     (with-slots (buffer) document
       (run-hook-with-args 'rudel-delete-hook buffer user position length))))
+
+(defmethod rudel-handle ((this rudel-hook-operators) operation
+			 &optional context)
+  "Handle OPERATION, possibly using information from CONTEXT.
+Operation is an instance of a subclass of `rudel-operation'.
+CONTEXT is a property list."
+  ;; TODO temporarily setting the user like this is not optimal
+  (oset this :user (plist-get context :user))
+  (rudel-apply operation this))
 
 (provide 'rudel-operators)
 ;;; rudel-operators.el ends here

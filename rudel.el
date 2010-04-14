@@ -390,6 +390,16 @@ does not have to be connected to the session at any given time."
 		     :type     rudel-session
 		     :documentation
 		     "")
+   (local-operators  :initarg :local-operators
+		     :type    list
+		     :documentation
+		     "List of operators which are applied to
+local operations.")
+   (remote-operators :initarg :remote-operators
+		     :type    list
+		     :documentation
+		     "List of operators which are applied to
+remote operations.")
    (buffer           :initarg  :buffer
 		     :type     (or null buffer)
 		     :initform nil
@@ -428,6 +438,40 @@ is detached from this document object."))
   "This class represents a document, which participants of a
 collaborative editing session can subscribe to."
   :abstract t)
+
+(defmethod initialize-instance ((this rudel-document) slots)
+  "Initialize slots of THIS, construct local/remote operators.
+The lists of local and remote operators can be extended or
+changed in `initialize-instance' :after methods specialized on
+subclasses to do additional processing of local or remote
+operations.."
+  ;; Initialize slots of THIS.
+  (when (next-method-p)
+    (call-next-method))
+
+  ;; Initialize lists of local and remote operators.
+  (with-slots (local-operators remote-operators) this
+    (setq local-operators  (list
+			    ;; Update overlays
+			    (rudel-overlay-operators
+			     "remote-overlay-operators"
+			     :document this)
+
+			    ;; Notify connection
+			    (rudel-connection-operators
+			     "remote-connection-operators"
+				      :document this))
+	  remote-operators (list
+			    ;; Update buffer contents
+			    (rudel-document-operators
+			     "local-document-operators"
+			     :document this)
+
+			    ;; Update overlays
+			    (rudel-overlay-operators
+			     "local-overlay-operators"
+			     :document this))))
+  )
 
 (defmethod rudel-unique-name ((this rudel-document))
   "Returns a suggested name for the buffer attached to THIS document."
@@ -576,44 +620,21 @@ Modification hooks are disabled during the insertion."
 
 (defmethod rudel-local-operation ((this rudel-document) operation)
   "Apply the local operation OPERATION to THIS."
-  (with-slots (session buffer) this
-    (with-slots (connection (user :self)) session
-      (dolist (operators (list
-
-			   ;; Update overlays
-			   (rudel-overlay-operators
-			    "overlay-operators"
-			    :document this
-			    :user     user)
-
-			   ;; Notify connection
-			   (rudel-connection-operators
-			    "connection-operators"
-			    :connection connection
-			    :document   this)))
-
+  (with-slots (session local-operators buffer) this
+    (let ((context (list :connection (oref session :connection)
+			 :user       (rudel-self       session))))
+      (dolist (operators local-operators)
 	;; Apply the operation using each set of operators
-	(rudel-apply operation operators))))
+	(rudel-handle operators operation context))))
   )
 
 (defmethod rudel-remote-operation ((this rudel-document) user operation)
   "Apply the remote operation OPERATION performed by USER to THIS."
-  (dolist (operators (append
-
-		       ;; Update buffer contents
-		       (list (rudel-document-operators
-			      "document-operators"
-			      :document this))
-
-		       ;; Update overlays
-		       (when user
-			 (list (rudel-overlay-operators
-				"overlay-operators"
-				:document this
-				:user     user)))))
-
-    ;; Apply the operation using each set of operators
-    (rudel-apply operation operators))
+  (with-slots (remote-operators) this
+    (let ((context (list :user user)))
+      ;; Apply the operation using each set of operators
+      (dolist (operators remote-operators)
+	(rudel-handle operators operation context))))
   )
 
 (defmethod rudel-chunks ((this rudel-document))
