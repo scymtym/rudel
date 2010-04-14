@@ -618,6 +618,28 @@ Modification hooks are disabled during the insertion."
 	  (delete-region (+ position 1) (+ position length 1))))))
   )
 
+(defmethod rudel-add-local-operation-handler ((this rudel-document) handler)
+  "Add HANDLER to the list of local operation handlers of THIS.
+A duplicate-element error is signaled if HANDLER is already
+contained in the list of local operation handlers."
+  (with-slots (local-operators) this
+    (when (memq handler local-operators)
+      (signal 'duplicate-element (list handler)))
+
+    (setq local-operators
+	  (append local-operators (list handler)))))
+
+(defmethod rudel-add-remote-operation-handler ((this rudel-document) handler)
+  "Add HANDLER to the list of remote operation handlers of THIS.
+A duplicate-element error is signaled if HANDLER is already
+contained in the list of remote operation handlers."
+  (with-slots (remote-operators) this
+    (when (memq handler remote-operators)
+      (signal 'duplicate-element (list handler)))
+
+    (setq remote-operators
+	  (append remote-operators (list handler)))))
+
 (defmethod rudel-local-operation ((this rudel-document) operation)
   "Apply the local operation OPERATION to THIS."
   (with-slots (session local-operators buffer) this

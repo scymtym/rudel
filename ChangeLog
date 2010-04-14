@@ -1,3 +1,39 @@
+2010-04-14  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added operation handler adder methods to rudel-document
+	* rudel.el (rudel-document::rudel-add-local-operation-handler):
+	new method; add a handler to the list of local operation handlers
+	(rudel-document::rudel-add-remote-operation-handler): new method;
+	add a handler to the list of remote operation handlers
+
+	Added generic handling of operators to rudel-document
+	* rudel-operators.el (header): updated copyright
+	(rudel-document-operators::rudel-handle): new method; handle an
+	operation independent of its type
+	(rudel-connection-operators::rudel-handle): new method; handle an
+	operation independent of its type
+	(rudel-overlay-operators::rudel-insert): new method; handle an
+	operation independent of its type
+	(rudel-hook-operators::rudel-handle): new method; handle an
+	operation independent of its type
+	* rudel.el (rudel-document::local-operators): new slot; list of
+	operators to apply to local operations
+	(rudel-document::remote-operators): new slot; list of operators to
+	apply to remote operations
+	(rudel-document::initialize-instance): new method; with initialize
+	list of local and remote operators with update overlays, notify
+	connection and update buffer, update overlays respectively
+	(rudel-document::rudel-local-operation): obtain applicable
+	operators from :local-operators slot
+	(rudel-document::rudel-remote-operation): obtain applicable
+	operators from :remote-operators slot
+
+	Minor cleanup in rudel-errors.el
+	* rudel-errors.el (header): updated commentary section
+	(rudel-incomplete-info):
+	(rudel-join-error):
+	(rudel-host-error): whitespace cleanup
+
 2010-04-10  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Warn for dispatch errors in infinote/rudel-infinote-group.el
@@ -58,6 +94,16 @@
 	(rudel-obby-server::next-client-id):
 	(rudel-obby-server::next-user-id):
 	(rudel-obby-server::contexts): added documentation strings
+
+2010-04-08  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added session name argument to /rudel host ERC command
+	* irc/rudel-irc-erc-commands.el (header): changed description of
+	/rudel host command in commentary section
+	(rudel-irc-erc-commands-host): added argument name; add name to
+	session info list
+	(rudel-irc-erc-commands-complete-host): name is first argument,
+	backend second, then keywords
 
 2010-04-05  Jan Moringen  <scymtym@users.sourceforge.net>
 
