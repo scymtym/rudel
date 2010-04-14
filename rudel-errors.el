@@ -27,6 +27,7 @@
 ;; The following condition hierarchy is defined:
 ;;
 ;; error
+;; + duplicate-element
 ;; + rudel-error
 ;;   + rudel-incomplete-info
 ;;   + rudel-join-error
@@ -56,8 +57,7 @@
 (intern "rudel-incomplete-info")
 
 (put 'rudel-incomplete-info 'error-conditions
-     '(error
-       rudel-error rudel-incomplete-info))
+     '(error rudel-error rudel-incomplete-info))
 
 (put 'rudel-incomplete-info 'error-message
      "Required properties missing in property list")
@@ -67,8 +67,7 @@
 (intern "rudel-join-error")
 
 (put 'rudel-join-error 'error-conditions
-     '(error
-       rudel-error rudel-join-error))
+     '(error rudel-error rudel-join-error))
 
 (put 'rudel-join-error 'error-message
      "Could not join session")
@@ -78,8 +77,7 @@
 (intern "rudel-host-error")
 
 (put 'rudel-host-error 'error-conditions
-     '(error
-       rudel-error rudel-host-error))
+     '(error rudel-error rudel-host-error))
 
 (put 'rudel-host-error 'error-message
      "Could not host session")
