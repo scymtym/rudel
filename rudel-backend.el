@@ -1,6 +1,6 @@
 ;;; rudel-backend.el --- A generic backend management mechanism for Rudel
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, backend, factory
@@ -48,6 +48,8 @@
 
 (eval-when-compile
   (require 'cl))
+
+(require 'warnings)
 
 (require 'eieio)
 

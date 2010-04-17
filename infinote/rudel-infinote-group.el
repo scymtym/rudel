@@ -38,6 +38,8 @@
 ;;; Code:
 ;;
 
+(require 'warnings)
+
 (require 'eieio)
 (require 'eieio-base) ;; for `eieio-named'
 
