@@ -58,7 +58,7 @@
     (with-tag-attrs ((position pos number)) xml
       (let ((text (car (xml-node-children xml)))) ;; TODO with-tag-children?
 	(rudel-remote-operation
-	 group 
+	 group
 	 ;; user
 	 (rudel-user "bla" :color "light sky blue") ;; TODO
 	 (rudel-insert-op "insert"
@@ -236,7 +236,7 @@
   nil)
 
 
-;;; Document group states
+;;; Text document group states
 ;;
 
 (defvar rudel-infinote-group-text-document-states
@@ -261,16 +261,8 @@
     (call-next-method))
 
   ;; Register states.
-  (with-slots (states) this ;; TODO temp
-    (setq states nil))
   (rudel-register-states
-   this rudel-infinote-group-text-document-states)
-
-  ;; TODO temp; this should be in initialize-instance :after of state-machine
-  (with-slots (states state) this
-    (setq state (cdr (nth 0 states)))
-    (rudel-enter state))
-  )
+   this rudel-infinote-group-text-document-states))
 
 (defmethod rudel-remote-operation
   ((this rudel-infinote-group-text-document) user operation)

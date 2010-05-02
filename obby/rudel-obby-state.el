@@ -36,6 +36,8 @@
 ;;; Code:
 ;;
 
+(require 'warnings)
+
 (require 'eieio)
 
 (require 'rudel-util)

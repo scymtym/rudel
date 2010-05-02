@@ -57,6 +57,7 @@
 
 (require 'rudel-state-machine)
 
+(require 'rudel-obby) ;; to silence the byte-compiler
 (require 'rudel-obby-errors)
 (require 'rudel-obby-util)
 (require 'rudel-obby-state)

@@ -39,6 +39,8 @@
 ;;; Code:
 ;;
 
+(require 'warnings)
+
 (require 'eieio)
 
 (require 'jupiter)

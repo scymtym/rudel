@@ -1,3 +1,15 @@
+2010-04-17  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Require warnings library where display-warning is used
+	* rudel-backend.el (header): updated copyright
+	(require warnings):
+	* obby/rudel-obby-state.el (require warnings):
+	* obby/rudel-obby-client.el (require warnings):
+	* infinote/rudel-infinote-group.el (require warnings):
+	* infinote/rudel-infinote-group-directory.el (require warnings):
+	* infinote/rudel-infinote-client.el (require warnings): new
+	require; this is needed since display-warning is used
+
 2010-04-14  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added operation handler adder methods to rudel-document

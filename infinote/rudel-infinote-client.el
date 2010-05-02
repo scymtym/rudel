@@ -36,6 +36,8 @@
 ;;; Code:
 ;;
 
+(require 'warnings)
+
 (require 'rudel)
 (require 'rudel-state-machine) ;; TODO necessary?
 (require 'rudel-infinote-util)
