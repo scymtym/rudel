@@ -24,6 +24,8 @@
 
 ;;; Commentary:
 ;;
+;; This file contains the `rudel-infinote-state' class, which is the
+;; base class for state classes in the infinote backend.
 
 
 ;;; History:
@@ -62,39 +64,6 @@
 (defmethod rudel-accept ((this rudel-infinote-state) xml)
   ""
   nil)
-
-
-;;; Class rudel-infinote-group-state
-;;
-
-(defclass rudel-infinote-group-state (rudel-infinote-state)
-  ()
-  "")
-
-(defmethod rudel-accept ((this rudel-infinote-group-state) xml)
-  ""
-  (case (xml-node-name xml)
-    ;;
-    (group
-     (let* ((group-name (xml-get-attribute xml 'name))
-	    (child      (nth 0 (xml-node-children xml)))
-	    (type       (xml-node-name child))) ;; TODO is there a better way?
-       (case type
-	 ;;
-	 (request-failed
-	  'established)
-
-	 ;; dispatch
-	 (t
-	  (rudel-dispatch this 
-			  "rudel-infinote/" (symbol-name type)
-			  (list child))))))
-
-    ;;
-    (t
-     (when (next-method-p)
-       (call-next-method))))
-  )
 
 (provide 'rudel-infinote-state)
 ;;; rudel-infinote-state.el ends here
