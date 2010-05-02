@@ -167,8 +167,11 @@ explored.")
   ""
   (with-slots (remaining-messages) this
     (unless (zerop remaining-messages)
-      (warn "received 'explore-end' message when still expecting %d messages"
-	    remaining-messages)))
+      (display-warning
+       '(rudel infinote)
+       (format
+	"received 'explore-end' message when still expecting %d messages"
+	remaining-messages))))
   'idle)
 
 
