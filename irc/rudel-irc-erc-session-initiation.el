@@ -216,12 +216,13 @@
   ""
   ;; Ask all handlers to advertise the session described by INFO.
   (dolist (handler (oref this :handlers))
-    (rudel-advertise handler info))
+    (rudel-advertise
+     handler (rudel-session-initiation-strip-info info '(:buffer))))
 
   ;; Send an action message announcing the session.
   (erc-send-action
    (erc-default-target)
-   (format "announces Rudel session %s" (plist-get info :name))))
+   (format "announces Rudel session \"%s\"" (plist-get info :name))))
 
 (defmethod rudel-withdraw ((this rudel-irc-erc-session-initiation)
 			    info)

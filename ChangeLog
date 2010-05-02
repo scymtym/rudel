@@ -1,3 +1,33 @@
+2010-05-03  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Strip info when advertising in rudel-irc-erc-session-initiation.el
+	* irc/rudel-irc-erc-session-initiation.el
+	(rudel-irc-erc-session-initiation::rudel-advertise): strip session
+	information list before advertising; display session name in
+	double quotes in IRC action
+
+	Added add/remove methods for operation handlers in rudel.el
+	* rudel.el (rudel-document::rudel-add-local-operation-handler): cleanup
+	(rudel-document::rudel-remove-local-operation-handler): new
+	method; remove a handler for local operations
+	(rudel-document::rudel-remove-remote-operation-handler): new
+	method; remove a handler for remote operations
+
+	Added new function rudel-session-initiation-strip-info
+	* rudel-session-initiation.el
+	(rudel-session-initiation-strip-info): new function; remove or
+	simplify unneeded key value pairs
+
+2010-05-02  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	New class rudel-operation-merger in rudel-operators.el
+	* rudel-operators.el (rudel-operation-merger): new class; merge
+	adjacent operations whenever possible
+	(rudel-insert-op::rudel-merge): new method; merge operation with
+	adjacent operations
+	(rudel-delete-op::rudel-merge): new method; merge operation with
+	adjacent operations
+
 2010-04-17  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Require warnings library where display-warning is used
