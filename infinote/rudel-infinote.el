@@ -104,10 +104,10 @@ Return the connection object."
     ;; Start the transport and wait until the basic session setup is
     ;; complete.
     (rudel-start transport)
-
     (rudel-state-wait transport
-		      '(established) '(we-finalize they-finalize)
-		      progress-callback)
+		      '(idle)
+		      '(we-finalize they-finalize disconnected)
+		      progress-callback) ;; TODO this should be in the transport itself
 
     ;; The connection is now ready for action; Return it.
     connection)
