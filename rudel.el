@@ -618,7 +618,8 @@ Modification hooks are disabled during the insertion."
 	  (delete-region (+ position 1) (+ position length 1))))))
   )
 
-(defmethod rudel-add-local-operation-handler ((this rudel-document) handler)
+(defmethod rudel-add-local-operation-handler
+  ((this rudel-document) handler)
   "Add HANDLER to the list of local operation handlers of THIS.
 A duplicate-element error is signaled if HANDLER is already
 contained in the list of local operation handlers."
@@ -629,7 +630,14 @@ contained in the list of local operation handlers."
     (setq local-operators
 	  (append local-operators (list handler)))))
 
-(defmethod rudel-add-remote-operation-handler ((this rudel-document) handler)
+(defmethod rudel-remove-local-operation-handler
+  ((this rudel-document) handler)
+  "Remove HANDLER from the list of local operation handlers of THIS."
+  (with-slots (local-operators) this
+    (setq local-operators (remove handler local-operators))))
+
+(defmethod rudel-add-remote-operation-handler
+  ((this rudel-document) handler)
   "Add HANDLER to the list of remote operation handlers of THIS.
 A duplicate-element error is signaled if HANDLER is already
 contained in the list of remote operation handlers."
@@ -640,10 +648,16 @@ contained in the list of remote operation handlers."
     (setq remote-operators
 	  (append remote-operators (list handler)))))
 
+(defmethod rudel-remove-remote-operation-handler
+  ((this rudel-document) handler)
+  "Remove HANDLER from the list of local operation handlers of THIS."
+  (with-slots (remote-operators) this
+    (setq remote-operators (remove handler remote-operators))))
+
 (defmethod rudel-local-operation ((this rudel-document) operation)
   "Apply the local operation OPERATION to THIS."
   (with-slots (session local-operators buffer) this
-    (let ((context (list :connection (oref session :connection)
+    (let ((context (list :connection (oref session :connection) ;; TODO (rudel-connection session)
 			 :user       (rudel-self       session))))
       (dolist (operators local-operators)
 	;; Apply the operation using each set of operators
