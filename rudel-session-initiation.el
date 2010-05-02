@@ -371,5 +371,45 @@ configured using customization.")
     (nreverse adjusted-info))
   )
 
+(defun rudel-session-initiation-strip-info (info &optional strip-keys)
+  "Remove certain keys and their values from INFO.
+Among removed keys are duplicate keys and elements of
+STRIP-KEYS. Values of the :transport-backend
+and :protocol-backend properties are replaced by the backend's
+symbol."
+  ;; Start with a new, empty property list.
+  (let ((adjusted-info)
+	(key   (car  info))
+	(value (cadr info))
+	(rest  info))
+    ;; Iterate over all properties in INFO.
+    (while rest
+      (cond
+       ;; Strip duplicate keys.
+       ((member key adjusted-info))
+
+       ;; Remove additional keys specified in STRIP-KEYS.
+       ((member key strip-keys))
+
+       ;; Replace values of backend properties by strings.
+       ((or (eq key :transport-backend)
+	    (eq key :protocol-backend))
+	(let ((name (symbol-name (car value))))
+	  (push key  adjusted-info)
+	  (push name adjusted-info)))
+
+       ;; Keep other arguments unmodified.
+       (t
+	(push key   adjusted-info)
+	(push value adjusted-info)))
+
+      ;; Advance to next key value pair.
+      (setq rest  (cddr rest)
+	    key   (car  rest)
+	    value (cadr rest)))
+    ;; Return the transformed session information.
+    (nreverse adjusted-info))
+  )
+
 (provide 'rudel-session-initiation)
 ;;; rudel-session-initiation.el ends here
