@@ -67,10 +67,13 @@
   ""
   (let ((type (xml-node-name xml)))
     (case type
-      ;;
-      ;;<request-failed domain="error_domain" code="error_code" seq="seq_id">
-      ;; <text>Human-readable text</text>
-      ;;</request-failed>
+      ;; Handle request-failed messages, which look like this:
+      ;; <request-failed
+      ;;     domain="error_domain"
+      ;;     code="error_code"
+      ;;     seq="seq_id">
+      ;;   <text>Human-readable text</text>
+      ;; </request-failed>
       ;; domain example: INF_DIRECTORY_ERROR
       (request-failed
        ;; TODO handle the problem
