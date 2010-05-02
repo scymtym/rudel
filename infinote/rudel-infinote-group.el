@@ -171,8 +171,8 @@
 	    (,publisher (oref ,group-var :publisher)))
        `(group
 	 ((name      . ,,name)
-	  (publisher . ,,publisher)))
-	 ,,@forms))
+	  (publisher . ,,publisher))
+	 ,,@forms)))
   )
 
 (provide 'rudel-infinote-group)
