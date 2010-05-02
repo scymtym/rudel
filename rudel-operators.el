@@ -201,5 +201,112 @@ CONTEXT is a property list."
   (oset this :user (plist-get context :user))
   (rudel-apply operation this))
 
+
+;;; Class rudel-operation-merger
+;;
+
+(defclass rudel-operation-merger ()
+  ((buffer :initarg  :buffer
+	   :type     list
+	   :initform nil
+	   :documentation
+	   "This buffer stores operations for merging when they
+are received.")
+   (timer  :initarg  :timer
+	   :type     (or null timer)
+	   :initform nil
+	   :documentation
+	   "This timer triggers the sending of queued, merged
+messages.")
+   (target :initarg  :target
+	   :type     object
+	   :reader   rudel-target
+	   :writer   rudel-set-target
+	   :documentation
+	   "This slot holds an object to which processed
+operations are passed."))
+  "Objects of this class handle operations by merging adjacent
+operations if possible.")
+
+(defmethod rudel-handle ((this rudel-operation-merger) operation
+			 &optional context)
+  "Process OPERATION, merging it with stored operations, eventually sending it.
+Operations are considered for merging within a time-window, then
+sent, whether merged or not."
+  (with-slots (buffer timer) this
+    ;; Add OPERATION to buffer and try merging
+    (push operation buffer)
+    (let ((ops '(nil)))
+      (while (and (> (length buffer) 1)
+		  (< (length ops) 2))
+	(let ((second (pop buffer))
+	      (first  (pop buffer)))
+	  (setq ops (rudel-merge first second))) ;; TODO correct?
+	(dolist (op ops)
+	  (push op buffer))))
+
+    ;; If there are operations in the buffer, potentially start the
+    ;; timer.
+    (if buffer
+	;; Start timer if necessary
+	(unless timer
+	  (setq timer (run-at-time
+		       0.3 nil ;; no repeat
+		       'rudel-flush this)))
+      ;; Cancel timer if necessary
+      (when timer
+	(cancel-timer timer)
+	(setq timer nil))))
+  )
+
+(defmethod rudel-flush ((this rudel-operation-merger))
+  "Pass remaining queued operations to the target object."
+  (with-slots (buffer timer target) this
+    (dolist (operation (nreverse buffer))
+      (rudel-handle target operation))
+    (setq buffer nil
+	  timer  nil)))
+
+
+;;; Merge methods for operation classes
+;;
+
+(defmethod rudel-merge ((first rudel-insert-op) second)
+  "Merge FIRST and SECOND, if possible."
+  ;; If wish, I had multiple dispatch
+  (cond
+   ;; Merge adjacent inserts.
+   ((and (rudel-insert-op-child-p second)
+	 (= (oref first  :to)
+	    (oref second :from)))
+    (list
+     (rudel-insert-op
+      "merged insert"
+      :from (oref first :from)
+      :data (concat (oref first  :data)
+		    (oref second :data)))))
+
+   (t
+    (list first second))))
+
+(defmethod rudel-merge ((first rudel-delete-op) second)
+  "Merge FIRST and SECOND, if possible."
+  ;; If wish, I had multiple dispatch
+  (cond
+   ;; Merge adjacent deletes.
+   ((and (rudel-delete-op-child-p second)
+	 (= (oref first  :from)
+	    (oref second :from)))
+    (list
+     (rudel-delete-op
+      "merged delete"
+      :from   (oref first :from)
+      :length (+ (oref first  :length)
+		 (oref second :length)))))
+
+
+   (t
+    (list first second))))
+
 (provide 'rudel-operators)
 ;;; rudel-operators.el ends here
