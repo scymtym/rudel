@@ -75,8 +75,8 @@
 		    :documentation
 		    "")
    (sequence-number :initarg  :sequence-number ;; TODO this belongs in the group class?
-		    :type     (integer 0)
-		    :initform 0
+		    :type     (integer 1)
+		    :initform 1
 		    :documentation
 		    ""))
   "TODO")
