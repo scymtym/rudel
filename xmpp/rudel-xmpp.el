@@ -122,10 +122,10 @@ called repeatedly to report progress."
 			 :transport stack
 			 :start     (list 'new host jid))))
 
-    ;; Now start receiving and wait until the connection has been
-    ;; established.
-    (rudel-start xmpp-transport) ;; Gets delegated to the TCP
-				 ;; transport
+    ;; Now start receiving via the TCP connection and wait until the
+    ;; connection has been established.
+    (rudel-start tcp-transport)
+
     (rudel-state-wait xmpp-transport
 		      '(established)
 		      '(we-finalize they-finalize disconnected)
@@ -176,14 +176,13 @@ negotiation."))
   ;; instead.
   (rudel-send
    this
-   (format "<?xml version=\"1.0\" encoding=\"%s\"?>\
-            <stream:stream
-              xmlns:stream=\"http://etherx.jabber.org/streams\" \
-              xmlns=\"jabber:client\" \
-              version=\"%s\" \
-              to=\"%s\" \
-              id=\"%s\">" ;; TODO does this work? not all clients like
-			  ;; additional spaces
+   (format "<?xml version=\"1.0\" encoding=\"%s\"?> \
+<stream:stream \
+xmlns:stream=\"http://etherx.jabber.org/streams\" \
+xmlns=\"jabber:client\" \
+version=\"%s\" \
+to=\"%s\" \
+id=\"%s\">"
 	   "UTF-8"
 	   (mapconcat #'identity
 		      (mapcar #'number-to-string
