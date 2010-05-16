@@ -156,10 +156,18 @@
   )
 
 (defmethod rudel-remove-group ((this rudel-infinote-client-connection)
-			       name)
-  ""
+			       group-or-name)
+  "Remove GROUP-OR-NAME from the list of groups of THIS.
+GROUP-OR-NAME is a `rudel-infinote-group' object or a string in
+which case it is the name of a group."
   (with-slots (groups) this
-    (remhash name groups)))
+    (let ((name (cond
+		 ((rudel-infinote-group-child-p group-or-name)
+		  (object-name group-or-name))
+
+		 (t
+		  group-or-name))))
+      (remhash name groups))))
 
 (defmethod rudel-find-node ((this rudel-infinote-client-connection)
 			    which &optional test key)
