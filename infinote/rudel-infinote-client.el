@@ -122,13 +122,12 @@ objects.")
       (rudel-add-group this group)
 
       (require 'rudel-infinote-node-directory)
-      (rudel-add-document session
-			  (rudel-infinote-node-directory
-			   "root"
-			   :id     0
-			   :parent nil
-			   :group  group)))) ;; TODO temp
-
+      (rudel-add-node this
+		      (rudel-infinote-node-directory
+		       "root"
+		       :id     0
+		       :parent nil
+		       :group  group))))
 
   ;; ;; Register states.
   ;; (rudel-register-states this rudel-infinote-client-states)
