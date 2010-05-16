@@ -592,18 +592,25 @@ This ensures:
 + BUFFER's name does not look like `rudel-auto-publish-exclude-regexp'
 + there is no document named like BUFFER
 + BUFFER does not have an associated document"
-  (and (not (string-match-p rudel-auto-publish-exclude-regexp
-			    (buffer-name buffer)))
-       (not (rudel-find-document
-	     rudel-current-session (buffer-name buffer)))
-       (not (with-current-buffer buffer
-	      rudel-buffer-document))))
+  (and
+   ;; Buffer name does not match exclude regexp
+   (not (string-match-p rudel-auto-publish-exclude-regexp
+			(buffer-name buffer)))
+   ;; No document is named like the buffer
+   (not (rudel-find-document
+	 rudel-current-session (buffer-name buffer)))
+   ;; Buffer does not have a document
+   (not (with-current-buffer buffer
+	  rudel-buffer-document))))
 
 (defun rudel-auto-maybe-publish-buffer (&optional buffer)
   "Publish BUFFER if it satisfies `rudel-auto-publish-predicate'.
 If BUFFER is nil, use the current buffer."
   (when (not buffer)
     (setq buffer (current-buffer)))
+
+  ;; If there is a session and BUFFER has not been excluded via
+  ;; `rudel-auto-publish-predicate', publish it.
   (when (and rudel-current-session
 	     (funcall rudel-auto-publish-predicate buffer))
     (rudel-publish-buffer buffer)))
