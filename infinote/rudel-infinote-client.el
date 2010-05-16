@@ -190,6 +190,50 @@ WHICH is compared to the result of KEY using TEST."
   "Remove NODE from the list of nodes of THIS."
   (object-remove-from-list this :nodes node))
 
+(defmethod rudel-add-new-node ((this rudel-infinote-client-connection)
+			       id parent-id name type)
+  (with-slots (session) this
+    (let ((parent (and parent-id
+		       (rudel-find-node this parent-id))))
+      ;; Signal an error if a parent was specified, but we cannot find
+      ;; it.
+      (unless (or (null parent-id) parent)
+	(signal 'rudel-infinote-no-such-node (list parent-id)))
+
+      ;; Create the new node. Distinguish document and directory nodes
+      ;; based on TYPE.
+      (destructuring-bind (node . is-document)
+	  (cond
+	   ;; This is a special kind of node. Nodes of this kind are
+	   ;; inner nodes in the node tree.
+	   ((string= type "InfSubdirectory")
+	    (cons (rudel-infinote-node-directory
+		   name
+		   :id     id
+		   :parent parent
+		   :group  (rudel-get-group this "InfDirectory"))
+		  nil))
+
+	   ;; Other special kinds of nodes would go here
+
+	   ;; Ordinary document nodes.
+	   ;; TODO the backend should construct the appropriate document
+	   ;; object based on TYPE
+	   ((string= type "InfText")
+	    (cons (rudel-infinote-text-document
+		   name
+		   :id     id
+		   :parent parent)
+		  t)))
+
+	;; Integrate the document object into the hierarchy.
+	(when parent
+	  (rudel-add-child parent node))
+	;;(rudel-add-node session node)
+	(when is-document
+	  (rudel-add-document session node)))))
+  )
+
 (defmethod rudel-send ((this rudel-infinote-client-connection) xml)
   ""
   (with-slots (transport) this
@@ -295,48 +339,6 @@ WHICH is compared to the result of KEY using TEST."
   ;; the server. TODO do we? Consequently we do not remove SELF from
   ;; the list of subscribed users of DOCUMENT.
   )
-
-(defmethod rudel-add-document ((this rudel-infinote-client-connection)
-			       id parent-id name type)
-  (with-slots (session) this
-    (let ((parent (and parent-id
-		       (rudel-find-document session parent-id
-					    #'eq #'rudel-id))))
-      ;; Signal an error if a parent was specified, but we cannot find
-      ;; it.
-      (unless (or (null parent-id) parent)
-	(signal 'rudel-infinote-no-such-node (list parent-id)))
-
-      ;; TODO the backend should construct the appropriate document
-      ;; object based on TYPE
-      ;(let ((document
-      (destructuring-bind (node . is-document)
-	  (cond
-	   ;;
-	   ((string= type "InfText")
-	    (cons (rudel-infinote-text-document
-		   name
-		   :id     id
-		   :parent parent)
-		  t))
-
-	   ;;
-	   ((string= type "InfSubdirectory")
-	    (cons (rudel-infinote-node-directory
-		   name
-		   :id     id
-		   :parent parent
-		   :group  (rudel-get-group this "InfDirectory"))
-		  nil)))
-
-	;;
-	(rudel-add-node  session node)
-	(rudel-add-child parent  node)
-	(when is-document
-	  (rudel-add-document session node)))))
-  )
-
-;; TODO rudel-remove-document
 
 (defmethod rudel-subscribe-session ((this rudel-infinote-client-connection)
 				    name method id)
