@@ -229,7 +229,7 @@ WHICH is compared to the result of KEY using TEST."
 	;; Integrate the document object into the hierarchy.
 	(when parent
 	  (rudel-add-child parent node))
-	;;(rudel-add-node session node)
+	(rudel-add-node this node)
 	(when is-document
 	  (rudel-add-document session node)))))
   )
