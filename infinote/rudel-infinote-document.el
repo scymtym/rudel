@@ -50,15 +50,5 @@
   ()
   "")
 
-(defmethod rudel-unique-name ((this rudel-infinote-document))
-  "Return a unique name for THIS by forming a path from the root node."
-  (with-slots (parent) this
-    (concat
-     (when parent
-       (rudel-unique-name parent))
-     "/"
-     (object-name-string this)))
-  )
-
 (provide 'rudel-infinote-document)
 ;;; rudel-infinote-document.el ends here

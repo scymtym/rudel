@@ -78,5 +78,15 @@ node.")
   "Objects of this class for a tree the leafs of which correspond
 to text documents.")
 
+(defmethod rudel-unique-name ((this rudel-infinote-node))
+  "Return a unique name for THIS by forming a path from the root node."
+  (with-slots (parent) this
+    (concat
+     (when parent
+       (rudel-unique-name parent))
+     "/"
+     (object-name-string this)))
+  )
+
 (provide 'rudel-infinote-node)
 ;;; rudel-infinote-node.el ends here
