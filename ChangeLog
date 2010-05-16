@@ -1,3 +1,60 @@
+2010-05-16  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added error conditions for the infinote backend
+	* infinote/rudel-infinote-errors.el: new file; contains
+	definitions of error conditions for the infinote backend
+	* infinote/Project.ede (target infinote): added
+	rudel-infinote-errors.el
+
+2010-05-15  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed invalid state switch in xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-make-connection):
+	call `rudel-start' of the TCP transport, not the XMPP transport
+	(rudel-xmpp-state-negotiate-stream::rudel-enter): removed
+	whitespace in stream template string
+
+	Sequence numbers start at 1 in infinote/rudel-infinote-client.el
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::sequence-number): start at 1,
+	not 0
+
+2010-05-02  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Improved comment in rudel-infinote-group-state::rudel-accept
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-group-state::rudel-accept): improved a comment
+
+	Removed class rudel-infinote-group-state in rudel-infinote-state.el
+	* infinote/rudel-infinote-state.el (header): added file commentary
+	(rudel-infinote-group-state): removed class; this is now handled
+	in rudel-infinote-group.el
+
+	Silence the byte-compiler in obby/rudel-obby-server.el
+	* obby/rudel-obby-server.el (require rudel-obby): required to
+	silence the byte-compiler
+
+	Fixed state list in rudel-infinote-backend::rudel-connect
+	* infinote/rudel-infinote.el
+	(rudel-infinote-backend::rudel-connect): wait for transport to go
+	to idle state, instead of established; expect disconnected error
+	state
+
+	Fixed parentheses in infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-embed-in-group): fixed parentheses
+
+	Cleanup in infinote/rudel-infinote-group-text-document.el
+	* infinote/rudel-infinote-group-text-document.el
+	(rudel-infinote-group-text-document-states): fixed comment
+	(rudel-infinote-group-text-document::initialize-instance): leave
+	initialization of state list to state-machine class
+
+	Use `display-warning' in infinote/rudel-infinote-group-directory.el
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-directory-state-exploring::rudel-infinote/explore-end):
+	use `display-warning' instead of `warn'
+
 2010-04-17  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Require warnings library where display-warning is used
