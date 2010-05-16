@@ -98,7 +98,7 @@ group.")
 		     (parent parent number)
 		     name
 		     type) xml
-      (rudel-add-document group id parent name type)))
+      (rudel-add-node group id parent name type)))
   nil)
 
 (defmethod rudel-infinote/remove-node
@@ -157,8 +157,9 @@ explored.")
   (with-slots (group remaining-messages) this
     (with-tag-attrs ((id     id     number)
 		     (parent parent number)
-		     name type) xml
-	(rudel-add-document group id parent name type))
+		     name
+		     type) xml
+	(rudel-add-node group id parent name type))
     (decf remaining-messages))
   nil)
 
@@ -252,15 +253,15 @@ communication groups.")
    this rudel-infinote-group-directory-states)
   )
 
-(defmethod rudel-add-document ((this rudel-infinote-group-directory)
-			       id parent name type)
+(defmethod rudel-add-node ((this rudel-infinote-group-directory)
+			   id parent name type)
   ""
   (with-slots (connection) this
-    (rudel-add-document connection id parent name type)))
+    (rudel-add-new-node connection id parent name type)))
 
-(defmethod rudel-remove-document ((this rudel-infinote-group-directory))
+(defmethod rudel-remove-node ((this rudel-infinote-group-directory))
   ""
-  )
+  (error "Removing nodes is not implemented"))
 
 (defmethod rudel-subscribe-session ((this rudel-infinote-group-directory)
 				    name method id)
