@@ -177,8 +177,8 @@ which case it is the name of a group."
 			    which &optional test key)
   "Find node WHICH in the node list of THIS.
 WHICH is compared to the result of KEY using TEST."
-  (with-slots (documents) this
-    (find which documents
+  (with-slots (nodes) this
+    (find which nodes
 	  :key  (or key #'rudel-id)
 	  :test (or test #'=))))
 
