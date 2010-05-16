@@ -3,7 +3,7 @@
    + Components :: protocol backends
    + Type :: task
    + Reporter :: jan
-   + Assigned :: 
+   + Assigned ::
    For small successive edits, the overhead is large in most
    protocols. Bandwidth can be conserved by queuing operations before
    sending and merging adjacent operations when possible. This would
@@ -173,6 +173,12 @@
    + Assigned ::
    Sending key presses as chat messages could be really useful for
    somebody something using rudel.
+** TODO IRC transport backend
+   + Component :: irc backend
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned ::
 ** STARTED Reference manual (#46)
    + Component :: documentation
    + Type :: task
@@ -231,36 +237,22 @@
    Modes
    + global-rudel-header-subscriptions-mode
    + global-rudel-mode-line-publish-state-mode
-** TODO Infinote client functionality
-   + Component :: infinote-backend
-   + Type :: task
-   + Priority :: major
-   + Reporter :: jan
-   + Assigned :: jan
-** TODO Support for trees of documents
-   + Component :: rudel-general
-   + Type :: task
-   + Priority :: major
-   + Reporter :: jan
-   + Assigned :: jan
 ** NEW Publishing read-only buffers leads to problems
    + Component :: multiple components affected
    + Type :: defect
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
 ** NEW SRecode's field edit mode desyncs buffers
    + Component :: obby
    + Type :: defect
-   + Reporter :: jan
-   + Assigned ::
-** NEW TLS transport does not start in stopped state
-   + Component :: tls-transport
-   + Type :: defect
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
 ** NEW Zeroconf needs some time before it works
    + Component :: zeroconf
    + Type :: defect
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
    When requiring the Zeroconf backend and immediately asking for
@@ -269,6 +261,7 @@
 ** NEW Get rid of error calls in the server (#58)
    + Component :: obby-backend
    + Type :: defect
+   + Priority :: major
    + Reporter :: jan
    + Assigned ::
    It makes no sense to call `error` when something goes wrong in
@@ -277,6 +270,7 @@
 ** NEW Global mode line publish state mode does not work for all new buffers (#55)
    + Component :: rudel-user-interface
    + Type :: defect
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
    `global-mode-line-publish-state-mode` is define using
@@ -288,8 +282,27 @@
 ** NEW Handle net6_encryption_info messages (#57)
    + Component :: obby-backend
    + Type :: defect
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
+** STARTED Support for trees of documents
+   + Component :: rudel-general
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned :: jan
+** STARTED Infinote client functionality
+   + Component :: infinote-backend
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned :: jan
+** FIXED TLS transport does not start in stopped state
+   + Component :: tls-transport
+   + Type :: defect
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned :: jan
 ** DONE Integrate new debugging framework
    + Component :: multiple components affected
    + Type :: task
