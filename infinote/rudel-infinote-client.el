@@ -161,14 +161,22 @@
   (with-slots (groups) this
     (remhash name groups)))
 
+(defmethod rudel-find-node ((this rudel-infinote-client-connection)
+			    which &optional test key)
+  "Find node WHICH in the node list of THIS.
+WHICH is compared to the result of KEY using TEST."
+  (with-slots (documents) this
+    (find which documents
+	  :key  (or key #'rudel-id)
+	  :test (or test #'=))))
+
 (defmethod rudel-add-node ((this rudel-infinote-client-connection) node)
-  ""
+  "Add NODE to the list of nodes of THIS."
   (object-add-to-list this :nodes node))
 
-;; TODO implement
-;; (defmethod rudel-remove-node ((this rudel-infinote-client-connection) node)
-;;   ""
-;;   )
+(defmethod rudel-remove-node ((this rudel-infinote-client-connection) node)
+  "Remove NODE from the list of nodes of THIS."
+  (object-remove-from-list this :nodes node))
 
 (defmethod rudel-send ((this rudel-infinote-client-connection) xml)
   ""
