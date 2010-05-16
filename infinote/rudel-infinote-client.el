@@ -36,11 +36,15 @@
 ;;; Code:
 ;;
 
+(eval-when-compile
+  (require 'cl))
+
 (require 'warnings)
 
 (require 'rudel)
 (require 'rudel-state-machine) ;; TODO necessary?
 (require 'rudel-infinote-util)
+(require 'rudel-infinote-errors)
 
 (require 'rudel-infinote-state)
 
@@ -278,9 +282,10 @@
     (let ((parent (and parent-id
 		       (rudel-find-document session parent-id
 					    #'eq #'rudel-id))))
+      ;; Signal an error if a parent was specified, but we cannot find
+      ;; it.
       (unless (or (null parent-id) parent)
-	;(signal
-	(error "Could not find parent node %d" parent-id))
+	(signal 'rudel-infinote-no-such-node (list parent-id)))
 
       ;; TODO the backend should construct the appropriate document
       ;; object based on TYPE
