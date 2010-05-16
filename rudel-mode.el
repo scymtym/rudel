@@ -36,6 +36,8 @@
 
 ;;; History:
 ;;
+;; 0.5 - Automatic publishing, subscribing and mode selection.
+;;
 ;; 0.4 - Display buffer publication state in mode line.
 ;;
 ;; 0.3 - Display subscriptions in header line.
@@ -99,7 +101,7 @@
   (rx
    (or (group "*" (0+ anything) "*")
        " SPEEDBAR"))
-  "Buffer matching this regular expression are not auto-published.
+  "Buffers matching this regular expression are not auto-published.
 
 This option only has an effect when `rudel-auto-publish-predicate' is
 set to `rudel-auto-publish-not-excluded-p' "
@@ -584,7 +586,7 @@ the mode. nil means to toggle the mode."
 ;;; Auto publish minor mode
 ;;
 
-(defun rudel-auto-publish-not-exluded-p (buffer)
+(defun rudel-auto-publish-not-excluded-p (buffer)
   "Nil when BUFFER should be excluded from auto-publishing.
 This ensures:
 + BUFFER's name does not look like `rudel-auto-publish-exclude-regexp'
