@@ -72,12 +72,17 @@
    (groups          :initarg  :groups
 		    :type     hash-table
 		    :documentation
-		    "")
+		    "Association of group names and
+objects. Groups are objects of subclasses of
+`rudel-infinote-group'.")
    (nodes           :initarg  :nodes
 		    :type     list
 		    :initform nil
 		    :documentation
-		    "")
+		    "List of node objects in this
+connection. Nodes are objects of subclasses of
+`rudel-infinote-node'. Nodes usually have associated group
+objects.")
    (sequence-number :initarg  :sequence-number ;; TODO this belongs in the group class?
 		    :type     (integer 1)
 		    :initform 1
