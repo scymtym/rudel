@@ -1,6 +1,6 @@
 ;;; rudel-operators.el --- Sets of modification operators for Rudel objects
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, operators
@@ -25,22 +25,22 @@
 ;;; Commentary:
 ;;
 ;; Collections of operations on specific objects are collected into
-;; classes. Current there are
+;; classes. Currently there are
 ;;
-;; - rudel-document-operators: realize operations on document objects
+;; + rudel-document-operators: perform operations on document objects
 ;;
-;; - rudel-connection-operators: realize operations on connection
+;; + rudel-connection-operators: perform operations on connection
 ;;   objects
 ;;
-;; - rudel-overlay-operators: realize operations by altering the
-;;   overlays of buffer objects
+;; + rudel-overlay-operators: perform operations by altering overlays
+;;   of buffer objects
 ;;
-;; - rudel-hook-operators: realize operations by calling hooks
+;; + rudel-hook-operators: perform operations by calling hooks
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -127,7 +127,7 @@ buffer.")
       (unless position
 	(with-current-buffer buffer
 	  (setq position (- (point-max) (length data) 1))))
-	
+
 
       (rudel-update-author-overlay-after-insert
        buffer (+ position 1) (length data) user)))
@@ -148,7 +148,7 @@ buffer.")
   ((document :initarg  :document
 	     :type     rudel-document-child
 	     :documentation
-	     "The document object to which operations refer.")   
+	     "The document object to which operations refer.")
    (user     :initarg  :user
 	     :type     rudel-user-child
 	     :documentation
