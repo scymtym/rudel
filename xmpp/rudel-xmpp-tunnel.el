@@ -48,12 +48,12 @@
   "Transport backend that tunnels any kind of data (not
 necessarily XML) through an XMPP connection.")
 
-(defmethod rudel-send ((this rudel-xmpp-transport) data)
+(defmethod rudel-send ((this rudel-xmpp-tunnel-transport) data)
   ""
   (let ((encoded (base64-encode-string data)))
     (rudel-send this `(("data") ,encoded))))
 
-(defmethod rudel-message ((this rudel-xmpp-transport) xml)
+(defmethod rudel-message ((this rudel-xmpp-tunnel-transport) xml)
   ""
   (with-tag-attrs (data) xml
     (let ((decoded (base64-decode-string data)))
