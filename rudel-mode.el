@@ -1,6 +1,6 @@
 ;;; rudel-mode.el --- Global and buffer-local Rudel minor modes
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, mode
@@ -150,11 +150,11 @@
 (defun rudel-header-subscriptions--add-user (document user)
   "Start monitoring USER and update header line."
   ;; Monitor USER.
-  (lexical-let ((document document))
+  (lexical-let ((document1 document))
     (object-add-hook user 'change-hook
 		     (lambda (user)
 		       (rudel-header-subscriptions--user-change
-			document user))))
+			document1 user))))
 
   ;; Update the header line once to get the user added.
   (rudel-header-subscriptions--update-from-document document)
@@ -599,7 +599,9 @@ line publish state mode; otherwise, turn it off."
 
 If ARG is null, toggle global Rudel mode.
 If ARG is a number greater than zero, turn on global Rudel mode;
-otherwise, turn it off."
+otherwise, turn it off.
+
+\\{rudel-minor-keymap}"
   :init-value nil
   :keymap     rudel-minor-keymap
   :global     t
