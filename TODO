@@ -1,16 +1,41 @@
 * Future
-** TODO Consolidate operations before sending
-   + Components :: protocol backends
+** TODO Keep a log of the current session
+   + Components :: multiple components affected
    + Type :: task
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
-   For small successive edits, the overhead is large in most
-   protocols. Bandwidth can be conserved by queuing operations before
-   sending and merging adjacent operations when possible. This would
-   be most important for the IRC backend.
+   The following aspects could be logged:
+   + Joining/leaving session
+   + Changing color
+   + Subscribing/unsubscribing
+** TODO Generic activity indicator in mode line
+   + Components :: user interface
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
+   Indicate offscreen events like in ERC's [#,i] indicators
+** TODO Track last modification of chunks
+   This would be useful for
+   + Fading old changes towards transparent
+   + Showing tooltips like
+     #+BEGIN_EXAMPLE
+     Written by Jan Moringen
+     last changed 20 minutes ago
+     #+END_EXAMPLE
+** TODO Peer view indication
+   + Components :: user interface
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
+   Somehow communicate to peers at which documents the user is
+   currently looking
 ** TODO Allow multiple transport listeners per server session
    + Components :: multiple components affected
    + Type :: task
+   + Priority :: major
    + Reporter :: jan
    + Assigned ::
    For protocol backends that work with multiple transports, it would
@@ -61,7 +86,7 @@
    + Type :: task
    + Reporter :: jan
    + Assigned ::
-** TODO Allow users to insert comments
+** TODO Allow users to insert comments			    :branch_comments:
    + Component :: multiple components affected
    + Type :: task
    + Reporter :: jan
@@ -173,37 +198,57 @@
    + Assigned ::
    Sending key presses as chat messages could be really useful for
    somebody something using rudel.
-** TODO IRC transport backend
+** STARTED Consolidate operations before sending		 :branch_irc:
+   + Components :: protocol backends
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned ::
+   For small successive edits, the overhead is large in most
+   protocols. Bandwidth can be conserved by queuing operations before
+   sending and merging adjacent operations when possible. This would
+   be most important for the IRC backend.
+** STARTED IRC transport backend				 :branch_irc:
    + Component :: irc backend
    + Type :: task
    + Priority :: major
    + Reporter :: jan
    + Assigned ::
+** STARTED Make document history available		    :branch_activity:
+   + Components :: user interface
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
+   We should create a separate buffer and put it into a kind of
+   history browse mode
+** STARTED Typing/activity notification			    :branch_activity:
+   + Components :: user interface
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
+   + Indicate who is currently editing a document
+   + Idle mechanism for users?
 ** STARTED Reference manual (#46)
    + Component :: documentation
    + Type :: task
    + Reporter :: jan
-   + Assigned :: jan
+   + Assigned ::
    In addition to the [[file:README][README]], a proper reference manual would be
    nice. At some point, complete info documentation may be
-   desirable. Docbook seems to be the best approach since we get (at
-   least):
+   desirable. Docbook or org-mode seem to be the best approach since
+   we get (at least):
    + Pdf
    + Html
    + Info
 
 
 * Milestone rudel-0.4
-** TODO Integrate unit tests
+** TODO Integrate existing unit tests
    + Component :: multiple components affected
    + Type :: task
    + Priority :: major
-   + Reporter :: jan
-   + Assigned ::
-** TODO Telepathy transport
-   + Component :: telepathy-backend
-   + Type :: task
-   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
 ** TODO Only read color hue, not complete colors (#53)
@@ -213,6 +258,12 @@
    + Assigned ::
    Taking control over saturation and value away from the user makes
    it impossible to choose unreadable colors.
+** STARTED Telepathy transport				   :branch_telepathy:
+   + Component :: telepathy-backend
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
 ** STARTED SubEthaEdit client functionality
    + Component :: subethaedit-backend
    + Type :: task
