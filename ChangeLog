@@ -1,4 +1,52 @@
+2010-05-23  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Improved arg handling rudel-find-{user, document} in rudel.el
+	* rudel.el (rudel-session::rudel-find-user):
+	(rudel-session::rudel-find-document): handle optional arguments
+	more efficiently
+	(rudel-user): added a comment
+
+	Wait for idle state in rudel-infinote-backend::rudel-connect
+	* infinote/rudel-infinote.el
+	(rudel-infinote-backend::rudel-connect): wait for the infinote
+	connection object to enter its idle state
+
+	Improved documentation string of class rudel-infinote-node
+	* infinote/rudel-infinote-node.el (rudel-infinote-node): improved
+	documentation string
+
+	Disabled query on exit for TLS and socket transport processes
+	* tls/rudel-tls.el (rudel-tls-make-process): set query on exit
+	flag of the process to nil
+	* socket/rudel-socket.el
+	(rudel-tcp-backend::rudel-make-connection):
+	(rudel-tcp-backend::rudel-wait-for-connections): set :noquery flag
+	of the new process
+
+	Improved docstring of global-rudel-minor-mode in rudel-mode.el
+	* rudel-mode.el (header): updated copyright
+	(rudel-header-subscriptions--add-user): renamed lexical-let
+	binding for clarity
+	(global-rudel-minor-mode): Added key bindings to documentation
+	string
+
+	Small fixes and improvements in README
+	* README (INTRODUCTION): fixed a typo
+	(GETTING STARTED): added comment about enabling
+	global-rudel-minor-mode in .emacs; added markup to example
+
+	Added branches as tags and other updates in TODO
+	* TODO (Future): added tasks typing notification, document
+	history, session log, activity indicator, tracking of chunk
+	modifications, peer view indication; added branch tags
+	(Milestone 0.4): added branch tags
+
 2010-05-21  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed header sections in rudel-operators.el
+	* rudel-operators.el (header): updated copyright; minor
+	improvements in commentary section; minor improvements in history
+	section
 
 	Fixed XMPP TLS state name in xmpp/rudel-xmpp-tls.el
 	* xmpp/rudel-xmpp-tls.el (rudel-xmpp-tls-states): fixed class name
