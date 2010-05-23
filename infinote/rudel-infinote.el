@@ -109,6 +109,13 @@ Return the connection object."
 		      '(we-finalize they-finalize disconnected)
 		      progress-callback) ;; TODO this should be in the transport itself
 
+    ;; Wait until the connection has done its session initiation on
+    ;; the protocol level.
+    (rudel-state-wait connection
+		      '(idle)
+		      '()
+		      progress-callback)
+
     ;; The connection is now ready for action; Return it.
     connection)
   )
