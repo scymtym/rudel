@@ -1,4 +1,13 @@
 * Future
+** TODO Status icons of users should be clickable
+   + Components :: user interface
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
+   The status icon of users should be clickable. For example, when the
+   user is typing, clicking the status icon should move point to the
+   location of the changes.
 ** TODO Keep a log of the current session
    + Components :: multiple components affected
    + Type :: task
@@ -214,7 +223,7 @@
    + Priority :: major
    + Reporter :: jan
    + Assigned ::
-** STARTED Make document history available		    :branch_activity:
+** STARTED Make document history available			 :branch_irc:
    + Components :: user interface
    + Type :: task
    + Priority :: minor
