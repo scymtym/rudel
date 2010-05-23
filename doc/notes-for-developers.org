@@ -1,3 +1,12 @@
+* Related Work
+** SubEthaEdit
+   http://www.codingmonkeys.de/subethaedit/
+** Gobby
+   http://gobby.0x539.de/trac/
+** Eclipse Communication Framework
+   http://www.eclipse.org/ecf/
+** Saros
+   https://www.inf.fu-berlin.de/w/SE/DPP
 * Simulating a slow network connection
   Probably only works for Linux
   + Installing ::
