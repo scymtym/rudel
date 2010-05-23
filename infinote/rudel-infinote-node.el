@@ -75,8 +75,9 @@ node.")
 	   :type    (or null rudel-infinote-group-child)
 	   :documentation
 	   "The communication group associated with this node."))
-  "Objects of this class for a tree the leafs of which correspond
-to text documents.")
+  "Objects of this class form a tree the leafs of which
+correspond to text documents or other content containing
+documents.")
 
 (defmethod rudel-unique-name ((this rudel-infinote-node))
   "Return a unique name for THIS by forming a path from the root node."
