@@ -561,14 +561,16 @@ a 'self' user object."))
 	;; Construct user object and add it to the session.
 	(let ((user (rudel-obby-user
 		     name
+		     :color      color
 		     :client-id  client-id
 		     :user-id    user-id
 		     :connected  t
-		     :encryption (string= encryption "1")
-		     :color      color)))
+		     :encryption (string= encryption "1"))))
 	  (rudel-add-user session user)
 
-	  ;; The first user object describes the user of this client.
+	  ;; If the session does not have a 'self' user, use this one
+	  ;; (since the first 'net6_client_join' message is always
+	  ;; referring to ourselves).
 	  (unless have-self
 	    (with-slots (self) session
 	      (setq self      user
@@ -712,21 +714,22 @@ a 'self' user object."))
 (defmethod rudel-obby/obby_document/sync_chunk
   ((this rudel-obby-client-state-document-synching)
    document data user-id)
-  "Handle obby 'sync_chunk' message."
+  "Handle 'sync_chunk' submessage of the obby 'document' message."
   (with-parsed-arguments ((user-id number))
     (with-slots (connection remaining-bytes) this
       (with-slots (session) connection
-	(let* ((user      (unless (zerop user-id)
-			    (rudel-find-user session user-id
-					     #'= #'rudel-id)))
-	       (operation (rudel-insert-op "bulk-insert"
-					   :from nil
-					   :data data)))
+	;; Fetch the user object for `user-id' unless `user-id' is 0.
+	(let ((user      (unless (zerop user-id)
+			   (rudel-find-user session user-id
+					    #'= #'rudel-id)))
+	      (operation (rudel-insert-op "bulk-insert"
+					  :from nil
+					  :data data)))
 	  (rudel-remote-operation document user operation)))
 
       ;; After all bytes are transferred, go back to idle state.
       (decf remaining-bytes (string-bytes data))
-      (if (= remaining-bytes 0)
+      (if (zerop remaining-bytes)
 	  'idle
 	nil)))
   )
@@ -933,7 +936,7 @@ documents."))
 	      (rudel-obby-format-color color)))
 
 (defmethod rudel-publish ((this rudel-obby-connection) document)
-  ""
+  "Publish DOCUMENT to server."
   ;; Create a new jupiter context for DOCUMENT.
   (rudel-add-context this document)
 
