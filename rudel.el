@@ -4,6 +4,7 @@
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, collaboration
+;; Version: 0.3
 ;; URL: http://rudel.sourceforge.net/
 ;; X-RCS: $Id:$
 ;;
