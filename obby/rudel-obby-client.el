@@ -834,7 +834,7 @@ sends and receives its data.")
 documents."))
   "Class rudel-obby-connection ")
 
-(defmethod initialize-instance ((this rudel-obby-connection) &rest slots)
+(defmethod initialize-instance ((this rudel-obby-connection) slots)
   ;; Initialize slots of THIS
   (when (next-method-p)
     (call-next-method))
