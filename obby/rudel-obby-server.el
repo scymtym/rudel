@@ -51,6 +51,8 @@
 (eval-when-compile
   (require 'cl))
 
+(require 'warnings)
+
 (require 'eieio)
 
 (require 'jupiter)
@@ -328,9 +330,15 @@ of her color to COLOR."
     (let ((document (with-slots (server) (oref this :connection)
 		      (rudel-find-document server doc-id
 					   #'equal #'rudel-both-ids))))
-      (rudel-dispatch
-       this "rudel-obby/obby_document/" action
-       (append (list document) arguments))))
+      (if document
+	  (rudel-dispatch
+	   this "rudel-obby/obby_document/" action
+	   (append (list document) arguments))
+	;; Display a warning if we cannot find the document.
+	(display-warning
+	 '(rudel obby)
+	 (format "Could not find document: `%s'" doc-id)
+	 :warning))))
   )
 
 (defmethod rudel-obby/obby_document/subscribe
