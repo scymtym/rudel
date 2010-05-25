@@ -156,6 +156,9 @@ Return the connection object."
 		      :transport transport
 		      :info      info)))
 
+    ;; Make connection known to session
+    (oset session :connection connection)
+
     ;; Start the transport and wait until the basic session setup is
     ;; complete.
     (rudel-start transport)

@@ -926,7 +926,6 @@ will be prompted for."
 		      protocol-backend transport
 		      info #'rudel-ask-connect-info
 		      (rudel-make-state-progress-callback "Joining ")))
-    (oset session :connection connection)
 
     ;; Store the new session object globally.
     (setq rudel-current-session session)
