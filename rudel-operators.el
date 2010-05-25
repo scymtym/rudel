@@ -111,8 +111,6 @@ connection.")
   "Handle OPERATION, possibly using information from CONTEXT.
 Operation is an instance of a subclass of `rudel-operation'.
 CONTEXT is a property list."
-  ;; TODO temporarily storing the connection like this is not optimal
-  (oset this :connection (plist-get context :connection))
   (rudel-apply operation this))
 
 

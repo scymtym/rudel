@@ -280,6 +280,20 @@ the local user"))
   "Objects represent a collaborative editing session from a
 client perspective.")
 
+(defmethod rudel-add-document :before ((this rudel-client-session) document)
+  "Add local operation handlers to DOCUMENT."
+  (with-slots (connection) this
+    ;; Add the operation handler that notifies the connection when
+    ;; local document changes occur.
+    (rudel-add-local-operation-handler
+     document
+     (rudel-operation-merger
+      "remote-operation-merger"
+      :target (rudel-connection-operators
+	       "remote-connection-operators"
+	       :connection connection
+	       :document   document)))))
+
 (defmethod rudel-end ((this rudel-client-session))
   ;; Clean everything up
   (with-slots (connection users documents) this
@@ -445,18 +459,17 @@ operations.."
   (when (next-method-p)
     (call-next-method))
 
-  ;; Initialize lists of local and remote operators.
+  ;; Initialize lists of local and remote operators. The operation
+  ;; handlers added here are exclusively concerned with the buffer
+  ;; associated to the document and its overlays. Any other behavior
+  ;; has to be added externally.
   (with-slots (local-operators remote-operators) this
     (setq local-operators  (list
 			    ;; Update overlays
 			    (rudel-overlay-operators
 			     "remote-overlay-operators"
-			     :document this)
+			     :document this))
 
-			    ;; Notify connection
-			    (rudel-connection-operators
-			     "remote-connection-operators"
-				      :document this))
 	  remote-operators (list
 			    ;; Update buffer contents
 			    (rudel-document-operators
