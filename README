@@ -1,6 +1,6 @@
 * INTRODUCTION
 
-  Rudel is collaborative editing environment for GNU Emacs. Its
+  Rudel is a collaborative editing environment for GNU Emacs. Its
   purpose is to share buffers with other users in order to edit the
   contents of those buffers collaboratively. Rudel supports multiple
   backends to enable communication with other collaborative editors
@@ -24,7 +24,13 @@
 
   : M-x global-rudel-minor-mode
 
-  This will enabled Rudel's key bindings and menu entry.
+  This will enabled Rudel's key bindings and menu entry. To enable
+  this mode permanently, the following fragment can be added to the
+  Emacs initialization file (usually .emacs):
+
+  #+BEGIN_SRC emacs-lisp
+  (global-rudel-minor-mode 1)
+  #+END_SRC
 
 ** JOINING A SESSION
 
@@ -37,6 +43,7 @@
    A typical example of the questions asked when joining a session may
    look like this:
 
+   #+BEGIN_EXAMPLE
    Server: localhost RET
    Port (default 6522): RET
    Username: jan RET
@@ -44,9 +51,11 @@
    Use Encryption (y or n): n RET
    Global Password: RET
    User Password: RET
+   #+END_EXAMPLE
 
-   IMPORTANT: For sessions using the obby backend (like in the example
-   above), the following restriction has to be taken into account:
+   *IMPORTANT*: For sessions using the obby backend (like in the
+   example above), the following restriction has to be taken into
+   account:
    + When the server is Rudel inside an Emacs process:
      Encryption cannot be used currently in this case. Consequently
      the answer to the `Use Encryption (y or n):' prompt above has to
@@ -74,10 +83,10 @@
 
 * KNOWN ISSUES
 
-   + Publishing eshell buffers will cause your session to be
-     disconnected since eshell disables the hooks that Rudel uses to
-     catch changes to the buffer. As a workaround, you can use M-x
-     ansi-term or another terminal emulator.
+  + Publishing eshell buffers will cause your session to be
+    disconnected since eshell disables the hooks that Rudel uses to
+    catch changes to the buffer. As a workaround, you can use M-x
+    ansi-term or another terminal emulator.
 
 * LICENSE
 

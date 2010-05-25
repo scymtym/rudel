@@ -208,7 +208,8 @@ and :port."
 		  :name     (format "TCP to %s" host)
 		  :host     host
 		  :service  port
-		  :stop     t)))
+		  :stop     t
+		  :noquery  t)))
     (rudel-socket-transport
      (format "to %s:%s" host port)
      :socket socket))
@@ -236,6 +237,7 @@ INFO has to be a property list containing the key :port."
 		      :name     (format "TCP on %s" port)
 		      :service  port
 		      :server   t
+		      :noquery  t
 		      :filter   #'ignore
 		      :sentinel #'ignore
 		      :log

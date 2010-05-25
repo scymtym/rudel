@@ -1,9 +1,9 @@
-;;; rudel-infinote-document.el --- Infinote document class
+;;; rudel-infinote-errors.el --- Error data used in the infinote Rudel backend
 ;;
-;; Copyright (C) 2009, 2010 Jan Moringen
+;; Copyright (C) 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: rudel, infinote, document
+;; Keywords: Rudel, infinote, errors
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -24,9 +24,8 @@
 
 ;;; Commentary:
 ;;
-;; This file contains the `rudel-infinote-document' class which is the
-;; base class for different document classes used in the infinote
-;; backend. (See rudel-infinote-node.el for an overview)
+;; This file contains definitions of error conditions used in the
+;; Rudel infinote backend.
 
 
 ;;; History:
@@ -37,18 +36,22 @@
 ;;; Code:
 ;;
 
-(require 'eieio)
-
-(require 'rudel-infinote-node)
+(require 'rudel-errors)
 
 
-;;; Class rudel-infinote-document
+;;; Error conditions
 ;;
 
-(defclass rudel-infinote-document (rudel-document
-				   rudel-infinote-node)
-  ()
-  "")
+;; rudel-infinote-no-such-node
 
-(provide 'rudel-infinote-document)
-;;; rudel-infinote-document.el ends here
+(intern "rudel-infinote-no-such-node")
+
+(put 'rudel-infinote-no-such-node 'error-conditions
+     '(error
+       rudel-error rudel-infinote-no-such-node))
+
+(put 'rudel-infinote-no-such-node 'error-message
+     "No such node")
+
+(provide 'rudel-infinote-errors)
+;;; rudel-infinote-errors.el ends here

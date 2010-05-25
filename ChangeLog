@@ -1,3 +1,162 @@
+2010-05-23  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Improved arg handling rudel-find-{user, document} in rudel.el
+	* rudel.el (rudel-session::rudel-find-user):
+	(rudel-session::rudel-find-document): handle optional arguments
+	more efficiently
+	(rudel-user): added a comment
+
+	Wait for idle state in rudel-infinote-backend::rudel-connect
+	* infinote/rudel-infinote.el
+	(rudel-infinote-backend::rudel-connect): wait for the infinote
+	connection object to enter its idle state
+
+	Improved documentation string of class rudel-infinote-node
+	* infinote/rudel-infinote-node.el (rudel-infinote-node): improved
+	documentation string
+
+	Disabled query on exit for TLS and socket transport processes
+	* tls/rudel-tls.el (rudel-tls-make-process): set query on exit
+	flag of the process to nil
+	* socket/rudel-socket.el
+	(rudel-tcp-backend::rudel-make-connection):
+	(rudel-tcp-backend::rudel-wait-for-connections): set :noquery flag
+	of the new process
+
+	Improved docstring of global-rudel-minor-mode in rudel-mode.el
+	* rudel-mode.el (header): updated copyright
+	(rudel-header-subscriptions--add-user): renamed lexical-let
+	binding for clarity
+	(global-rudel-minor-mode): Added key bindings to documentation
+	string
+
+	Small fixes and improvements in README
+	* README (INTRODUCTION): fixed a typo
+	(GETTING STARTED): added comment about enabling
+	global-rudel-minor-mode in .emacs; added markup to example
+
+	Added branches as tags and other updates in TODO
+	* TODO (Future): added tasks typing notification, document
+	history, session log, activity indicator, tracking of chunk
+	modifications, peer view indication; added branch tags
+	(Milestone 0.4): added branch tags
+
+2010-05-21  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed header sections in rudel-operators.el
+	* rudel-operators.el (header): updated copyright; minor
+	improvements in commentary section; minor improvements in history
+	section
+
+	Fixed XMPP TLS state name in xmpp/rudel-xmpp-tls.el
+	* xmpp/rudel-xmpp-tls.el (rudel-xmpp-tls-states): fixed class name
+	for start-tls state rudel-xmpp-start-tls-start ->
+	rudel-xmpp-state-tls-start
+
+	Fixed class name in methods in xmpp/rudel-xmpp-tunnel.el
+	* xmpp/rudel-xmpp-tunnel.el
+	(rudel-xmpp-tunnel-transport::rudel-send):
+	(rudel-xmpp-tunnel-transport::rudel-message): fixed class name in
+	method definition rudel-xmpp-transport ->
+	rudel-xmpp-tunnel-transport
+
+2010-05-16  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Updated IRC, TLS and infinote related issues in TODO
+	* TODO (Future): added task for IRC backend
+	(Milestone 0.3): marked TLS start state problem as fixed; marked
+	document tree-related tasks as started
+
+	Add new nodes to list in infinote/rudel-infinote-client.el
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-add-new-node): call
+	rudel-add-node to add the new nodes to the node list of the client
+	connection
+
+	Moved rudel-unique-name from infinote-document to infinote-node
+	* infinote/rudel-infinote-node.el
+	(rudel-infinote-node::rudel-unique-name): new method; move to
+	rudel-infinote-note from rudel-infinote-document
+	* infinote/rudel-infinote-document.el
+	(rudel-infinote-document::rudel-unique-name): removed; moved to
+	rudel-infinote-node
+
+	Fixed slot in rudel-infinote-client-connection::rudel-find-node
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-find-node): fixed name of
+	slot documents -> nodes
+
+	Renamed r-add-document -> r-add-new-node in -infinote-client.el
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-add-new-node): renamed
+	rudel-add-document -> rudel-add-new-node; added comments
+
+	Renamed -document to -node in rudel-infinote-group-directory.el
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-directory-state-idle::rudel-infinote/add-node):
+	call rudel-add-node instead of rudel-add-document
+	(rudel-infinote-directory-state-exploring::rudel-infinote/add-node):
+	call rudel-add-node instead of rudel-add-document
+	(rudel-infinote-group-directory::rudel-add-node): renamed
+	rudel-add-document -> rudel-add-node
+	(rudel-infinote-group-directory::rudel-remove-node): renamed
+	rudel-remove-document -> rudel-remove-node
+
+	Improved creation of root node in rudel-infinote-client-connection
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::initialize-instance): add the
+	root directory as a node, not as a document
+
+	Docstrings of groups and nodes of rudel-infinote-client-connection
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::groups): added documentation
+	string
+	(rudel-infinote-client-connection::nodes): added documentation
+	string
+
+	Extended rudel-remove-group infinote/in rudel-infinote-client.el
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-remove-group): changed
+	argument to allow for group name or group object; added
+	documentation string
+
+	Methods of rudel-infinote-client to find, add, remove nodes
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-find-node): new method;
+	find node by its id or by other criteria
+	(rudel-infinote-client-connection::rudel-add-node): added
+	documentation string
+	(rudel-infinote-client-connection::rudel-remove-node): new method;
+	remove a node
+
+	Signal proper errors in infinote/rudel-infinote-client.el
+	* infinote/rudel-infinote-client.el (require cl): new require; we
+	use cl functions
+	(require rudel-infinote-errors): new require; for specialized
+	infinote errors
+	(rudel-infinote-client-connection::rudel-add-document): when we
+	cannot find a parent node, signal rudel-infinote-no-such-node;
+	added a comment
+
+	Added error conditions for the infinote backend
+	* infinote/rudel-infinote-errors.el: new file; contains
+	definitions of error conditions for the infinote backend
+	* infinote/Project.ede (target infinote): added
+	rudel-infinote-errors.el
+
+2010-05-15  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed invalid state switch in xmpp/rudel-xmpp.el
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-make-connection):
+	call `rudel-start' of the TCP transport, not the XMPP transport
+	(rudel-xmpp-state-negotiate-stream::rudel-enter): removed
+	whitespace in stream template string
+
+	Sequence numbers start at 1 in infinote/rudel-infinote-client.el
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::sequence-number): start at 1,
+	not 0
+
 2010-05-03  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Strip info when advertising in rudel-irc-erc-session-initiation.el
@@ -27,6 +186,40 @@
 	adjacent operations
 	(rudel-delete-op::rudel-merge): new method; merge operation with
 	adjacent operations
+
+	Improved comment in rudel-infinote-group-state::rudel-accept
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-group-state::rudel-accept): improved a comment
+
+	Removed class rudel-infinote-group-state in rudel-infinote-state.el
+	* infinote/rudel-infinote-state.el (header): added file commentary
+	(rudel-infinote-group-state): removed class; this is now handled
+	in rudel-infinote-group.el
+
+	Silence the byte-compiler in obby/rudel-obby-server.el
+	* obby/rudel-obby-server.el (require rudel-obby): required to
+	silence the byte-compiler
+
+	Fixed state list in rudel-infinote-backend::rudel-connect
+	* infinote/rudel-infinote.el
+	(rudel-infinote-backend::rudel-connect): wait for transport to go
+	to idle state, instead of established; expect disconnected error
+	state
+
+	Fixed parentheses in infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-embed-in-group): fixed parentheses
+
+	Cleanup in infinote/rudel-infinote-group-text-document.el
+	* infinote/rudel-infinote-group-text-document.el
+	(rudel-infinote-group-text-document-states): fixed comment
+	(rudel-infinote-group-text-document::initialize-instance): leave
+	initialization of state list to state-machine class
+
+	Use `display-warning' in infinote/rudel-infinote-group-directory.el
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-directory-state-exploring::rudel-infinote/explore-end):
+	use `display-warning' instead of `warn'
 
 2010-04-17  Jan Moringen  <scymtym@users.sourceforge.net>
 

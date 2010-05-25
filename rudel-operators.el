@@ -25,22 +25,22 @@
 ;;; Commentary:
 ;;
 ;; Collections of operations on specific objects are collected into
-;; classes. Current there are
+;; classes. Currently there are
 ;;
-;; - rudel-document-operators: realize operations on document objects
+;; + rudel-document-operators: perform operations on document objects
 ;;
-;; - rudel-connection-operators: realize operations on connection
+;; + rudel-connection-operators: perform operations on connection
 ;;   objects
 ;;
-;; - rudel-overlay-operators: realize operations by altering the
-;;   overlays of buffer objects
+;; + rudel-overlay-operators: perform operations by altering overlays
+;;   of buffer objects
 ;;
-;; - rudel-hook-operators: realize operations by calling hooks
+;; + rudel-hook-operators: perform operations by calling hooks
 
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial version
 
 
 ;;; Code:

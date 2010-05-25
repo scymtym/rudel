@@ -113,6 +113,10 @@ for the network connection."
     ;; Mark the process as supporting TLS encryption
     (process-put process :supports-tls t)
 
+    ;; Disable querying the user about this process being still active
+    ;; when exiting Emacs.
+    (set-process-query-on-exit-flag process nil)
+
     process)
   )
 

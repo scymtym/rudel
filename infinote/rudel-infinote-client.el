@@ -36,11 +36,15 @@
 ;;; Code:
 ;;
 
+(eval-when-compile
+  (require 'cl))
+
 (require 'warnings)
 
 (require 'rudel)
 (require 'rudel-state-machine) ;; TODO necessary?
 (require 'rudel-infinote-util)
+(require 'rudel-infinote-errors)
 
 (require 'rudel-infinote-state)
 
@@ -68,15 +72,20 @@
    (groups          :initarg  :groups
 		    :type     hash-table
 		    :documentation
-		    "")
+		    "Association of group names and
+objects. Groups are objects of subclasses of
+`rudel-infinote-group'.")
    (nodes           :initarg  :nodes
 		    :type     list
 		    :initform nil
 		    :documentation
-		    "")
+		    "List of node objects in this
+connection. Nodes are objects of subclasses of
+`rudel-infinote-node'. Nodes usually have associated group
+objects.")
    (sequence-number :initarg  :sequence-number ;; TODO this belongs in the group class?
-		    :type     (integer 0)
-		    :initform 0
+		    :type     (integer 1)
+		    :initform 1
 		    :documentation
 		    ""))
   "TODO")
@@ -113,13 +122,12 @@
       (rudel-add-group this group)
 
       (require 'rudel-infinote-node-directory)
-      (rudel-add-document session
-			  (rudel-infinote-node-directory
-			   "root"
-			   :id     0
-			   :parent nil
-			   :group  group)))) ;; TODO temp
-
+      (rudel-add-node this
+		      (rudel-infinote-node-directory
+		       "root"
+		       :id     0
+		       :parent nil
+		       :group  group))))
 
   ;; ;; Register states.
   ;; (rudel-register-states this rudel-infinote-client-states)
@@ -152,19 +160,79 @@
   )
 
 (defmethod rudel-remove-group ((this rudel-infinote-client-connection)
-			       name)
-  ""
+			       group-or-name)
+  "Remove GROUP-OR-NAME from the list of groups of THIS.
+GROUP-OR-NAME is a `rudel-infinote-group' object or a string in
+which case it is the name of a group."
   (with-slots (groups) this
-    (remhash name groups)))
+    (let ((name (cond
+		 ((rudel-infinote-group-child-p group-or-name)
+		  (object-name group-or-name))
+
+		 (t
+		  group-or-name))))
+      (remhash name groups))))
+
+(defmethod rudel-find-node ((this rudel-infinote-client-connection)
+			    which &optional test key)
+  "Find node WHICH in the node list of THIS.
+WHICH is compared to the result of KEY using TEST."
+  (with-slots (nodes) this
+    (find which nodes
+	  :key  (or key #'rudel-id)
+	  :test (or test #'=))))
 
 (defmethod rudel-add-node ((this rudel-infinote-client-connection) node)
-  ""
+  "Add NODE to the list of nodes of THIS."
   (object-add-to-list this :nodes node))
 
-;; TODO implement
-;; (defmethod rudel-remove-node ((this rudel-infinote-client-connection) node)
-;;   ""
-;;   )
+(defmethod rudel-remove-node ((this rudel-infinote-client-connection) node)
+  "Remove NODE from the list of nodes of THIS."
+  (object-remove-from-list this :nodes node))
+
+(defmethod rudel-add-new-node ((this rudel-infinote-client-connection)
+			       id parent-id name type)
+  (with-slots (session) this
+    (let ((parent (and parent-id
+		       (rudel-find-node this parent-id))))
+      ;; Signal an error if a parent was specified, but we cannot find
+      ;; it.
+      (unless (or (null parent-id) parent)
+	(signal 'rudel-infinote-no-such-node (list parent-id)))
+
+      ;; Create the new node. Distinguish document and directory nodes
+      ;; based on TYPE.
+      (destructuring-bind (node . is-document)
+	  (cond
+	   ;; This is a special kind of node. Nodes of this kind are
+	   ;; inner nodes in the node tree.
+	   ((string= type "InfSubdirectory")
+	    (cons (rudel-infinote-node-directory
+		   name
+		   :id     id
+		   :parent parent
+		   :group  (rudel-get-group this "InfDirectory"))
+		  nil))
+
+	   ;; Other special kinds of nodes would go here
+
+	   ;; Ordinary document nodes.
+	   ;; TODO the backend should construct the appropriate document
+	   ;; object based on TYPE
+	   ((string= type "InfText")
+	    (cons (rudel-infinote-text-document
+		   name
+		   :id     id
+		   :parent parent)
+		  t)))
+
+	;; Integrate the document object into the hierarchy.
+	(when parent
+	  (rudel-add-child parent node))
+	(rudel-add-node this node)
+	(when is-document
+	  (rudel-add-document session node)))))
+  )
 
 (defmethod rudel-send ((this rudel-infinote-client-connection) xml)
   ""
@@ -271,47 +339,6 @@
   ;; the server. TODO do we? Consequently we do not remove SELF from
   ;; the list of subscribed users of DOCUMENT.
   )
-
-(defmethod rudel-add-document ((this rudel-infinote-client-connection)
-			       id parent-id name type)
-  (with-slots (session) this
-    (let ((parent (and parent-id
-		       (rudel-find-document session parent-id
-					    #'eq #'rudel-id))))
-      (unless (or (null parent-id) parent)
-	;(signal
-	(error "Could not find parent node %d" parent-id))
-
-      ;; TODO the backend should construct the appropriate document
-      ;; object based on TYPE
-      ;(let ((document
-      (destructuring-bind (node . is-document)
-	  (cond
-	   ;;
-	   ((string= type "InfText")
-	    (cons (rudel-infinote-text-document
-		   name
-		   :id     id
-		   :parent parent)
-		  t))
-
-	   ;;
-	   ((string= type "InfSubdirectory")
-	    (cons (rudel-infinote-node-directory
-		   name
-		   :id     id
-		   :parent parent
-		   :group  (rudel-get-group this "InfDirectory"))
-		  nil)))
-
-	;;
-	(rudel-add-node  session node)
-	(rudel-add-child parent  node)
-	(when is-document
-	  (rudel-add-document session node)))))
-  )
-
-;; TODO rudel-remove-document
 
 (defmethod rudel-subscribe-session ((this rudel-infinote-client-connection)
 				    name method id)

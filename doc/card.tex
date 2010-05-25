@@ -39,8 +39,8 @@
 %
 
 \def\versionnumber{0.3}
-\def\versiondate{March 2010}
-\def\year{2010}
+\def\versiondate{May 2010}
+\def\year{2009, 2010}
 
 \def\copyrightnotice{
 \vskip 1ex plus 2 fill\begingroup\small
@@ -56,7 +56,6 @@ are preserved on all copies.
 %Foundation, Inc., 675 Massachusetts Ave, Cambridge MA 02139.
 
 \endgroup}
-
 
 
 %% Header
@@ -168,11 +167,6 @@ are preserved on all copies.
   {\hsize=.75\hsize\rightskip=1em
   \hskip\keyindent\relax#1}\kbd{#2}\hfil}}
 
-\newbox\metaxbox
-\setbox\metaxbox\hbox{\kbd{M-x }}
-\newdimen\metaxwidth
-\metaxwidth=\wd\metaxbox
-
 % Redefine to make spaces a bit smaller
 \let\wkbd=\kbd
 \def\kbd#1{{\spaceskip=.37em\tt#1}\null}
@@ -181,7 +175,7 @@ are preserved on all copies.
   {\hsize=.75\hsize\rightskip=1em
   \hskip\keyindent\relax#1}\wkbd{#2}\hfil}}
 
-\def\ccc{C-c\ c\ }
+\def\prefix{C-c\ c\ }
 \def\,{{\rm ,\hskip.55em}\ignorespaces}
 \def\lesssectionskip{\vskip-1.5ex}
 
@@ -202,29 +196,29 @@ are preserved on all copies.
 
 \lesssectionskip
 {\notefont All key bindings are only available when the global Rudel
-minor mode is active. See ``Minor Modes'' below.}
+minor mode is enabled. See ``Minor Modes'' below.}
 
 \subsection{Hosting and Joining}
 
-\wkey{Join a Rudel session}{\ccc j}
-\wkey{Leave a Rudel session}{\ccc e}
+\wkey{Join a Rudel session}{\prefix j}
+\wkey{Leave a Rudel session}{\prefix e}
 
-\wkey{Host a Rudel session}{\ccc h}
+\wkey{Host a Rudel session}{\prefix h}
 
 \subsection{In a Session}
 
 The following commands are available once a Rudel session has been
 joined:
 
-\key{Change color}{\ccc c}
+\key{Change color}{\prefix c}
 
-\key{Create and publish document for buffer}{\ccc p}
-\key{Subscribe to a document}{\ccc s}
+\key{Create and publish document for buffer}{\prefix p}
+\key{Subscribe to a document}{\prefix s}
 
 The following commands are only available if the current buffer has an
 associated document (achieved by publishing or subscribing):
 
-\key{Detach buffer from document (unsubscribe)}{\ccc u}
+\key{Detach buffer from document (unsubscribe)}{\prefix u}
 
 \section{Minor Modes}
 
@@ -251,22 +245,32 @@ The associated global mode ({\tt
 global-rudel-mode-line-publish-state-mode}) turns the mode on or off
 in all suitable buffers.
 
-\eject
+\newcolumn
 
 \section{Backends}
 
 \lesssectionskip
-In Rudel, various kinds of backends are used to provide multiple
-pluggable implementations of functionalities like communication
-protocols, network transport, session initiation and parts of the user
-interface.
+Rudel uses various kinds of backends to provide multiple pluggable
+implementations of functionalities like communication protocols,
+network transport, session initiation and parts of the user interface.
 
 \subsection{Protocol}
 
 {\bf Obby}
 
 This backend implements the obby protocol used by the Gobby
-collaborative editor until (including) version 4.9.
+collaborative editor until (including) version 0.4.9.
+
+{\bf Infinote}
+
+This backend implements the infinote protocol used by the Gobby
+collaborative editor staring with version 0.5.
+
+\subsection{Transport}
+
+{\bf IRC}
+
+This backend transports data using the ERC IRC client.
 
 \subsection{Session Initiation}
 
@@ -275,23 +279,27 @@ collaborative editor until (including) version 4.9.
 Frequently used sessions can be configured permanently using the {\tt
 rudel-configured-sessions} customization variable. When there are
 configured sessions, connecting to one of these session is offered
-when joining a session using \kbd{\ccc j}.
+when joining a session using \kbd{\prefix j}.
 
 {\bf Zeroconf}
 
 The Zeroconf backends discovers collaboration sessions which are
 advertised using, well Zeroconf. Currently, it works for Rudel (obby
-backend) and Obby servers. When there are Zeroconf-advertised
-sessions, using \kbd{\ccc j} to join a session will display these
-sessions.
+backend) and Obby servers (obby and infinote backends). When there are
+Zeroconf-advertised sessions, using \kbd{\prefix j} to join a session
+will list these.
+
+\newcolumn
 
 \section{Examples}
 
-\subsection{Joining a Session with the obby backend}
+\subsection{Without Zeroconf Discovery}
 
-{\bf Without Zeroconf Discovery}
+{\bf Joining a Session with the obby backend}
 
-\kbd{\ccc j}\hfil\break
+\kbd{\prefix j}\hfil\break
+{\tt Protocol backend: } obby \kbd{RET}\hfil\break
+{\tt Transport backend: } start-tls \kbd{RET}\hfil\break
 {\tt Server: }{\it SERVER} \kbd{RET}\hfil\break
 {\tt Port (default 6522): } \kbd{RET}\hfil\break
 {\tt Username: }{\it NAME} \kbd{RET}\hfil\break
@@ -308,17 +316,28 @@ none}\hfil\break
 {\it This password prevents name stealing; just \kbd{RET} for
 none}\hfil\break
 
-{\bf With Zeroconf Discovery}
+\subsection{With Zeroconf Discovery}
 
-\kbd{\ccc j}\hfil\break
+\kbd{\prefix j}\hfil\break
 {\tt Choose Session: }Zeroconf advertised session {\it
-"NAME"}\kbd{RET}\hfil\break
+"NAME"} \kbd{RET}\hfil\break
 {\notefont (Note: by choosing "ask-protocol" here, you can still get the
 above behavior)}\hfil\break
 {\tt Username: }{\it NAME} \kbd{RET}\hfil\break
 {\tt Color: }{\it COLOR} \kbd{RET}\hfil\break
 {\tt Global Password: }{\it PASSWORD} \kbd{RET}\hfil\break
 {\tt User Password: }{\it PASSWORD} \kbd{RET}\hfil
+
+\section{Troubleshooting}
+
+\subsection{Debugging}
+
+A list of available backends can be displayed using \kbd{M-x} {\tt
+rudel-backend-dump}.
+
+Additional debugging functions can be enabled by loading the {\tt
+rudel-debug} library: \kbd{M-x} {\tt load-library} \kbd{RET} {\tt
+rudel-debug} \kbd{RET}.
 
 \copyrightnotice
 

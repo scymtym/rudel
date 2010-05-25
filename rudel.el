@@ -4,6 +4,7 @@
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, collaboration
+;; Version: 0.3
 ;; URL: http://rudel.sourceforge.net/
 ;; X-RCS: $Id:$
 ;;
@@ -202,13 +203,10 @@ with arguments THIS and USER."
 			    which &optional test key)
   "Find user WHICH in the user list.
 WHICH is compared to the result of KEY using TEST."
-  (unless test
-    (setq test #'string=))
-  (unless key
-    (setq key #'object-name-string))
   (with-slots (users) this
-    (find which users :key key :test test))
-  )
+    (find which users
+	  :key  (or key  #'object-name-string)
+	  :test (or test #'string=))))
 
 (defmethod rudel-add-document ((this rudel-session) document)
   "Add DOCUMENT to the document list of THIS session."
@@ -245,13 +243,10 @@ WHICH is compared to the result of KEY using TEST."
 				which &optional test key)
   "Find document WHICH in the document list.
 WHICH is compared to the result of KEY using TEST."
-  (unless test
-    (setq test #'string=))
-  (unless key
-    (setq key #'object-name-string))
   (with-slots (documents) this
-    (find which documents :key key :test test))
-  )
+    (find which documents
+	  :key  (or key  #'object-name-string)
+	  :test (or test #'string=))))
 
 (defmethod rudel-unsubscribed-documents ((this rudel-session))
   ""
@@ -364,6 +359,7 @@ client protocols have to obey."
 		"Color used to indicate ownership or authorship
 by the user. Examples includes text written by the user or the
 user name itself.")
+   ;; Hooks
    (change-hook :initarg  :change-hook
 		:type     list
 		:initform nil

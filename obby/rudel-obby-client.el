@@ -251,9 +251,11 @@ failure."))
     (with-slots (connection) this
       (with-slots (session) connection
 	(let ((user (rudel-find-user session user-id
-				     #'eq #'rudel-id)))
+				     #'= #'rudel-id)))
 	  (if user
-	      ;; If we have such a user object, update its state.
+	      ;; If we successfully located the user using the
+	      ;; transmitted user-id, we update the existing user
+	      ;; object and run the change hook of the user object.
 	      (with-slots ((client-id1  client-id)
 			   (color1      color)
 			   connected
@@ -344,7 +346,7 @@ failure."))
 				       :id         doc-id
 				       :owner-id   owner-id
 				       :suffix     suffix))))
-      (message "New document: %s" name)))
+      (message "New document: %s" name))) ;; TODO remove this
   nil)
 
 (defmethod rudel-obby/obby_document_remove
@@ -370,7 +372,7 @@ failure."))
 (defmethod rudel-obby/obby_document/rename
   ((this rudel-obby-client-state-idle)
    document user new-name new-suffix)
-  "Handle obby 'rename' submessage of the 'obby_document' message."
+  "Handle 'rename' submessage of the obby 'document' message."
   (with-parsed-arguments ((new-suffix number))
     (with-slots ((name :object-name) suffix) document
       (setq name   new-name
@@ -378,8 +380,7 @@ failure."))
   nil)
 
 (defmethod rudel-obby/obby_document/subscribe
-  ((this rudel-obby-client-state-idle)
-   document user-id)
+  ((this rudel-obby-client-state-idle) document user-id)
   "Handle 'subscribe' submessage of obby 'document' message."
   (with-parsed-arguments ((user-id number))
     (with-slots (connection) this
@@ -390,8 +391,7 @@ failure."))
   nil)
 
 (defmethod rudel-obby/obby_document/unsubscribe
-  ((this rudel-obby-client-state-idle)
-   document user-id)
+  ((this rudel-obby-client-state-idle) document user-id)
   "Handle 'unsubscribe' submessage of obby 'document' message."
   (with-parsed-arguments ((user-id number))
     (with-slots (connection) this
@@ -526,18 +526,18 @@ failure."))
   ((all-items       :initarg  :all-items
 		    :type     (integer 0)
 		    :documentation
-		    "Total number of synchronization items expected
-		    to receive from the server.")
+		    "Total number of synchronization items
+expected to receive from the server.")
    (remaining-items :initarg  :remaining-items
 		    :type     (integer 0)
 		    :documentation
 		    "Number of synchronization items not yet
-		    received from the server.")
+received from the server.")
    (have-self       :initarg  :have-self
 		    :type     boolean
 		    :documentation
 		    "Flag that remembers, whether the session has
-		    a 'self' user object."))
+a 'self' user object."))
   "State used for synching session data.")
 
 (defmethod rudel-enter ((this rudel-obby-client-state-session-synching)
@@ -561,14 +561,16 @@ failure."))
 	;; Construct user object and add it to the session.
 	(let ((user (rudel-obby-user
 		     name
+		     :color      color
 		     :client-id  client-id
 		     :user-id    user-id
 		     :connected  t
-		     :encryption (string= encryption "1")
-		     :color      color)))
+		     :encryption (string= encryption "1"))))
 	  (rudel-add-user session user)
 
-	  ;; The first user object describes the user of this client.
+	  ;; If the session does not have a 'self' user, use this one
+	  ;; (since the first 'net6_client_join' message is always
+	  ;; referring to ourselves).
 	  (unless have-self
 	    (with-slots (self) session
 	      (setq self      user
@@ -669,11 +671,10 @@ failure."))
   nil)
 
 (defmethod rudel-obby/obby_document/sync_init
-  ((this rudel-obby-client-state-subscribing)
-   document num-bytes)
+  ((this rudel-obby-client-state-subscribing) document num-bytes)
   "Handle obby 'sync_init' message."
   (with-parsed-arguments ((num-bytes number))
-    (with-slots (documents) this
+    (with-slots (document) this
       (if (= num-bytes 0)
 	  'idle
 	(list 'document-synching document num-bytes))))
@@ -713,21 +714,22 @@ failure."))
 (defmethod rudel-obby/obby_document/sync_chunk
   ((this rudel-obby-client-state-document-synching)
    document data user-id)
-  "Handle obby 'sync_chunk' message."
+  "Handle 'sync_chunk' submessage of the obby 'document' message."
   (with-parsed-arguments ((user-id number))
     (with-slots (connection remaining-bytes) this
       (with-slots (session) connection
-	(let* ((user      (unless (zerop user-id)
-			    (rudel-find-user session user-id
-					     #'= #'rudel-id)))
-	       (operation (rudel-insert-op "bulk-insert"
-					   :from nil
-					   :data data)))
+	;; Fetch the user object for `user-id' unless `user-id' is 0.
+	(let ((user      (unless (zerop user-id)
+			   (rudel-find-user session user-id
+					    #'= #'rudel-id)))
+	      (operation (rudel-insert-op "bulk-insert"
+					  :from nil
+					  :data data)))
 	  (rudel-remote-operation document user operation)))
 
       ;; After all bytes are transferred, go back to idle state.
       (decf remaining-bytes (string-bytes data))
-      (if (= remaining-bytes 0)
+      (if (zerop remaining-bytes)
 	  'idle
 	nil)))
   )
@@ -835,7 +837,7 @@ sends and receives its data.")
 documents."))
   "Class rudel-obby-connection ")
 
-(defmethod initialize-instance ((this rudel-obby-connection) &rest slots)
+(defmethod initialize-instance ((this rudel-obby-connection) slots)
   ;; Initialize slots of THIS
   (when (next-method-p)
     (call-next-method))
@@ -934,7 +936,7 @@ documents."))
 	      (rudel-obby-format-color color)))
 
 (defmethod rudel-publish ((this rudel-obby-connection) document)
-  ""
+  "Publish DOCUMENT to server."
   ;; Create a new jupiter context for DOCUMENT.
   (rudel-add-context this document)
 

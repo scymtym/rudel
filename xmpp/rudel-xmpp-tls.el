@@ -57,7 +57,7 @@
 ;;
 
 (defvar rudel-xmpp-tls-states
-  '((start-tls . rudel-xmpp-start-tls-start))
+  '((start-tls . rudel-xmpp-state-tls-start))
   "")
 
 (dolist (state rudel-xmpp-tls-states)
