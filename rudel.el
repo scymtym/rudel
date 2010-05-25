@@ -904,6 +904,11 @@ will be prompted for."
 		    transport-backend info #'ignore))
     (setq session  (rudel-host protocol-backend listener info))
 
+    ;; Advertise the new session using registered session initiation
+    ;; mechanisms.
+    ;; TODO not sure whether here is the right place for this
+    (rudel-session-initiation-advertise info)
+
     session))
 
 ;;;###autoload
