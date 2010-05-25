@@ -481,9 +481,22 @@ multiple chunks.")
 
 ;; TODO have a callback instead of the actual reporter
 (defclass rudel-progress-reporting-transport-filter (rudel-transport-filter)
-  ((reporter :initarg :reporter
-	     :documentation
-	     "TODO"))
+  ((reporter   :initarg  :reporter
+	       :documentation
+	       "TODO")
+   (threshold  :initarg  :threshold
+	       :type     (integer 1)
+	       :initform 300
+	       :documentation
+	       "Minimum size a message must have to be broken up
+into chunks and sent successively instead of being sent
+directly.")
+   (chunk-size :initarg  :chunk-size
+	       :type     (integer 1)
+	       :initform 300
+	       :documentation
+	       "The size of chunks into which large messages are
+split."))
   "TODO")
 
 (defmethod initialize-instance
@@ -495,7 +508,7 @@ multiple chunks.")
   (with-slots (reporter) this
     (setq reporter (make-progress-reporter "Sending data " 0.0 1.0)))
 
-  ;; Install a handler as filter in underlying transport.
+  ;; Install `rudel-handle-data' as filter in underlying transport.
   (with-slots (transport) this
     (lexical-let ((this1 this))
       (rudel-set-filter transport (lambda (data)
@@ -507,15 +520,14 @@ multiple chunks.")
 (defmethod rudel-send ((this rudel-progress-reporting-transport-filter)
 		       data)
   "TODO"
-  (with-slots (transport reporter) this
-    (if (>= (length data) rudel-long-message-threshold)
+  (with-slots (transport reporter threshold chunk-size) this
+    (if (>= (length data) threshold)
 
 	;; For huge messages, chunk the message data and transmit the
 	;; chunks
-	(let ((total   (/ (length data)
-			  rudel-long-message-chunk-size))
+	(let ((total   (/ (length data) chunk-size))
 	      (current 0))
-	  (rudel-loop-chunks data chunk rudel-long-message-chunk-size
+	  (rudel-loop-chunks data chunk chunk-size
 	    (progress-reporter-update reporter (/ (float current) total))
 	    (rudel-send transport chunk)
 	    (incf current))
@@ -537,7 +549,7 @@ SPECS ::= (SPEC*)
 SPEC  ::= (CLASS KWARG*)
 KWARG ::= KEYWORD VALUE
 CLASS is the symbol of a class derived from
-`rudel-transport-filter' KEYWORD is a keyword and VALUE is an
+`rudel-transport-filter'. KEYWORD is a keyword and VALUE is an
 arbitrary expression and is used unevaluated.
 
 The returned value is the \"top\" of the constructed stack (BASE
