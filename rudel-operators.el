@@ -236,7 +236,7 @@ sent, whether merged or not."
   (with-slots (buffer timer) this
     ;; Add OPERATION to buffer and try merging
     (push operation buffer)
-    (let ((ops '(nil)))
+    (let ((ops))
       (while (and (> (length buffer) 1)
 		  (< (length ops) 2))
 	(let ((second (pop buffer))
@@ -264,6 +264,9 @@ sent, whether merged or not."
   (with-slots (buffer timer target) this
     (dolist (operation (nreverse buffer))
       (rudel-handle target operation))
+
+    (when timer
+      (cancel-timer timer))
     (setq buffer nil
 	  timer  nil)))
 
@@ -279,13 +282,13 @@ sent, whether merged or not."
    ((and (rudel-insert-op-child-p second)
 	 (= (oref first  :to)
 	    (oref second :from)))
-    (list
-     (rudel-insert-op
-      "merged insert"
-      :from (oref first :from)
-      :data (concat (oref first  :data)
-		    (oref second :data)))))
+    (list (clone first
+		 "merged insert"
+		 :from (oref first :from)
+		 :data (concat (oref first  :data)
+			       (oref second :data)))))
 
+   ;; Ignore other combinations.
    (t
     (list first second))))
 
@@ -297,14 +300,13 @@ sent, whether merged or not."
    ((and (rudel-delete-op-child-p second)
 	 (= (oref first  :from)
 	    (oref second :from)))
-    (list
-     (rudel-delete-op
-      "merged delete"
-      :from   (oref first :from)
-      :length (+ (oref first  :length)
-		 (oref second :length)))))
+    (list (clone first
+		 "merged delete"
+		 :from   (oref first :from)
+		 :length (+ (oref first  :length)
+			    (oref second :length)))))
 
-
+   ;; Ignore other combinations.
    (t
     (list first second))))
 
