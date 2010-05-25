@@ -36,6 +36,8 @@
 ;;   keyword arguments that should always work are
 ;;   + :username
 ;;   + :color
+;;
+;; + /rudel sessions
 
 
 ;;; History:
@@ -73,7 +75,8 @@
 (defconst rudel-irc-erc-commands-subcommands
   '(("host"        . rudel-irc-erc-commands-host)
     ("join"        . rudel-irc-erc-commands-join)
-    ("join-manual" . rudel-irc-erc-commands-join-manual))
+    ("join-manual" . rudel-irc-erc-commands-join-manual)
+    ("sessions"    . rudel-irc-erc-commands-sessions))
   "List of subcommands of the /rudel ERC command and
 corresponding implementing functions.")
 
@@ -135,6 +138,11 @@ corresponding implementing functions.")
 	  :local-password    nil)))
   )
 
+(defun rudel-irc-erc-commands-sessions ()
+  ""
+  (dolist (session (rudel-session-initiation-discover 'irc-erc))
+    (erc-display-line (plist-get session :name))))
+
 
 ;;; Completion
 ;;
@@ -160,7 +168,7 @@ corresponding implementing functions.")
   ;; Name of the session.
   (when (= pcomplete-index 2)
     (message "Enter session name (no spaces)"))
-  (pcomplete-here '(""))
+  (pcomplete-here '("NAME"))
 
   ;; Name of the protocol backend to use.
   (pcomplete-here
@@ -179,10 +187,12 @@ corresponding implementing functions.")
   ""
   ;; Names of advertised sessions.
   (pcomplete-here
-   (mapcar (lambda (i) (plist-get i :name))
+   (mapcar (lambda (info)
+	     (replace-regexp-in-string
+	      "\s" "_" (plist-get info :name)))
 	   (rudel-session-initiation-discover 'irc-erc)))
 
-  ;;
+  ;; Additional keyword arguments.
   (let ((backend (plist-get
 		  (rudel-irc-erc-commands-named-session
 		   (pcomplete-arg 'first 2))
@@ -233,28 +243,46 @@ corresponding implementing functions.")
 ;;
 
 (defun rudel-irc-erc-commands-capable-backends (capability)
-  ""
+  "Return protocol backends capable of CAPABILITY."
   (rudel-backend-suitable-backends
    'protocol (lambda (backend)
 	       (rudel-capable-of-p backend capability))))
 
 (defun rudel-irc-erc-commands-named-backend (name)
+  "Return the protocol backend named NAME."
   (rudel-backend-get 'protocol (intern-soft name)))
 
 (defun rudel-irc-erc-commands-named-session (name)
-  ""
+  "Return a session named NAME advertised via the ERC backend or nil.
+In NAME, whitespace characters have to be replace by \"_\"."
   (find name (rudel-session-initiation-discover 'irc-erc)
-	:key  (lambda (i) (plist-get i :name))
+	:key  (lambda (info)
+		(replace-regexp-in-string
+		 "\s" "_" (plist-get info :name)))
 	:test #'string=))
 
 (defun rudel-irc-erc-commands-parse-keyword-args (args)
   ""
-  (mapcar
-   (lambda (p)
-     (or (and (= (aref p 0) ?:)
-	      (intern-soft p))
-	 (car (read-from-string p))))
-   args))
+  (mapcar #'rudel-irc-erc-commands-parse-keyword-arg args))
+
+(defun rudel-irc-erc-commands-parse-keyword-arg (arg) ;; TODO fails for empty
+  ""
+  (or
+   ;; If it looks like a keyword, treat it like a symbol
+   (and (= (aref arg 0) ?:)
+	(car (read-from-string arg)))
+
+   ;; If it looks like a quoted expression,
+   (and (= (aref arg 0) ?')
+	(car (read-from-string (substring arg 1))))
+
+   ;; If it looks like a double quoted string,
+   (and (= (aref arg 0) ?\")
+	(= (aref arg (- (length arg) 1)) ?\")
+	(car (read-from-string (substring arg 1 -1))))
+
+   ;; Otherwise, read value as string.
+   (car (read-from-string (concat "\"" arg "\"")))))
 
 (provide 'rudel-irc-erc-commands)
 ;;; rudel-irc-erc-commands.el ends here
