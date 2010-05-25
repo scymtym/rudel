@@ -126,7 +126,7 @@ CONTEXT is a property list."
 	     "The document to the overlays of which the
 operations are applied")
    (user     :initarg  :user
-	     :type     rudel-user-child
+	     :type     (or null rudel-user-child)
 	     :documentation
 	     "The user object associated to operations."))
   "Provides operation methods which affect the overlays of a
