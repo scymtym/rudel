@@ -248,16 +248,9 @@ Return the connection object."
 (defmethod rudel-ask-host-info ((this rudel-obby-backend)
 				&optional info)
   "Ask user for information required to host an obby session."
-  ;; Read address and port unless they are already specified in INFO.
-  (let ((address (or (plist-get info :address)
-		     "0.0.0.0"))
-	(port    (or (plist-get info :port)
-		     (read-number "Port: " rudel-obby-default-port))))
-    (append (list
-	     :address address
-	     :port    port)
-	    info))
-  )
+  ;; We do not need any info since the transport object will have
+  ;; everything.
+  info)
 
 (defmethod rudel-host ((this rudel-obby-backend) listener info)
   "Host an obby session using the information INFO.
