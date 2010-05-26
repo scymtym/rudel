@@ -390,9 +390,9 @@ transmission.")
 		 :documentation
 	         "A timer used to trigger the transmission of
 queued data.")
-   (delay        :initarg  :delay
-		 :type     number
-		 :initform 1
+   (window       :initarg  :window
+		 :type     (number 0)
+		 :initform 1.0
 		 :documentation
 		 "The maximum time to wait before transmitting
 queued data even if it is smaller than a complete chunk."))
@@ -450,14 +450,14 @@ transmission.")
   "Start timer that runs `rudel-flush' when it expires."
   ;; If necessary, create a timer that runs `rudel-flush' when it
   ;; expires.
-  (with-slots (timer delay) this
+  (with-slots (timer window) this
     (unless timer
-      (lexical-let ((this1 this))
-	(setq timer (run-at-time
-		     delay nil ;; no repeat
-		     (lambda ()
-		       (rudel-flush this1)
-		       (oset this1 :timer nil)))))))
+      (setq timer (run-at-time
+		   window nil ;; no repeat
+		   (lambda (this)
+		     (rudel-flush this)
+		     (oset this :timer nil))
+		   this))))
   )
 
 (defmethod rudel-maybe-cancel-timer
