@@ -238,18 +238,6 @@ WHICH is compared to the result of KEY using TEST."
 	  :key  (or key  #'object-name-string)
 	  :test (or test #'string=))))
 
-(defmethod rudel-unsubscribed-documents ((this rudel-session))
-  ""
-  (unless (slot-boundp this :self)
-    (error "Cannot find unsubscribed documents unless slot self is bound"))
-  (with-slots (documents self) this
-    (remove-if
-     (lambda (document)
-       (with-slots (subscribed) document
-	 (memq self subscribed)))
-       documents))
-  )
-
 
 ;;; Class rudel-client-session
 ;;
@@ -283,6 +271,19 @@ client perspective.")
   ;;
   (when (next-method-p)
     (call-next-method))
+  )
+
+(defmethod rudel-unsubscribed-documents ((this rudel-client-session))
+  "Return documents in THIS to which the self user is not subscribed."
+  (unless (slot-boundp this :self)
+    (error "Cannot find unsubscribed documents unless slot self is bound"))
+
+  (with-slots (documents self) this
+    (remove-if
+     (lambda (document)
+       (with-slots (subscribed) document
+	 (memq self subscribed)))
+     documents))
   )
 
 
@@ -616,7 +617,7 @@ null rudel-user-child)."
 				     (- (overlay-end   overlay) 1)
 				     (rudel-overlay-user overlay)))
 			     (sort* (rudel-author-overlays)
-				    '< :key 'overlay-start)))
+				    #'< :key #'overlay-start)))
 	    (last)
 	    (augmented-chunks))
 
@@ -649,7 +650,7 @@ null rudel-user-child)."
 		augmented-chunks))
 
 	;; Sort chunks according to the start position.
-	(sort* augmented-chunks '< :key 'car))))
+	(sort* augmented-chunks #'< :key #'car))))
   )
 
 
@@ -742,7 +743,7 @@ See after-change-functions for more information."
 
 (defvar rudel-mode-changed-buffers nil
   "List of buffers that may need to be repaired after a major
-  mode change.")
+mode change.")
 
 (defun rudel-handle-major-mode-change ()
   "Store the current buffer to repair damage done by major mode change.

@@ -1,4 +1,72 @@
+2010-05-27  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Associated rudel-unsubscribed-documents to rudel-client-session
+	* rudel.el (rudel-client-session::rudel-unsubscribed-documents):
+	changed specializer rudel-session -> rudel-client-session
+	(rudel-document::rudel-chunks): write functions with #' syntax
+	(rudel-mode-changed-buffers): reflowed documentation string
+
+2010-05-25  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Warn if document does not exist when handling obby_document msg
+	* obby/rudel-obby-server.el (require warnings): new require; used
+	to display warning messages
+	(rudel-obby-server-state-idle::rudel-obby/obby_document): check
+	whether the document does exist; display a warning if it does not
+
+	Pass new session to session initiation in rudel-host-session
+	* rudel.el (rudel-host-session): call
+	rudel-session-initiation-advertise when the new session object has
+	been constructed
+
+	Cosmetic changes and doc improvements in obby/rudel-obby-client.el
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-session-synching::rudel-obby/net6_client_join):
+	improved comment; cosmetic changes
+	(rudel-obby/obby_document/sync_chunk): improved documentation
+	string; changed let* -> let; use zerop instead of = ... 0; added a
+	comment
+	(rudel-obby-connection::rudel-publish): added a documentation
+	string
+
+2010-05-24  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Removed &rest from slots arg of init-inst of rudel-obby-connection
+	* obby/rudel-obby-client.el
+	(rudel-obby-connection::initialize-instance): removed &rest from
+	slots argument
+
+	Minor fixes and improvements in obby/rudel-obby-client.el
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-idle::rudel-obby/net6_client_join): use
+	test = when locating user; improved comment
+	(rudel-obby-client-state-idle::rudel-obby/obby_document_create):
+	added TODO item regarding not displaying messages from the backend
+	(rudel-obby-client-state-idle::rudel-obby/obby_document/rename):
+	improved documentation string
+	(rudel-obby-client-state-session-synching): reflowed documentation
+	strings of slots
+	(rudel-obby-client-state-subscribing::rudel-obby/obby_document/sync_init):
+	fixed name of document slot
+
+	Added version to header in rudel.el and update rule to Project.ede
+	* rudel.el (header): added Version field
+	* Project.ede (target rudel): added rudel.el to :versionsource
+
 2010-05-23  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Small improvements and updates in doc/card.tex
+	* doc/card.tex (macros): removed metabox macro; renamed \ccc ->
+	\prefix
+	(Backends): improved wording; added infinote and IRC backends
+	(Examples): reorganized; added prompts for transport and protocol
+	backends
+	(Debugging): new section; explain dumping backends and loading the
+	debug library
+
+	Added clickable status icon task to milestone Future in TODO
+	* TODO (Future): added status icon should be clickable task;
+	document history is in irc branch
 
 	Improved arg handling rudel-find-{user, document} in rudel.el
 	* rudel.el (rudel-session::rudel-find-user):
