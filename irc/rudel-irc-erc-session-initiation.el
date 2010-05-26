@@ -26,7 +26,7 @@
 ;;
 ;; This file contains an implementation of the
 ;; `rudel-session-initiation-backend' interface that operates on top
-;; of erc connections, sending and receiving session advertise or
+;; of ERC connections, sending and receiving session advertise or
 ;; withdraw messages.
 
 
@@ -93,12 +93,14 @@
 			 sender type &rest args)
   ""
   (case (intern-soft (downcase type))
-    ;; Handle ADVERTISE message.
+    ;; Handle ADVERTISE message. The only argument is the
+    ;; base64-encoded session information.
     (advertise
      (rudel-handle-advertise this sender (car args))
      t)
 
-    ;; Handle WITHDRAW message.
+    ;; Handle WITHDRAW message. The only argument is the
+    ;; base64-encoded session information.
     (withdraw
      (rudel-handle-withdraw this sender (car args))
      t)
@@ -164,7 +166,7 @@
   ((capabilities :initform (discover advertise))
    (priority     :initform primary)
    (handlers     :initarg  :handlers
-		 :type     list
+		 :type     list ;; of rudel-irc-erc-session-initiation-handler-child
 		 :initform nil
 		 :documentation
 		 "")
@@ -202,9 +204,12 @@
      'erc-join-hook
      (lambda ()
        (rudel-add-handler
-	this1 erc-session-server (erc-server-buffer) (buffer-name)))))
+	this1 erc-session-server (erc-server-buffer) (buffer-name))))
 
-  ;; TODO remove handler when parting
+    ;; TODO remove handler when parting
+    ;;(remove-hook
+    ;;'erc-part-hook
+    )
   )
 
 (defmethod rudel-discover ((this rudel-irc-erc-session-initiation))
@@ -222,7 +227,8 @@
   ;; Send an action message announcing the session.
   (erc-send-action
    (erc-default-target)
-   (format "announces Rudel session \"%s\"" (plist-get info :name))))
+   (format "announces Rudel session \"%s\"" (plist-get info :name)))
+  )
 
 (defmethod rudel-withdraw ((this rudel-irc-erc-session-initiation)
 			    info)
@@ -233,7 +239,7 @@
 
 (defmethod rudel-add-handler ((this rudel-irc-erc-session-initiation)
 			      server buffer target)
-  "Add a handler whose message go to TARGET to BUFFER."
+  "Add a handler whose messages go to TARGET to BUFFER."
   (with-slots (handlers) this
     (push
      (rudel-irc-erc-session-initiation-handler
@@ -243,6 +249,10 @@
       :master    this)
      handlers))
   )
+
+(defmethod rudel-remove-handler ((this rudel-irc-erc-session-initiation))
+  ""
+  (error "not implemented"))
 
 (defmethod rudel-add-session ((this rudel-irc-erc-session-initiation)
 			      info)
