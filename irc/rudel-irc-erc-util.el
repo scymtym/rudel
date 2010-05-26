@@ -99,13 +99,15 @@ receiving messages.")
     (let ((hook-symbol (intern (format "erc-ctcp-query-%s-hook"
 				       ctcp-type)))) ;; TODO make a function for this
       (with-current-buffer buffer
-	(add-hook hook-symbol message-handler)
-	;;(add-hook 'erc-server-PART-functions part-handler)
+	(when (slot-boundp this 'message-handler)
+	  (add-hook hook-symbol message-handler))
+	;;(when (slot-boundp this 'part-handler)
+	;;(add-hook 'erc-server-PART-functions part-handler))
 	)))
   )
 
 (defmethod rudel-send ((this rudel-irc-erc-base) &rest args)
-  "Send DATA through THIS."
+  "Send ARGS through THIS."
   (with-slots (buffer peer-name ctcp-type) this
     (with-current-buffer buffer
       (apply #'erc-cmd-CTCP peer-name ctcp-type args))))
@@ -117,8 +119,10 @@ receiving messages.")
     (let ((hook-symbol (intern (format "erc-ctcp-query-%s-hook"
 				       ctcp-type)))) ;; TODO make a function for this
     (with-current-buffer buffer
-      (remove-hook hook-symbol message-handler)
-      ;;(remove-hook 'erc-server-PART-functions part-handler)
+      (when (slot-boundp 'message-handler)
+	(remove-hook hook-symbol message-handler))
+      ;;(when (slot-boundp 'part-handler)
+      ;;(remove-hook 'erc-server-PART-functions part-handler))
       )))
   )
 
