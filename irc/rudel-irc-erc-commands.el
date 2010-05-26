@@ -171,7 +171,7 @@ settings and depends on the kind of session."
 (defun rudel-irc-erc-commands-sessions ()
   ""
   (dolist (session (rudel-session-initiation-discover 'irc-erc))
-    (erc-display-line (plist-get session :name))))
+    (erc-display-line (concat "- " (plist-get session :name)) 'active)))
 
 
 ;;; Completion
