@@ -25,20 +25,29 @@
 ;;; Commentary:
 ;;
 ;; Collections of operations on specific objects are collected into
-;; classes. Currently there are
+;; classes. Currently there are:
 ;;
-;; + rudel-document-operators: perform operations on document objects
+;; + `rudel-document-operators': perform operations on document objects
 ;;
-;; + rudel-connection-operators: perform operations on connection
+;; + `rudel-connection-operators': perform operations on connection
 ;;   objects
 ;;
-;; + rudel-overlay-operators: perform operations by altering overlays
-;;   of buffer objects
+;; + `rudel-overlay-operators': perform operations by altering
+;;   overlays of buffer objects
 ;;
-;; + rudel-hook-operators: perform operations by calling hooks
+;; + `rudel-hook-operators': perform operations by calling hooks
+;;
+;; Related classes:
+;;
+;; + `rudel-operation-merger': merge series of operations into more
+;;   compact series of operations without changing the effect of
+;;   applying the operations
 
 
 ;;; History:
+;;
+;; 0.2 - Persistent operator objects
+;;     - Operation merger
 ;;
 ;; 0.1 - Initial version
 
@@ -216,6 +225,11 @@ are received.")
 	   :documentation
 	   "This timer triggers the sending of queued, merged
 messages.")
+   (window :initarg  :window
+	   :type     (number 0)
+	   :initform 0.5
+	   :documentation
+	   "")
    (target :initarg  :target
 	   :type     object
 	   :reader   rudel-target
@@ -231,7 +245,7 @@ operations if possible.")
   "Process OPERATION, merging it with stored operations, eventually sending it.
 Operations are considered for merging within a time-window, then
 sent, whether merged or not."
-  (with-slots (buffer timer) this
+  (with-slots (buffer timer window) this
     ;; Add OPERATION to buffer and try merging
     (push operation buffer)
     (let ((ops))
@@ -249,7 +263,7 @@ sent, whether merged or not."
 	;; Start timer if necessary
 	(unless timer
 	  (setq timer (run-at-time
-		       0.3 nil ;; no repeat
+		       window nil ;; no repeat
 		       'rudel-flush this)))
       ;; Cancel timer if necessary
       (when timer
