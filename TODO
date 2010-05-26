@@ -1,5 +1,5 @@
 * Future
-** TODO Status icons of users should be clickable
+** TODO Status icons of users should be clickable	    :branch_activity:
    + Components :: user interface
    + Type :: task
    + Priority :: minor
@@ -41,16 +41,6 @@
    + Assigned ::
    Somehow communicate to peers at which documents the user is
    currently looking
-** TODO Allow multiple transport listeners per server session
-   + Components :: multiple components affected
-   + Type :: task
-   + Priority :: major
-   + Reporter :: jan
-   + Assigned ::
-   For protocol backends that work with multiple transports, it would
-   be convenient to create a single server with multiple transport
-   listeners. For example, This would be useful to create an obby over
-   IRC server with an additional TCP listener as a LAN gateway.
 ** TODO Use auth-source or secrets.el for passwords
    + Components ::
    + Type :: task
@@ -142,7 +132,7 @@
    + Type :: task
    + Reporter :: jan
    + Assigned ::
-** TODO Synchronize object graphs
+** TODO Synchronize object graphs			   :branch_data_sync:
    + Component :: ?
    + Type :: task
    + Reporter :: jan
@@ -207,6 +197,16 @@
    + Assigned ::
    Sending key presses as chat messages could be really useful for
    somebody something using rudel.
+** STARTED Allow multiple listeners per server session	  :branch_networking:
+   + Components :: multiple components affected
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned ::
+   For protocol backends that work with multiple transports, it would
+   be convenient to create a single server with multiple transport
+   listeners. For example, This would be useful to create an obby over
+   IRC server with an additional TCP listener as a LAN gateway.
 ** STARTED Consolidate operations before sending		 :branch_irc:
    + Components :: protocol backends
    + Type :: task
@@ -254,7 +254,7 @@
 
 
 * Milestone rudel-0.4
-** TODO Integrate existing unit tests
+** TODO Integrate existing unit tests			  :branch_unit_tests:
    + Component :: multiple components affected
    + Type :: task
    + Priority :: major
