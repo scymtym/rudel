@@ -100,7 +100,14 @@ corresponding implementing functions.")
 
 (defun rudel-irc-erc-commands-host (name protocol-backend
 				    &rest extra-properties)
-  ""
+  "Host a Rudel session that uses an IRC transport.
+NAME is the name of the new session and can be chosen
+arbitrarily. PROTOCOL-BACKEND specifies which protocol should be
+used in the new session. A list of backends can be obtained using
+`rudel-backend-dump'. EXTRA-PROPERTIES contain additional
+settings for the new session and depends on the chosen protocol
+backend."
+  ;; Build a session information list and call `rudel-host-session'.
   (rudel-host-session
    (append
     (rudel-irc-erc-commands-parse-keyword-args extra-properties)
@@ -113,29 +120,52 @@ corresponding implementing functions.")
 
 (defun rudel-irc-erc-commands-join (session-name
 				    &rest extra-properties)
-  ""
-  (let ((info (rudel-irc-erc-commands-named-session session-name)))
-    (rudel-join-session
-     (append
-      (rudel-irc-erc-commands-parse-keyword-args extra-properties)
-      info))))
+  "Join an advertised Rudel session that uses an IRC transport.
+SESSION-NAME is the name of a previously announced
+session. EXTRA-PROPERTIES can be used to specify additional
+settings and depends on the kind of session. To join sessions
+that have not been announced or whose information is not
+available for other reasons, the join-manual command has to be
+used. "
+  ;; Retrieve the specified session, merge EXTRA-PROPERTIES into its
+  ;; information.
+  (let ((info       (rudel-irc-erc-commands-named-session session-name))
+	(extra-info (rudel-irc-erc-commands-parse-keyword-args
+		     extra-properties)))
+    (unless info
+      (error "Could not find session `%s'" session-name))
+
+    (rudel-join-session (append extra-info info))))
 
 (defun rudel-irc-erc-commands-join-manual (nick protocol-backend
 					   &rest extra-properties)
-  ""
-  (rudel-join-session
-   (append
-    (rudel-irc-erc-commands-parse-keyword-args extra-properties)
-    (list :transport-backend (rudel-backend-get 'transport 'irc-erc)
-	  :protocol-backend  (rudel-backend-get
-			      'protocol (intern-soft protocol-backend))
-	  :buffer            (current-buffer)
-	  :peer-name         nick
-	  :self-name         (erc-current-nick)
-	  :encryption        nil
-	  :username          (erc-current-nick)
-	  :global-password   nil
-	  :local-password    nil)))
+  "Join a Rudel session that uses an IRC transport.
+NICK is the IRC nick name of the user hosting the
+session. PROTOCOL-BACKEND specifies the protocol used in the
+session. EXTRA-PROPERTIES can be used to specify additional
+settings and depends on the kind of session."
+  (let ((protocol-backend (rudel-backend-get
+			   'protocol (intern-soft protocol-backend)))
+	(self-nick        (erc-current-nick))
+	(extra-info       (rudel-irc-erc-commands-parse-keyword-args
+			   extra-properties)))
+    (unless protocol-backend
+      (error "No such protocol backend: `%s'" protocol-backend))
+    (unless self-nick
+      (error "Could not determine current nick name"))
+
+    (rudel-join-session
+     (append
+      extra-info
+      (list :transport-backend (rudel-backend-get 'transport 'irc-erc)
+	    :protocol-backend  protocol-backend
+	    :buffer            (current-buffer)
+	    :peer-name         nick
+	    :self-name         self-nick
+	    :encryption        nil
+	    :username          self-nick
+	    :global-password   nil
+	    :local-password    nil))))
   )
 
 (defun rudel-irc-erc-commands-sessions ()
@@ -150,8 +180,11 @@ corresponding implementing functions.")
 ;;;###autoload
 (defun pcomplete/erc-mode/RUDEL ()
   "Provides completion for the /RUDEL command."
+  ;; First position is the subcomand.
   (pcomplete-here (mapcar #'car rudel-irc-erc-commands-subcommands))
 
+  ;; For other positions, dispatch to specialized completion
+  ;; functions.
   (case (intern (downcase (pcomplete-arg 1)))
      (host
       (rudel-irc-erc-commands-complete-host))
@@ -177,10 +210,14 @@ corresponding implementing functions.")
     (mapcar #'car (rudel-irc-erc-commands-capable-backends 'host))))
 
   ;; Keyword arguments of the backend.
-  (let ((backend (rudel-irc-erc-commands-named-backend
-		  (pcomplete-arg 'first 3))))
-    (rudel-irc-erc-commands-complete-keyword-args
-     '(:global-password)))
+  (let* ((backend  (rudel-irc-erc-commands-named-backend
+		    (pcomplete-arg 'first 3)))
+	 (keywords (when backend
+		     (rudel-irc-erc-commands-keywords-for-backend
+		      backend 'host))))
+    (when keywords
+      (rudel-irc-erc-commands-complete-keyword-args
+       keywords)))
   )
 
 (defun rudel-irc-erc-commands-complete-join ()
@@ -193,13 +230,16 @@ corresponding implementing functions.")
 	   (rudel-session-initiation-discover 'irc-erc)))
 
   ;; Additional keyword arguments.
-  (let ((backend (plist-get
-		  (rudel-irc-erc-commands-named-session
-		   (pcomplete-arg 'first 2))
-		  :protocol-backend)))
-    (when backend
+  (let* ((backend  (plist-get
+		    (rudel-irc-erc-commands-named-session
+		     (pcomplete-arg 'first 2))
+		    :protocol-backend))
+	 (keywords (when backend
+		    (rudel-irc-erc-commands-keywords-for-backend
+		     backend 'join))))
+    (when keywords
       (rudel-irc-erc-commands-complete-keyword-args
-       '(:username :color))))
+       keywords)))
   )
 
 (defun rudel-irc-erc-commands-complete-join-manual ()
@@ -212,16 +252,24 @@ corresponding implementing functions.")
   (pcomplete-here
    (mapcar
     #'symbol-name
-    (mapcar #'car (rudel-irc-erc-commands-capable-backends 'join))))
+    (mapcar
+     #'car
+     (rudel-irc-erc-commands-capable-backends 'join))))
 
   ;; Keyword arguments for the protocol backend.
-  (let ((backend (rudel-irc-erc-commands-named-backend
-		  (pcomplete-arg 'first 3))))
-    (rudel-irc-erc-commands-complete-keyword-args
-     '(:username :color)))
+  (let* ((backend  (rudel-irc-erc-commands-named-backend
+		    (pcomplete-arg 'first 3)))
+	 (keywords (when backend
+		     (rudel-irc-erc-commands-keywords-for-backend
+		      backend 'join))))
+    (when keywords
+      (rudel-irc-erc-commands-complete-keyword-args
+       keywords)))
   )
 
 (defun rudel-irc-erc-commands-complete-keyword-args (keywords)
+  "Complete keyword arguments and their values from KEYWORDS."
+  ;; Keep track of already used keywords.
   (let ((seen-keywords))
     (while t
       (push (pcomplete-arg 0) seen-keywords)
@@ -251,6 +299,18 @@ corresponding implementing functions.")
 (defun rudel-irc-erc-commands-named-backend (name)
   "Return the protocol backend named NAME."
   (rudel-backend-get 'protocol (intern-soft name)))
+
+(defun rudel-irc-erc-commands-keywords-for-backend (backend operation)
+  "Return keywords accepted by BACKEND for OPERATION.
+OPERATION has to be one of join and host."
+  ;; TODO obtain these from the backend
+  (case operation
+    (join
+     '(:username :color))
+    (host
+     '(:global-password))
+    (t
+     (signal 'wrong-type-argument nil))))
 
 (defun rudel-irc-erc-commands-named-session (name)
   "Return a session named NAME advertised via the ERC backend or nil.
