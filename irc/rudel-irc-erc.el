@@ -155,7 +155,7 @@
 
 (defmethod initialize-instance ((this rudel-irc-erc-listener) slots)
   ""
-  ;;
+  ;; Initialize slots.
   (when (next-method-p)
     (call-next-method))
 
@@ -178,29 +178,32 @@
    ;; Handle CONNECT messages.
    (connect
     (with-slots (buffer self-name ctcp-type dispatch) this
-      (with-current-buffer buffer
-	(erc-cmd-CTCP sender ctcp-type "OK" "RUDEL"))
+      (let ((key "RUDEL"))
+	;; Send a reply containing the communication key.
+	;; TODO generate unique keys
+	(with-current-buffer buffer
+	  (erc-cmd-CTCP sender ctcp-type "OK" key))
 
-      ;; TODO We should wait for another reply from the client
-      (sleep-for 1.0)
+	;; TODO We should wait for another reply from the client
+	(sleep-for 1.0)
 
-      (when dispatch
-	(let ((transport (rudel-irc-erc-transport
-			  "bla"
-			  :buffer    buffer
-			  :peer-name sender
-			  :self-name self-name
-			  :ctcp-type "RUDEL"))) ;; TODO
+	(when dispatch
+	  (let ((transport (rudel-irc-erc-transport
+			    "bla"
+			    :buffer    buffer
+			    :peer-name sender
+			    :self-name self-name
+			    :ctcp-type key)))
 
-	  ;; TODO unify this
-	  (setq transport (rudel-transport-make-filter-stack
-			   transport
-			   '(
-			     (rudel-progress-reporting-transport-filter)
-			     (rudel-collecting-transport-filter)
-			     )))
+	    ;; TODO unify this
+	    (setq transport (rudel-transport-make-filter-stack
+			     transport
+			     '(
+			       (rudel-progress-reporting-transport-filter)
+			       (rudel-collecting-transport-filter)
+			       )))
 
-	  (funcall dispatch transport)))))
+	    (funcall dispatch transport))))))
 
    ;; Do not handle other messages; Just display a warning.
    (t
@@ -237,9 +240,8 @@ The transport backend is a factory for IRC-ERC transport objects.")
 	(peer-name (or (plist-get info :peer-name)
 		       (read-string "Peer: "))))
     (append
-     (list
-      :buffer    buffer
-      :peer-name peer-name)
+     (list :buffer    buffer
+	   :peer-name peer-name)
      info)))
 
 (defmethod rudel-make-connection ((this rudel-irc-erc-backend)
@@ -259,7 +261,9 @@ and :port."
 	(key)
 	(transport))
 
-    ;;
+    ;; Send a connect message to the peer and wait for its reply
+    ;; message which contains the communication key for the
+    ;; connection.
     (with-current-buffer buffer
       (erc-cmd-CTCP peer-name "RUDEL-SETUP" "CONNECT"))
 
@@ -267,7 +271,7 @@ and :port."
 
     ;;
     (setq transport (rudel-irc-erc-transport
-		     "bla" ;; TODO
+		     (format "to %s" peer-name)
 		     :buffer    buffer
 		     :peer-name peer-name
 		     :ctcp-type key))
