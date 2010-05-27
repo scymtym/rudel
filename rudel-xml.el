@@ -86,37 +86,47 @@ tag name. TYPE can be 'number."
 	      ;; Simple form
 	      ((symbolp attr)
 	       `(,attr (xml-get-attribute ,tag-var (quote ,attr))))
+
 	      ;; Variable name, attribute name and type
 	      ((= (length attr) 3)
-	       (let* ((attr-var     (nth 0 attr))
-		      (name         (nth 1 attr))
-		      (type         (nth 2 attr))
-		      (value-expr   `(xml-get-attribute ,tag-var (quote ,name)))
-		      (value-string (make-symbol "value-string")))
-		 `(,attr-var (let ((,value-string ,value-expr))
+	       (let* ((attr-var (nth 0 attr))
+		      (name     (nth 1 attr))
+		      (type     (nth 2 attr))
+		      (value    (if (eq name 'text)
+				    `(car (xml-node-children ,tag-var))
+				  `(xml-get-attribute ,tag-var (quote ,name))))
+		      (string   (make-symbol "value-string")))
+		 `(,attr-var (let ((,string ,value))
 			       ,(cond
 				 ;; Convert to number
 				 ((eq type 'number)
-				  `(when ,value-string
-				     (string-to-number ,value-string)))
+				  `(when ,string
+				     (string-to-number ,string)))
 
 				 ;; String; no conversion
 				 ((eq type 'string)
-				  value-string)
+				  string)
 
 				 ;; For other types, signal an error.
 				 (t
 				  (error "Invalid type: %s" type)))))))
+
 	      ;; Variable name and attribute name
 	      ((= (length attr) 2)
 	       (let* ((attr-var (nth 0 attr))
 		      (name     (nth 1 attr))
-		      (value    `(xml-get-attribute ,tag-var (quote ,name))))
+		      (value    (if (eq name 'text)
+				    `(car (xml-node-children ,tag-var))
+				  `(xml-get-attribute ,tag-var (quote ,name)))))
 		 `(,attr-var ,value)))
 
 	      ;; Invalid form
-	      (t (error "Invalid tag clause: %s" attr)))) ;; TODO define a proper condition or use signal?
+	      (t
+	       ;; TODO define a proper condition or use signal?
+	       (error "Invalid tag clause: %s" attr))))
 	   attrs)))
+
+    ;; Construct binding forms
     `(let ((,tag-var ,tag))
        (let (,@bindings)
 	 (progn
