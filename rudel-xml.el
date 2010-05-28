@@ -134,7 +134,8 @@ tag name. TYPE can be 'number."
   )
 
 (defmacro do-tag-children (var-and-tag &rest body)
-  ""
+  "Bind a var to children of a tag, eval BODY for each binding.
+VAR-AND-TAG has to be a list of the form (VAR TAG)."
   (declare (indent 1)
 	   (debug ((symbolp form) &rest form)))
   (let ((var      (nth 0 var-and-tag))
@@ -150,19 +151,23 @@ tag name. TYPE can be 'number."
 ;;
 
 (defun rudel-xml-toplevel-tag-positions (string)
-  "Return positions of top-level XML tags in STRING."
+  "Return positions of top-level XML tags in STRING.
+The return value is a list of cons cells. Each cell contains a
+start position and an end position."
   (let ((depth       0)
 	(tag-opening nil)
 	(start)
 	(tags        nil))
     (dolist (index (number-sequence 0 (- (length string) 1)))
       (cond
+       ;; Opening element
        ((= (aref string index) ?<)
 	(setq tag-opening (/= (aref string (+ index 1)) ?/))
 	(when (and (= depth 0)
 		   tag-opening)
 	  (setq start index)))
 
+       ;; Closing element
        ((= (aref string index) ?>)
 	(unless (or (= (aref string (- index 1)) ?/)
 		    (= (aref string (- index 1)) ??))
@@ -172,6 +177,7 @@ tag name. TYPE can be 'number."
 	(when (= depth 0)
 	  (push (cons start (+ index 1)) tags)))))
 
+    ;; Return list of tag positions.
     (nreverse tags)))
 
 (defun rudel-xml-toplevel-tags (string)
