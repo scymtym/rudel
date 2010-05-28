@@ -54,9 +54,11 @@
 (defun xml->string (xml &optional pretty-print)
   "Convert infoset XML to string representation.
 PRETTY-PRINT is currently ignored."
-  (with-temp-buffer
-    (xml-print (list xml))
-    (buffer-string)))
+  (if pretty-print
+    (with-temp-buffer
+      (xml-print (list xml))
+      (buffer-string))
+    (rudel-xml-print-node xml)))
 
 (defun string->xml (string)
   "Convert STRING to XML infoset."
@@ -206,6 +208,36 @@ is a string containing not yet complete tags."
   (destructuring-bind (tags buffer)
       (rudel-xml-toplevel-tags (concat storage data))
     (list tags buffer)))
+
+
+;;; Utility functions
+;;
+
+(defun rudel-xml-print-node (node)
+  "Serialize XML infoset NODE."
+  (cond
+   ((stringp node)
+    node)
+
+   (t
+    (let ((name       (symbol-name (xml-node-name node)))
+	  (attributes (xml-node-attributes node))
+	  (children   (xml-node-children node)))
+      (concat
+       "<" name
+       (when attributes " ")
+       (mapconcat #'rudel-xml-print-attr attributes " ")
+       (if children ">" "/>")
+       (mapconcat #'rudel-xml-print-node children "")
+       (when children
+	 (concat "</" name ">"))))))
+  )
+
+(defun rudel-xml-print-attr (attr)
+  "Print XML attribute ATTR which is a cons cell."
+  (concat (symbol-name (car attr))
+	  "="
+	  "\"" (xml-escape-string (cdr attr)) "\""))
 
 (provide 'rudel-xml)
 ;;; rudel-xml.el ends here
