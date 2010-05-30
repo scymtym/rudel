@@ -1,5 +1,44 @@
 2010-05-30  Jan Moringen  <scymtym@users.sourceforge.net>
 
+	Store remote side id in infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-sequence-number-group::remote-id): new slot;
+	stores id assigned by remote side
+
+	Store sequence number and plugins in rudel-infinote/welcome
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-directory-state-new::sequence-number): new slot;
+	stores the sequence number transmitted by the remote side
+	(rudel-infinote-directory-state-new::plugins): new slot; stores
+	the plugin list transmitted by the remote side
+	(rudel-infinote-directory-state-new::rudel-infinote/welcome):
+	store sequence number and plugin list received form remote side
+
+	Warning severity in infinote/rudel-infinote-group-directory.el
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-directory-state-exploring::rudel-infinote/explore-end):
+	specify warning severity in call to `display-warning'
+
+	Improved commentary section in infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el (header): extended commentary
+	section; added 0.2 to version section
+
+	Added documentation strings in infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el (rudel-infinote-group): made
+	abstract; added documentation string
+	(rudel-infinote-embed-in-group): added documentation string
+
+	More data in warnings in rudel-infinote-group-state::rudel-accept
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-group-state::rudel-accept): include more data in
+	warning messages for failed requests
+
+	Added class rudel-infinote-sequence-number-group
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-sequence-number-group): new class; added
+	automatically incrementing sequence numbers to messages sent
+	through the group
+
 	Improved docstring of method rudel-obby/obby_document/sync_init
 	* obby/rudel-obby-client.el
 	(rudel-obby-client-state-subscribing::rudel-obby/obby_document/sync_init):

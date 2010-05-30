@@ -173,7 +173,12 @@ machines. Subclasses have to provide their own states."
 			 :initform 0
 			 :documentation
 			 "Sequence number used when sending
-requests."))
+requests.")
+   (remote-id            :initarg  :remote-id
+			 :type     (integer 0)
+			 :documentation
+			 "Id assigned to us by the remote
+side. This is used to identify messages directed at us."))
   "Objects of this class inject sequence number into messages
 sent via `rudel-send'.")
 
