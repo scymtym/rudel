@@ -63,24 +63,24 @@
   ""
   :abstract t)
 
-(defmethod rudel-accept ((this rudel-infinote-group-state) xml) ;; TODO is xml a single element or a list of elements?
-  ""
+(defmethod rudel-accept ((this rudel-infinote-group-state) xml)
+  "Dispatch XML to appropriate handler method based on content."
   (let ((type (xml-node-name xml)))
     (case type
-      ;; Handle request-failed messages, which look like this:
-      ;; <request-failed
-      ;;     domain="error_domain"
-      ;;     code="error_code"
-      ;;     seq="seq_id">
-      ;;   <text>Human-readable text</text>
-      ;; </request-failed>
-      ;; domain example: INF_DIRECTORY_ERROR
+      ;; Handle request-failed messages.
       (request-failed
        ;; TODO handle the problem
+       ;; TODO there can be a description:
+       ;;      <request-failed><text>Bla</text></request-failed>
        (with-tag-attrs (domain
 			(code            code number)
 			(sequence-number seq  number)) xml
-			)
+	 (display-warning
+	  '(rudel infinote)
+	  (format "request failed; sequence number: `%s', \
+domain: `%s', code: `%s'"
+		  sequence-number domain code)
+	  :warning))
        'idle)
 
       ;; Dispatch all normal message to appropriate methods
@@ -88,7 +88,7 @@
       (t
        (let ((name (symbol-name type)))
 	 (condition-case error
-	     ;; Try to dispatch
+	     ;; Try to dispatch on the message type.
 	     (rudel-dispatch this
 			     "rudel-infinote/" name
 			     (list xml))
@@ -101,7 +101,7 @@
 	       (format "%s: no method (%s: %s): `%s/%s'; arguments: %s"
 		       (object-print this) (car error) (cdr error)
 		       "rudel-infinote" name arguments)
-	       :debug)
+	       :warning)
 	      nil)))))))
   )
 
