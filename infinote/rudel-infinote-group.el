@@ -24,13 +24,24 @@
 
 ;;; Commentary:
 ;;
-;; This file contains the classes `rudel-infinote-group' which is a
-;; base class for other infinote group classes and
-;; `rudel-infinote-group-state' which is a base class for infinote
-;; group state classes.
+;; This file contains the following super class classes for
+;; implementing infinote communication groups:
+;;
+;; + `rudel-infinote-group'
+;;   + `rudel-infinote-sequence-number-group'
+;;
+;; Communication groups are modeled as named state machines. States
+;; have to be implemented in sub classes.
+;;
+;; For implementing infinote group state, the super class
+;; `rudel-infinote-group-state' which mixes in impersonation (via
+;; `rudel-impersonator') and delegation (via `rudel-delegator') to the
+;; containing group is provided.
 
 
 ;;; History:
+;;
+;; 0.2 - Automatic sequence number injection
 ;;
 ;; 0.1 - Initial version
 
