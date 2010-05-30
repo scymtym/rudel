@@ -54,7 +54,17 @@
 
 (defclass rudel-infinote-directory-state-new
   (rudel-infinote-group-state)
-  ()
+  ((sequence-number :initarg :sequence-number
+		    :type    (integer 0)
+		    :documentation
+		    "The sequence number the server reserved for
+this exchange.")
+   (plugins         :initarg  :plugins
+		    :type     list
+		    :initform nil
+		    :documentation
+		    "The list of plugins is stored here
+temporarily after receiving it from the server."))
   "New state of the directory group.
 Initial state of the state machine of the infinote directory
 group.")
@@ -62,17 +72,22 @@ group.")
 (defmethod rudel-infinote/welcome
   ((this rudel-infinote-directory-state-new) xml)
   "Handle infinote welcome message."
-  ;; TODO list of plugins belongs in the :plugins slot of the
-  ;; connection
-  (let ((plugins (mapcar
-		  (lambda (plugin)
-		    (xml-get-attribute plugin 'type))
-		  (xml-node-children
-		   (car (xml-get-children xml 'note-plugins))))))
+  ;; Temporarily store list of plugins and sequence
+  ;; number. Ultimately, the plugin list belongs in the :plugins slot
+  ;; of the connection object and the sequence-number should be used
+  ;; by all groups to identify server replies.
+  (with-slots (sequence-number plugins) this
     (with-tag-attrs ((version  protocol-version number)
 		     (sequence sequence-id      number)) xml
-      ;; TODO
-      ))
+      (setq sequence-number sequence
+	    plugins         (mapcar
+			     (lambda (plugin)
+			       (xml-get-attribute plugin 'type))
+			     (xml-node-children
+			      (car (xml-get-children
+				    xml 'note-plugins)))))))
+
+  ;; Switch to idle state.
   'idle)
 
 
