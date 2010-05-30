@@ -90,7 +90,17 @@ It would be nice to find another way to do this.")
 
 (defgroup rudel nil
   "Rudel collaborative editing framework."
-  :group 'applications)
+  :group 'applications
+  :group 'communication
+  :link  '(emacs-library-link :tag "Lisp File" "rudel.el")
+  :link  '(url-link :tag "Project Homepage"
+		    "http://rudel.sourceforge.net")
+  :link  '(url-link :tag "Report Issues"
+		    "http://sourceforge.net/tracker/?group_id=249139")
+  :link  '(url-link :tag "Ask Questions (Mailing List)"
+		    "http://sourceforge.net/mail/?group_id=249139")
+  :link  '(url-link :tag "Ask Questions (EmacsWiki)"
+		    "http://www.emacswiki.org/emacs/Rudel"))
 
 (defcustom rudel-allocate-buffer-function
   'rudel-allocate-buffer-clear-existing
