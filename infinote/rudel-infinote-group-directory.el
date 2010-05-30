@@ -172,7 +172,8 @@ explored.")
        '(rudel infinote)
        (format
 	"received 'explore-end' message when still expecting %d messages"
-	remaining-messages))))
+	remaining-messages)
+       :warning)))
   'idle)
 
 
