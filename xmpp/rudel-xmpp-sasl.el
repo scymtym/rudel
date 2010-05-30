@@ -201,16 +201,17 @@ mechanism.")
     ;; Authentication mechanism failed.
     (failure
      (let ((child (car-safe (xml-node-children xml))))
-       (cond
+       (case (xml-node-name child)
+
 	;; The id chosen for identification was not accepted (example:
 	;; incorrectly formatted user id).
-	((eq (xml-node-name child) 'invalid-authzid)
+	(invalid-authzid
 	 (with-slots (name server rest) this
 	   (list 'sasl-try-one name server rest))) ;; TODO how do we react?
 
 	;; The not-authorized failure means that the credentials we
 	;; provided were wrong.
-	((eq (xml-node-name child) 'not-authorized)
+	('not-authorized
 	 (with-slots (name server rest) this
 	   (list 'sasl-try-one name server rest))) ;; TODO how do we react?
 
