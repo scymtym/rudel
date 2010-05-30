@@ -1,4 +1,60 @@
+2010-05-30  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Improved docstring of method rudel-obby/obby_document/sync_init
+	* obby/rudel-obby-client.el
+	(rudel-obby-client-state-subscribing::rudel-obby/obby_document/sync_init):
+	improved documentation string
+
+	New function rudel-obtain-password, used in XMPP SASL mechanism
+	* rudel-interactive.el (rudel-obtain-password): new function; try
+	to obtain from different sources, falling back to prompting the
+	user
+	* xmpp/rudel-xmpp-sasl.el
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-accept): bind
+	`sasl-read-passphrase' to `rudel-obtain-sasl-password' to make it
+	overridable
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-obtain-sasl-password):
+	call `rudel-obtain-password'
+	* obby/rudel-obby.el (rudel-obby-backend::rudel-ask-connect-info):
+	use `rudel-obtain-password' instead of `read-string'
+
+	Contents of header commentary section in xmpp/rudel-xmpp-sasl.el
+	* xmpp/rudel-xmpp-sasl.el (header): added contents of commentary
+	section
+
+	Match response types with case in xmpp/rudel-xmpp-sasl.el
+	* xmpp/rudel-xmpp-sasl.el
+	(rudel-xmpp-state-sasl-mechanism-step::rudel-accept): use `case'
+	instead of `cond' when matching response types
+
+	Improved customization group definition in rudel.el
+	* rudel.el (defgroup rudel): added group communication and :link s
+	to the library, the Sourceforge project page and the Emacs Wiki
+	page
+
+2010-05-28  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Make xml->string not pretty-print unless requested
+	* rudel-xml.el (xml->string): use new utility function
+	rudel-xml-print-node when not pretty-printing
+	(rudel-xml-print-node): new utility function; print XML node
+	(rudel-xml-print-attr): new utility function; print XML attribute
+
+	Added documentation and comments in rudel-xml.el
+	* rudel-xml.el (do-tag-children): added documentation string
+	(rudel-xml-toplevel-tag-positions): Improved documentation string;
+	added some comments
+
+	Allow access to text child nodes in with-tag-attrs
+	* rudel-xml.el (with-tag-attrs): allow second position in binding
+	specification to text; look up child text node
+
 2010-05-27  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added some branch tags in TODO
+	* TODO (Future): added branch tags; multiple listeners task is
+	started
+	(Milestone 0.4): added branch tags
 
 	Associated rudel-unsubscribed-documents to rudel-client-session
 	* rudel.el (rudel-client-session::rudel-unsubscribed-documents):

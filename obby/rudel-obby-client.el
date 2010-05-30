@@ -672,7 +672,7 @@ a 'self' user object."))
 
 (defmethod rudel-obby/obby_document/sync_init
   ((this rudel-obby-client-state-subscribing) document num-bytes)
-  "Handle obby 'sync_init' message."
+  "Handle 'sync_init' submessage of the obby 'document' message."
   (with-parsed-arguments ((num-bytes number))
     (with-slots (document) this
       (if (= num-bytes 0)
