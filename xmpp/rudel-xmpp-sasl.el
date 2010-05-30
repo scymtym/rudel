@@ -24,6 +24,8 @@
 
 ;;; Commentary:
 ;;
+;; This file defines additional XMPP connection states that implement
+;; the SASL authentication mechanism using Emacs' sasl library.
 
 
 ;;; History:
