@@ -120,10 +120,12 @@ connections and creates obby servers.")
 				(rudel-read-user-color)))
 	 (global-password   (if (member :global-password info)
 				(plist-get info :global-password)
-			      (read-string "Global password: " "")))
+			      (rudel-obtain-password
+			       'global info "Global password: ")))
 	 (user-password     (if (member :user-password info)
 				(plist-get info :user-password)
-			      (read-string "User password: " ""))))
+			      (rudel-obtain-password
+			       'user info "User password: "))))
     (append (list :transport-backend transport-backend
 		  :protocol-backend  protocol-backend
 		  :host              host

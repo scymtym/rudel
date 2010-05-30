@@ -247,7 +247,11 @@ mechanism.")
 
        ;; Proceed to next step and send response, possibly with
        ;; response data.
-       (let ((next (sasl-next-step client step)))
+       (let* ((sasl-read-passphrase (lexical-let ((this1 this))
+				      (lambda (prompt)
+					(rudel-obtain-sasl-password
+					 this1 prompt))))
+	      (next                 (sasl-next-step client step)))
 	 (if next
 	     ;; If there is another step, send a 'response' element,
 	     ;; possibly containing the response data.
@@ -271,6 +275,22 @@ mechanism.")
     ;; Unknown message.
     (t
      nil)) ;; TODO send error or call-next-method?
+  )
+
+(defmethod rudel-obtain-sasl-password
+  ((this rudel-xmpp-state-sasl-mechanism-step) prompt)
+  "Replaces prompt function of the sasl library.
+This function adds all available context information to the
+password request and passes it to `rudel-obtain-password'."
+  (with-slots (name server schema) this
+    (rudel-obtain-password
+     'xmpp-sasl
+     (list
+      :host     server
+      :port     5222 ;; TODO this one could be wrong
+      :schema   schema
+      :username name)
+     prompt))
   )
 
 

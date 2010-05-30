@@ -1,6 +1,6 @@
 ;;; rudel-interactive.el --- User interaction functions for Rudel.
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, user, interface, interaction
@@ -28,6 +28,8 @@
 
 
 ;;; History:
+;;
+;; 0.2 - Password function
 ;;
 ;; 0.1 - Initial version
 
@@ -139,6 +141,42 @@ return the name as string."
       (find document-name documents
 	    :test #'string= :key #'rudel-unique-name))
      (t document-name)))
+  )
+
+
+;;; Password functions
+;;
+
+(defun rudel-obtain-password (id context prompt)
+  "Obtain the password identified by ID using info in CONTEXT.
+ID is a symbol identifying the requested password. CONTEXT is a
+property list that specifies additional information identifying
+the requested password. PROMPT is used when it is necessary to
+ask the user for the password.
+
+For example, the XMPP backend would set ID to 'xmpp-sasl and
+CONTEXT to (:host \"jabber.org\" :port 5222 :username
+\"joe\"). This Information would be used to search auth-source's
+sources for a matching password entry."
+
+  (or
+   ;; Do not try anything fancy, if CONTEXT already has the password.
+   (plist-get context (intern-soft
+		       (concat ":" (symbol-name id) "-password")))
+
+   ;; Try secret stores.
+   ;; TODO finish this
+   ;; TODO use secrets.el directly?
+   ;; (progn
+   ;;   (when (require 'auth-source nil t)
+   ;;     (auth-source-user-or-password
+   ;; 	"login"
+   ;; 	(plist-get context :host)
+   ;; 	(plist-get context :port)
+   ;; 	(plist-get context :username))))
+
+   ;; Fall back to just read the password.
+   (read-passwd prompt))
   )
 
 
