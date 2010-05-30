@@ -107,14 +107,6 @@
 
 ;; TODO can all groups receive <session-close/> or just document groups?
 
-(defmethod rudel-send ((this rudel-infinote-group-state) data)
-  ""
-  (with-slots (group) this
-    ;;
-    ;(with-slots (sequence-number) connection ;; TODO encapsualtion violation
-    (rudel-send group data))
-  )
-
 
 ;;; Class rudel-infinote-group
 ;;
@@ -156,6 +148,43 @@
   (with-slots (connection) this
     (rudel-send connection
 		(rudel-infinote-embed-in-group this data))))
+
+
+;;; Class rudel-infinote-sequence-number-group
+;;
+
+(defclass rudel-infinote-sequence-number-group (rudel-infinote-group)
+  ((next-sequence-number :initarg  :next-sequence-number
+			 :type     (integer 0)
+			 :initform 0
+			 :documentation
+			 "Sequence number used when sending
+requests."))
+  "Objects of this class inject sequence number into messages
+sent via `rudel-send'.")
+
+(defmethod rudel-send ((this rudel-infinote-sequence-number-group)
+		       data &optional no-sequence-number)
+  "Add a sequence number to DATA and send it.
+After sending, increment the sequence number counter.
+If NO-SEQUENCE-NUMBER is non-nil, do not add a sequence number
+and do not increment the sequence number counter."
+  (if no-sequence-number
+      (call-next-method this data)
+    (with-slots ((seq-num :next-sequence-number)) this
+      (let ((data       (xml-node-name data))
+	    (attributes (xml-node-attributes data))
+	    (children   (xml-node-children data)))
+	(call-next-method
+	 this
+	 (append
+	  (list
+	   data
+	   (cons `(seq . ,(number-to-string seq-num))
+		 attributes))
+	  children)))
+      (incf seq-num)))
+  )
 
 
 ;;; Miscellaneous functions
