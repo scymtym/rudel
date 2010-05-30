@@ -130,7 +130,10 @@ domain: `%s', code: `%s'"
 	       :initform nil
 	       :documentation
 	       ""))
-  "")
+  "Super class for all communication groups used in infinote
+sessions. Groups are basically modeled as named state
+machines. Subclasses have to provide their own states."
+  :abstract t)
 
 ;; TODO we could introduce rudel-message to pass data to rudel accept
 
@@ -190,9 +193,10 @@ and do not increment the sequence number counter."
 ;;; Miscellaneous functions
 ;;
 
-;; TODO move to util file
-(defmacro rudel-infinote-embed-in-group (group &rest forms);; TODO bad name
-  ""
+(defmacro rudel-infinote-embed-in-group (group &rest forms) ;; TODO bad name
+  "Construct a message out of FORMS by adding data from GROUP.
+The returned message consists of an outer <group> element with
+GROUP's properties in its attributes and FORMS as children."
   (declare (indent 1)
 	   (debug (form &rest form)))
   (let ((group-var (make-symbol "group"))
