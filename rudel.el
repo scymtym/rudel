@@ -260,6 +260,7 @@ WHICH is compared to the result of KEY using TEST."
 session.")
    (self       :initarg  :self
 	       :type     rudel-user-child
+	       :reader   rudel-self
 	       :documentation
 	       "Points into USERS to the user object representing
 the local user"))
@@ -541,6 +542,15 @@ with arguments THIS and USER."
 
   ;; Run the hook.
   (object-run-hook-with-args this 'unsubscribe-hook user))
+
+(defmethod rudel-find-user ((this rudel-document)
+			    which &optional test key)
+  "Find user WHICH in the list of subscribed users.
+WHICH is compared to the result of KEY using TEST."
+  (with-slots (subscribed) this
+    (find which subscribed
+	  :key  (or key  #'object-name-string)
+	  :test (or test #'string=))))
 
 (defmethod rudel-insert ((this rudel-document) position data)
   "Insert DATA at POSITION into the buffer attached to THIS.
