@@ -43,23 +43,22 @@
 (require 'rudel-infinote-group)
 
 
-;;; Class rudel-infinote-document-state-idle
+;;; Class rudel-infinote-group-document-state-idle
 ;;
 
-;; TODO rudel-infinote-group-document-state-idle?
-(defclass rudel-infinote-document-state-idle
+(defclass rudel-infinote-group-document-state-idle
   (rudel-infinote-group-state)
   ()
   "")
 
 (defmethod rudel-infinote/sync-begin
-  ((this rudel-infinote-document-state-idle) xml)
+  ((this rudel-infinote-group-document-state-idle) xml)
   ""
   (with-tag-attrs ((num-messages num-messages number)) xml
     (list 'synchronizing num-messages)))
 
 (defmethod rudel-infinote/user-join
-  ((this rudel-infinote-document-state-idle) xml)
+  ((this rudel-infinote-group-document-state-idle) xml)
   ""
   ;;<user-join
   ;;  id="1"
@@ -83,7 +82,7 @@
   nil)
 
 (defmethod rudel-infinote/user-rejoin
-  ((this rudel-infinote-document-state-idle) xml)
+  ((this rudel-infinote-group-document-state-idle) xml)
   ""
   ;; <user-rejoin
   ;;   id="1"
@@ -96,7 +95,7 @@
   nil)
 
 (defmethod rudel-infinote/user-status-change
-  ((this rudel-infinote-document-state-idle) xml)
+  ((this rudel-infinote-group-document-state-idle) xml)
   ""
   ;;<user-status-change
   ;;  id="1"
@@ -108,7 +107,7 @@
 
 ;; TODO does this belong here or in derived classes?
 (defmethod rudel-infinote/request
-  ((this rudel-infinote-document-state-idle) xml)
+  ((this rudel-infinote-group-document-state-idle) xml)
   ""
   (with-tag-attrs (user user number) xml
     (let* ((operation (car (xml-node-children xml))) ;; TODO are multiple operations possible?
@@ -119,7 +118,7 @@
   nil)
 
 (defmethod rudel-infinote/session-close
-  ((this rudel-infinote-document-state-idle) xml)
+  ((this rudel-infinote-group-document-state-idle) xml)
   ""
   'closed)
 
@@ -138,7 +137,7 @@
 ;;; Class rudel-infinote-state-synchronizing
 ;;
 
-(defclass rudel-infinote-document-state-synchronizing
+(defclass rudel-infinote-group-document-state-synchronizing
   (rudel-infinote-group-state)
   ((all-items       :initarg :all-items
 		    :type    (integer 0)
@@ -150,7 +149,7 @@
 		    ""))
   "")
 
-(defmethod rudel-enter ((this rudel-infinote-document-state-synchronizing)
+(defmethod rudel-enter ((this rudel-infinote-group-document-state-synchronizing)
 			num-items)
   ""
   (with-slots (all-items remaining-items) this
@@ -159,7 +158,7 @@
   nil)
 
 (defmethod rudel-infinote/sync-user ;; TODO send sync-error if remaining-items is already zero
-  ((this rudel-infinote-document-state-synchronizing) xml)
+  ((this rudel-infinote-group-document-state-synchronizing) xml)
   ""
   (with-slots (remaining-items) this
     (with-tag-attrs (id name status caret selection hue) xml
@@ -171,7 +170,7 @@
   nil)
 
 (defmethod rudel-infinote/sync-request
-  ((this rudel-infinote-document-state-synchronizing) xml)
+  ((this rudel-infinote-group-document-state-synchronizing) xml)
   ""
   (with-slots (remaining-items) this
     (with-tag-attrs (user time) xml
@@ -182,7 +181,7 @@
   nil)
 
 (defmethod rudel-infinote/sync-segment ;; TODO text documents only?
-  ((this rudel-infinote-document-state-synchronizing) xml)
+  ((this rudel-infinote-group-document-state-synchronizing) xml)
   ""
   (with-slots (remaining-items) this
     (with-tag-attrs (author) xml
@@ -193,7 +192,7 @@
   nil)
 
 (defmethod rudel-infinote/sync-end
-  ((this rudel-infinote-document-state-synchronizing) xml)
+  ((this rudel-infinote-group-document-state-synchronizing) xml)
   "Handle 'sync-end' message."
   (with-slots (all-items remaining-items) this
     (if (= remaining-items 0)
@@ -210,7 +209,7 @@
   'idle)
 
 (defmethod rudel-infinote/sync-cancel
-  ((this rudel-infinote-document-state-synchronizing) xml)
+  ((this rudel-infinote-group-document-state-synchronizing) xml)
   "Handle 'sync-cancel' message."
   'idle)
 
@@ -271,8 +270,8 @@
 ;;
 
 (defvar rudel-infinote-group-document-states
-  '((idle          . rudel-infinote-document-state-idle)
-    (synchronizing . rudel-infinote-document-state-synchronizing) ;; TODO names
+  '((idle          . rudel-infinote-group-document-state-idle)
+    (synchronizing . rudel-infinote-group-document-state-synchronizing)
     (joining       . rudel-infinote-group-document-state-joining))
   "TODO")
 
