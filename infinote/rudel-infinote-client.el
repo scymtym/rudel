@@ -386,10 +386,11 @@ WHICH is compared to the result of KEY using TEST."
   ;;(let ((context (rudel-find-context this document)))
 
   ;; Notify the server of the operation
-  (with-slots (id group) document
-    (rudel-send group
-		(rudel-infinote-embed-in-request (rudel-infinote-user "jan" :user-id 2) ;; TODO user
-		  (rudel-operation->xml operation))))
+  (let ((self (rudel-self (oref this :session))))
+    (with-slots (id group) document
+      (rudel-send group
+		  (rudel-infinote-embed-in-request
+		   self (rudel-operation->xml operation)))))
 
   ;; Submit the operation to the jupiter context.
   ;; (jupiter-local-operation context operation))
