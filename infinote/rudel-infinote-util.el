@@ -86,6 +86,15 @@
   "Parse the string VALUE into a cons cell.
 If string is of the form \"A/B\" the returned cell is (A . B)
 where A and B are then of type number."
+  ;; Make sure VALUE is of the expected form.
+  (unless (string-match-p
+	   (rx (seq
+		string-start
+		(1+ (any "0-9"))) "/" (1+ (any "0-9"))
+		string-end)
+	   value)
+    (signal 'wrong-type-argument nil))
+
   (let ((values (split-string value "/")))
     (cons (string-to-number (nth 0 values))
 	  (string-to-number (nth 1 values)))))
@@ -107,8 +116,8 @@ For a cons cell (A . B), the generated string is of the form
     `(let ((,user-var ,user))
        (with-slots (,id-var) ,user-var
 	 `(request
-	   ((user . ,(format "%d" ,id-var))))
-	   ,,@forms)))
+	   ((user . ,(format "%d" ,id-var)))
+	   ,,@forms))))
   )
 
 (provide 'rudel-infinote-util)
