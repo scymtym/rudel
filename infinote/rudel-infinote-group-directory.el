@@ -146,14 +146,9 @@ explored.")
 (defmethod rudel-enter
   ((this rudel-infinote-directory-state-exploring) id)
   ""
-  (with-slots (sequence-number) this ;; transparently from group
-                                     ;; TODO but better increase it
-				     ;; automatically
-    ;; TODO add seq-num automatically
-    (rudel-send this
-		`(explore-node
-		  ((seq . ,(format "%d" sequence-number))
-		   (id  . ,(format "%d" id))))))
+  (rudel-send this
+	      `(explore-node
+		  ((id  . ,(format "%d" id)))))
   nil)
 
 (defmethod rudel-infinote/explore-begin ;; TODO there should be another state
@@ -246,14 +241,8 @@ explored.")
 ;;; Class rudel-infinote-group-directory
 ;;
 
-(defclass rudel-infinote-group-directory (rudel-infinote-group)
-  ((method          :initform 'central)
-   (sequence-number :initarg  :sequence-number ;; TODO this belongs in the group class?
-		    :type     (integer 1)      ;; but which group class?
-		    :initform 1
-		    :documentation
-		    "Sequence number used when sending
-requests."))
+(defclass rudel-infinote-group-directory (rudel-infinote-sequence-number-group)
+  ((method :initform 'central))
   "Objects of this class represent infinote directory
 communication groups.")
 
