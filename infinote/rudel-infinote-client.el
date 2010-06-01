@@ -140,16 +140,6 @@ side."))
       ))
   )
 
-;; (defmethod rudel-register-state ((this rudel-infinote-client-connection)
-;; 				 symbol state)
-;;   ""
-;;   ;; Associate THIS connection to STATE.
-;;   (oset state :connection this)
-;;
-;;   ;;
-;;   (call-next-method)
-;;   )
-
 (defmethod rudel-get-group ((this rudel-infinote-client-connection) name)
   "Return group named NAME or nil if there is no such group."
   (with-slots (groups) this
