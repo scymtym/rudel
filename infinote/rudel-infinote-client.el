@@ -170,6 +170,17 @@ which case it is the name of a group."
 		  group-or-name))))
       (remhash name groups))))
 
+(defmethod rudel-make-and-add-group ((this rudel-infinote-client-connection)
+				     type)
+  "Create a group object and add it to THIS."
+  (let ((group (rudel-infinote-group-text-document ;; TODO class
+		name
+		:publisher "you" ;; TODO temp
+		:method    method
+		;;:id        id
+		:document  document)))
+    (rudel-add-group group)))
+
 (defmethod rudel-find-node ((this rudel-infinote-client-connection)
 			    which &optional test key)
   "Find node WHICH in the node list of THIS.
@@ -187,8 +198,8 @@ WHICH is compared to the result of KEY using TEST."
   "Remove NODE from the list of nodes of THIS."
   (object-remove-from-list this :nodes node))
 
-(defmethod rudel-add-new-node ((this rudel-infinote-client-connection)
-			       id parent-id name type)
+(defmethod rudel-make-and-add-node ((this rudel-infinote-client-connection)
+				    id parent-id name type)
   (with-slots (session) this
     (let ((parent (and parent-id
 		       (rudel-find-node this parent-id))))

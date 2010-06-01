@@ -273,7 +273,7 @@ communication groups.")
 			   id parent name type)
   ""
   (with-slots (connection) this
-    (rudel-add-new-node connection id parent name type)))
+    (rudel-make-and-add-node connection id parent name type)))
 
 (defmethod rudel-remove-node ((this rudel-infinote-group-directory))
   ""
