@@ -45,10 +45,10 @@
 ;;; Class rudel-infinote-document
 ;;
 
-(defclass rudel-infinote-document (rudel-document
-				   rudel-infinote-node)
+(defclass rudel-infinote-document (rudel-infinote-node
+				   rudel-document)
   ()
-  "")
+  "Super class of infinote document classes.")
 
 (provide 'rudel-infinote-document)
 ;;; rudel-infinote-document.el ends here
