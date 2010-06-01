@@ -192,31 +192,46 @@ explored.")
 
 (defclass rudel-infinote-directory-state-subscribing
   (rudel-infinote-group-state)
-  ()
+  ((id :initarg :id
+       :type    (or null (integer 0))
+       :documentation
+       "The id of the target node of the subscription."))
   "Directory group state entered when subscribing to a session.")
 
 (defmethod rudel-enter
   ((this rudel-infinote-directory-state-subscribing) id)
-  ""
-  (rudel-send this
-	      `((subscribe-session
-		 ((id . ,(format "%d" id))))))
-  nil) ;; TODO where do we get id?
+  "Send 'subscribe-session' message and store ID in THIS for later."
+  (with-slots ((id1 :id)) this
+    (setq id1 id)
+    (rudel-send this
+		`(subscribe-session
+		  ((id . ,(format "%d" id1))))))
+  nil)
 
 (defmethod rudel-infinote/subscribe-session
   ((this rudel-infinote-directory-state-subscribing) xml)
   ""
-  (with-slots (group) this
+  (with-slots ((id1 :id)) this
     (with-tag-attrs ((name group)
 		     method
-		     (id   id number)) xml ;; optional seq
+		     (id   id    number)) xml ;; optional seq
+
+      ;; Check received id against stored id.
+      (unless (= id1 id)
+	(setq id1 nil)
+	(display-warning
+	 '(rudel infinote)
+	 (format "Did not request subscription to group %d (was expecting %d)"
+		 id id1)
+	 :warning))
+
+      ;; Check method and subscribe.
       (let ((method-symbol (intern-soft method))) ;; TODO (make-symbol method)
 	(unless (memq method-symbol '(central))
 	  (error "Invalid method: `%s'" method))
 	;; TODO proper error handling
 
-	(rudel-subscribe-session
-	 group name method-symbol id))))
+	(rudel-subscribe-session this name method-symbol id1))))
 
   'idle)
 
