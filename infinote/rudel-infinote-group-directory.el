@@ -220,11 +220,16 @@ explored.")
 
   'idle)
 
-;; TODO this message is used when the server requested the subscription
-;; (rudel-send this
-;; 		  `(("subscribe-ack"
-;; 		     ("id" . ,(format "%d" id)))))
-
+;; TODO this message is used when the server requested the subscription?
+(defmethod rudel-leave ((this rudel-infinote-directory-state-subscribing))
+  "Acknowledge the subscription when leaving the state."
+  (with-slots (id) this
+    (when id
+      (rudel-send this
+		  `(subscribe-ack
+		    ((id . ,(format "%d" id))))
+		  t))) ;; no sequence number
+  )
 
 
 ;;; Directory group states
