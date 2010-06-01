@@ -87,7 +87,13 @@ objects.")
 		    :type     (integer 1)
 		    :initform 1
 		    :documentation
-		    ""))
+		    "")
+   (plugins         :initarg  :plugins
+		    :type     list
+		    :initform nil
+		    :documentation
+		    "List of plugins advertised by the remote
+side."))
   "TODO")
 
 (defmethod initialize-instance ((this rudel-infinote-client-connection)
@@ -116,10 +122,10 @@ objects.")
 	(setq self user))) ;; TODO temp
 
     ;; The special 'InfDirectory' group is there from the beginning.
-    (let ((group (rudel-infinote-group-directory
+    (let ((directory-group (rudel-infinote-group-directory
 		  "InfDirectory"
 		  :publisher "you"))) ;; TODO use correct publisher name
-      (rudel-add-group this group)
+      (rudel-add-group this directory-group)
 
       (require 'rudel-infinote-node-directory)
       (rudel-add-node this
@@ -127,10 +133,11 @@ objects.")
 		       "root"
 		       :id     0
 		       :parent nil
-		       :group  group))))
+		       :group  directory-group))
 
-  ;; ;; Register states.
-  ;; (rudel-register-states this rudel-infinote-client-states)
+      ;; TODO install a hook that takes the sequence number and plugin
+      ;; list from the directory group and stores it in THIS.
+      ))
   )
 
 ;; (defmethod rudel-register-state ((this rudel-infinote-client-connection)
