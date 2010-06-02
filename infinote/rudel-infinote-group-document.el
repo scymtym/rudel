@@ -36,6 +36,8 @@
 ;;; Code:
 ;;
 
+(require 'warnings)
+
 (require 'eieio)
 
 (require 'rudel-xml)
@@ -59,39 +61,63 @@
 
 (defmethod rudel-infinote/user-join
   ((this rudel-infinote-group-document-state-idle) xml)
-  ""
-  ;;<user-join
-  ;;  id="1"
-  ;;  name="jan"
-  ;;  status="active"
-  ;;  caret="0"
-  ;;  selection="0"
-  ;;  hue="0.67007399999999995"/>
-  (with-tag-attrs ((id        id        number)
+  "Handle 'user-join' message."
+  (with-slots (document) this
+    (with-tag-attrs ((id        id        number)
+		     name
+		     status
+		     (caret     caret     number)
+		     (selection selection number)
+		     (hue       hue       number)) xml
+      (let ((user (rudel-infinote-user
 		   name
-		   status
-		   (caret     caret     number)
-		   (selection selection number)
-		   (hue       hue       number)) xml
-    ;; (with-slots (session) (oref this :connection) ;; TODO
-    ;;   (rudel-add-user session (rudel-user name
-    ;;					  :color "red")))
+		   :color (format "#%04x%04x%04x"
+				  (* 65535 hue)
+				  (* 65535 0.8)
+				  (* 65535 0.8)) ;; TODO temp
+		   :id    id
+		   ;;:status status
+		   )))
+	;; Add user to session if necessary.
+	;; (with-slots (session) (oref this :connection) ;; TODO
+	;;   (rudel-add-user session user))
 
-    ;; TODO add to documents subscribed users
-    )
+	;; Add USER to list of users subscribed to DOCUMENT.
+	(rudel-add-user document user))))
   nil)
 
 (defmethod rudel-infinote/user-rejoin
   ((this rudel-infinote-group-document-state-idle) xml)
   ""
-  ;; <user-rejoin
-  ;;   id="1"
-  ;;   name="jan"
-  ;;   status="active"
-  ;;   caret="0"
-  ;;   selection="0"
-  ;;   hue="0.67007399999999995"/>
-  ;; TODO
+  (with-slots (document) this
+    (with-tag-attrs ((id        id        number)
+		     name
+		     status
+		     (caret     caret     number)
+		     (selection selection number)
+		     (hue       hue       number)) xml
+      (let ((user (rudel-find-user document id #'= #'rudel-id)))
+	(if (not user)
+	    ;; We did not find the user, display a warning and give
+	    ;; up.
+	    (display-warning
+	     '(rudel infinote)
+	     (format "Could not find user: %d" id)
+	     :warning)
+
+	  ;; If we found the user, change its status
+	  (with-slots ((name    :object-name)
+		       (color1  :color)
+		       (id1     :id)
+		       (status1 :status)) user
+	    (setq name1   name
+		  color1  (format "#%04x%04x%04x"
+				  (* 65535 hue)
+				  (* 65535 0.8)
+				  (* 65535 0.8)) ;; TODO temp
+		  id1     id
+		  status1 (intern-soft status)))
+	  (rudel-change-notify user)))))
   nil)
 
 (defmethod rudel-infinote/user-status-change
@@ -157,13 +183,31 @@
 	  remaining-items num-items))
   nil)
 
-(defmethod rudel-infinote/sync-user ;; TODO send sync-error if remaining-items is already zero
+(defmethod rudel-infinote/sync-user
   ((this rudel-infinote-group-document-state-synchronizing) xml)
-  ""
-  (with-slots (remaining-items) this
-    (with-tag-attrs (id name status caret selection hue) xml
-      ;; TODO
-      )
+  "Create a user object and add it to the document."
+  ;; TODO send sync-error if remaining-items is already zero
+  (with-slots (document remaining-items) this
+    (with-tag-attrs ((id        id        number)
+		     name
+		     status
+		     (caret     caret     number)
+		     (selection selection number)
+		     (hue       hue       number)) xml
+      (let ((user (rudel-infinote-user
+		   name
+		   :color  (format "#%04x%04x%04x"
+				   (* 65535 hue)
+				   (* 65535 0.8)
+				   (* 65535 0.8)) ;; TODO temp
+		   :id     id
+		   :status (intern-soft status))))
+
+	;; TODO try to find the user in the session first?
+	;; TODO add user to session?
+
+	;; Add user to the list of subscribed users of the document.
+	(rudel-add-user document user)))
 
     ;; Expect one less synchronization item.
     (decf remaining-items))
@@ -244,25 +288,72 @@
 (defmethod rudel-infinote/user-join
   ((this rudel-infinote-group-document-state-joining) xml)
   ""
-  (with-tag-attrs ((id        id        number)
-		   name
-		   status
-		   (caret     caret     number)
-		   (selection selection number)
-		   (hue       hue       number)) xml
-    ) ;; TODO
+  (with-slots (document) this
+    (with-tag-attrs ((id        id        number)
+		     name
+		     status
+		     (caret     caret     number)
+		     (selection selection number)
+		     (hue       hue       number)) xml
+      ;; In the joining state, the join message has to refer to our
+      ;; own user. Therefore, we obtain the self user object from the
+      ;; session, update its slots and add it to the document.
+      (let ((self (rudel-self (oref document :session))))
+	;; Update the user object.
+	(with-slots ((name1   :object-name)
+		     color
+		     (id1     :id)
+		     (status1 :status)) self
+	  (setq name1   name
+		color   (format "#%04x%04x%04x"
+				(* 65535 hue)
+				(* 65535 0.8)
+				(* 65535 0.8)) ;; TODO temp
+		id1     id
+		status1 (intern-soft status)))
+	(rudel-change-notify self)
+
+	;; Added self user to the list of subscribed users of the
+	;; document.
+	(rudel-add-user document self))))
   'idle)
 
 (defmethod rudel-infinote/user-rejoin
   ((this rudel-infinote-group-document-state-joining) xml)
   ""
-  (with-tag-attrs ((id        id        number)
-		   name
-		   status
-		   (caret     caret     number)
-		   (selection selection number)
-		   (hue       hue       number)) xml
-    ) ;; TODO
+  (with-slots (document) this
+    (with-tag-attrs ((id        id        number)
+		     name
+		     status
+		     (caret     caret     number)
+		     (selection selection number)
+		     (hue       hue       number)) xml
+      (let ((self (rudel-self (oref document :session)))
+	    (user (rudel-find-user document id #'= #'rudel-id)))
+	;; When we did not find the self user or the document user or
+	;; they are not the same object, display a warning.
+	(when (or (not self)
+		  (not user)
+		  (not (eq self user)))
+	  (display-warning
+	   '(rudel infinote)
+	   (format "Could not find self or document user: %d" id)
+	   :warning))
+
+	;; If we found the user, update its slots.
+	(when self
+	  (with-slots ((name    :object-name)
+		       (color1  :color)
+		       (id1     :id)
+		       (status1 :status))     self
+	    (setq name1   name
+		  color1  (format "#%04x%04x%04x"
+				  (* 65535 hue)
+				  (* 65535 0.8)
+				  (* 65535 0.8)) ;; TODO temp
+		  id1     id
+		  status1 (intern-soft status)))
+	  (rudel-change-notify self)))))
   'idle)
 
 
