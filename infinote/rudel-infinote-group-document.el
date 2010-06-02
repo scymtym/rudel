@@ -363,7 +363,8 @@
 (defvar rudel-infinote-group-document-states
   '((idle          . rudel-infinote-group-document-state-idle)
     (synchronizing . rudel-infinote-group-document-state-synchronizing)
-    (joining       . rudel-infinote-group-document-state-joining))
+    (joining       . rudel-infinote-group-document-state-joining)
+    (closed        . rudel-infinote-group-state-closed))
   "TODO")
 
 

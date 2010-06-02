@@ -242,7 +242,8 @@
 (defvar rudel-infinote-group-text-document-states
   '((idle          . rudel-infinote-group-text-document-state-idle)
     (synchronizing . rudel-infinote-group-text-document-state-synchronizing)
-    (joining       . rudel-infinote-group-document-state-joining)) ;; TODO
+    (joining       . rudel-infinote-group-document-state-joining) ;; TODO
+    (closed        . rudel-infinote-group-state-closed))
   "TODO")
 
 

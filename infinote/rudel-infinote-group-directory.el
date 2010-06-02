@@ -52,6 +52,7 @@
 ;;; Class rudel-infinote-directory-state-new
 ;;
 
+;; TODO rename to rudel-infinote-group-directory-state-new
 (defclass rudel-infinote-directory-state-new
   (rudel-infinote-group-state)
   ((sequence-number :initarg :sequence-number
@@ -254,7 +255,8 @@ explored.")
   '((new         . rudel-infinote-directory-state-new)
     (idle        . rudel-infinote-directory-state-idle)
     (exploring   . rudel-infinote-directory-state-exploring)
-    (subscribing . rudel-infinote-directory-state-subscribing))
+    (subscribing . rudel-infinote-directory-state-subscribing)
+    (closed      . rudel-infinote-group-state-closed))
   "States of the state machine used by the directory group.")
 
 
