@@ -116,7 +116,19 @@ domain: `%s', code: `%s'"
 	      nil)))))))
   )
 
+
+;;; Class rudel-infinote-group-state-closed
+;;
+
+(defclass rudel-infinote-group-state-closed (rudel-infinote-group-state)
+  ()
+  "Groups enter this state when receiving a <session-close/>
+message.")
 ;; TODO can all groups receive <session-close/> or just document groups?
+
+(defmethod rudel-accept ((this rudel-infinote-group-state-closed) xml)
+  "Simply ignore all further messages."
+  nil)
 
 
 ;;; Class rudel-infinote-group
