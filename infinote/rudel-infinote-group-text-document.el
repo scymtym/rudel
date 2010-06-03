@@ -47,7 +47,7 @@
 ;;
 
 (defclass rudel-infinote-group-text-document-state-idle
-  (rudel-infinote-document-state-idle)
+  (rudel-infinote-group-document-state-idle)
   ()
   "")
 
@@ -187,7 +187,7 @@
 ;;
 
 (defclass rudel-infinote-group-text-document-state-synchronizing
-  (rudel-infinote-document-state-synchronizing)
+  (rudel-infinote-group-document-state-synchronizing)
   ()
   "")
 
