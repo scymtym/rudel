@@ -71,13 +71,12 @@
 		     (hue       hue       number)) xml
       (let ((user (rudel-infinote-user
 		   name
-		   :color (format "#%04x%04x%04x"
-				  (* 65535 hue)
-				  (* 65535 0.8)
-				  (* 65535 0.8)) ;; TODO temp
-		   :id    id
-		   ;;:status status
-		   )))
+		   :color  (format "#%04x%04x%04x"
+				   (* 65535 hue)
+				   (* 65535 0.8)
+				   (* 65535 0.8)) ;; TODO temp
+		   :id     id
+		   :status (intern-soft status))))
 	;; Add user to session if necessary.
 	;; (with-slots (session) (oref this :connection) ;; TODO
 	;;   (rudel-add-user session user))
@@ -344,23 +343,31 @@ expect a 'user-join' or 'user-rejoin' message in response.")
       ;; own user. Therefore, we obtain the self user object from the
       ;; session, update its slots and add it to the document.
       (let ((self (rudel-self (oref document :session))))
-	;; Update the user object.
-	(with-slots ((name1   :object-name)
-		     color
-		     (id1     :id)
-		     (status1 :status)) self
-	  (setq name1   name
-		color   (format "#%04x%04x%04x"
-				(* 65535 hue)
-				(* 65535 0.8)
-				(* 65535 0.8)) ;; TODO temp
-		id1     id
-		status1 (intern-soft status)))
-	(rudel-change-notify self)
+	;; When we did not find the self user display a warning.
+	(when (not self)
+	  (display-warning
+	   '(rudel infinote)
+	   (format "Could not find self or document user: %d" id)
+	   :warning))
 
-	;; Added self user to the list of subscribed users of the
-	;; document.
-	(rudel-add-user document self))))
+	;; If we found the user object, update its slots.
+	(when self
+	  (with-slots ((name1   :object-name)
+		       color
+		       (id1     :id)
+		       (status1 :status)) self
+	    (setq name1   name
+		  color   (format "#%04x%04x%04x"
+				  (* 65535 hue)
+				  (* 65535 0.8)
+				  (* 65535 0.8)) ;; TODO temp
+		  id1     id
+		  status1 (intern-soft status)))
+	  (rudel-change-notify self)
+
+	  ;; Add self user to the list of subscribed users of the
+	  ;; document.
+	  (rudel-add-user document self)))))
   'idle)
 
 (defmethod rudel-infinote/user-rejoin
