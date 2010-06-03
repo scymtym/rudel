@@ -240,7 +240,11 @@
   "Handle 'sync-end' message."
   (with-slots (all-items remaining-items) this
     (if (= remaining-items 0)
+	;; Everything is fine, we received the expected number of
+	;; items.
 	(rudel-send this '(sync-ack))
+      ;; We did not received the correct number of items. Send an
+      ;; error message and display a warning.
       (rudel-send
        this
        `(sync-error
@@ -249,7 +253,14 @@
 	 ,(format
 	   "Received less synchronization items (%d) than previously announced (%d)"
 	   (- all-items remaining-items)
-	   all-items)))))
+	   all-items)))
+
+      (display-warning
+       '(rudel infinote)
+       (format
+	"Received less synchronization items (%d) than previously announced (%d)"
+	(- all-items remaining-items)
+	:warning))))
   'idle)
 
 (defmethod rudel-infinote/sync-cancel
@@ -270,7 +281,9 @@
 (defclass rudel-infinote-group-document-state-joining
   (rudel-infinote-group-state)
   ()
-  "")
+  "This state indicates that we are currently joining the session
+associated to a document. After sending a 'user-join' message, we
+expect a 'user-join' or 'user-rejoin' message in response.")
 
 (defmethod rudel-enter
   ((this rudel-infinote-group-document-state-joining))
