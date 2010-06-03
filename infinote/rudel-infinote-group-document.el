@@ -123,12 +123,44 @@
 (defmethod rudel-infinote/user-status-change
   ((this rudel-infinote-group-document-state-idle) xml)
   ""
-  ;;<user-status-change
-  ;;  id="1"
-  ;;  status="unavailable"/>
-  (with-tag-attrs ((id id number)
-		   status) xml
-    )
+  (with-slots (document) this
+    (with-tag-attrs ((id  id  number)
+		     status)          xml
+      (let ((user (rudel-find-user document id #'= #'rudel-id)))
+	(if (not user)
+	    ;; We did not find the user, display a warning and give
+	    ;; up.
+	    (display-warning
+	     '(rudel infinote)
+	     (format "Could not find user: %d" id)
+	     :warning)
+
+	  ;; If we found the user, change its status
+	  (oset user :status (intern-soft status)) ;; TODO add type symbol to with-tag-attr?
+	  (rudel-change-notify user)))))
+  nil)
+
+(defmethod rudel-infinote/user-color-change
+  ((this rudel-infinote-group-document-state-idle) xml)
+  ""
+  (with-slots (document) this
+    (with-tag-attrs ((id  id  number)
+		     (hue hue number)) xml
+      (let ((user (rudel-find-user document id #'= #'rudel-id)))
+	(if (not user)
+	    ;; We did not find the user, display a warning and give
+	    ;; up.
+	    (display-warning
+	     '(rudel infinote)
+	     (format "Could not find user: %d" id)
+	     :warning)
+
+	  ;; If we found the user, change its status
+	  (oset user :color (format "#%04x%04x%04x"
+				    (* 65535 hue)
+				    (* 65535 0.8)
+				    (* 65535 0.8))) ;; TODO temp
+	  (rudel-change-notify user)))))
   nil)
 
 ;; TODO does this belong here or in derived classes?
