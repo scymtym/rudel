@@ -209,7 +209,11 @@
 (defmethod rudel-enter ((this rudel-infinote-group-document-state-synchronizing)
 			num-items)
   ""
-  (with-slots (all-items remaining-items) this
+  (with-slots (document all-items remaining-items) this
+    ;; Remove all subscribed users from the document. The
+    ;; synchronization will add users anew.
+    (rudel-clear-users document)
+
     (setq all-items       num-items
 	  remaining-items num-items))
   nil)

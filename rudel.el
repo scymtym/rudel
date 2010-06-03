@@ -543,6 +543,10 @@ with arguments THIS and USER."
   ;; Run the hook.
   (object-run-hook-with-args this 'unsubscribe-hook user))
 
+(defmethod rudel-clear-users ((this rudel-document))
+  "Clear list of users subscribed to THIS."
+  (oset this :subscribed nil))
+
 (defmethod rudel-find-user ((this rudel-document)
 			    which &optional test key)
   "Find user WHICH in the list of subscribed users.
