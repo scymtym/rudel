@@ -1,3 +1,174 @@
+2010-06-03  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added rudel-color.el and use it in infinote backend
+	* rudel-color.el: new file; utility functions for color
+	manipulation; currently RGB <-> HSV conversion
+	* Project.ede (target rudel): added rudel-color.el
+	* infinote/rudel-infinote-group-document.el (require rudel-color):
+	new require; used to convert hue values to RGB colors
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-join):
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-rejoin):
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-color-change):
+	(rudel-infinote-group-document-state-synchronizing::rudel-infinote/sync-user):
+	(rudel-infinote-group-document-state-joining::rudel-infinote/user-join):
+	(rudel-infinote-group-document-state-joining::rudel-infinote/user-rejoin):
+	use `rudel-hsv->string' and `rudel-color-background-value'
+
+	New method rudel-document::rudel-clear-users for infinote backend
+	* rudel.el (rudel-document::rudel-clear-users): new method; clear
+	list of subscribed users
+	* infinote/rudel-infinote-group-document.el
+	(rudel-infinote-group-document-state-synchronizing::rudel-enter):
+	use `rudel-clear-users'; users are added by the synchronization
+	process
+
+	Fixed state superclasses in rudel-infinote-group-text-document.el
+	* infinote/rudel-infinote-group-text-document.el
+	(rudel-infinote-group-text-document-state-idle): fixed superclass
+	rudel-infinote-document-state-idle ->
+	rudel-infinote-group-document-state-idle
+	(rudel-infinote-group-text-document-state-synchronizing): fixed
+	superclass rudel-infinote-document-state-synchronizing ->
+	rudel-infinote-group-document-state-synchronizing
+
+	Better updates of user status in rudel-infinote-group-document.el
+	* infinote/rudel-infinote-group-document.el
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-join):
+	update the status slot of the user
+	(rudel-infinote-group-document-state-joining::rudel-infinote/user-join):
+	warn if the self user cannot be found
+
+	Updated user state handlers in rudel-infinote-group-document.el
+	* infinote/rudel-infinote-group-document.el
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-status-change):
+	try to find the user in the list of subscribed user of the
+	document and update its status
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-color-change):
+	new method; handle 'user-color-change' message
+
+	Added comments,  docs to infinote/rudel-infinote-group-document.el
+	* infinote/rudel-infinote-group-document.el
+	(rudel-infinote-group-document-state-synchronizing::rudel-infinote/sync-end):
+	added comments and display a warning when the number of received
+	synchronization items differs from the expected number
+	(rudel-infinote-group-document-state-joining): added documentation
+	string
+
+	Added a 'closed' state to infinote group classes
+	* infinote/rudel-infinote-group-text-document.el
+	(rudel-infinote-group-text-document-states): added closed state
+	* infinote/rudel-infinote-group-document.el
+	(rudel-infinote-group-document-states): added closed state
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-directory-state-new): added a comment
+	(rudel-infinote-group-directory-states): added closed state
+
+	Added new class rudel-infinote-group-state-closed
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-group-state-closed): new closed; groups enter this
+	state when a close message is received
+	(this rudel-infinote-group-state-closed::rudel-accept): new
+	method; ignore all messages
+
+2010-06-02  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Handle user joining in infinote/rudel-infinote-group-document.el
+	* infinote/rudel-infinote-group-document.el (require warnings):
+	new require; required for displaying warnings
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-join):
+	create a user object and add it to the document
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-rejoin):
+	find the user in the document and update its slots; warn if the
+	user cannot be found
+	(rudel-infinote-group-document-state-synchronizing::rudel-infinote/sync-user):
+	create a user object and add it to the document
+	(rudel-infinote-group-document-state-joining::rudel-infinote/user-join):
+	find the self user and update its slots; then add it to the
+	document
+	(rudel-infinote-group-document-state-joining::rudel-infinote/user-rejoin):
+	find the self user and update its slots; make the self user and
+	the document user agree; warn if one is not found or they do not
+	agree
+
+	Renamed group states in infinote/rudel-infinote-group-document.el
+	* infinote/rudel-infinote-group-document.el
+	(rudel-infinote-group-document-state-idle): renamed
+	rudel-infinote-document-state-idle ->
+	rudel-infinote-group-document-state-idle
+	(rudel-infinote-group-document-state-synchronizing):
+	rudel-infinote-document-state-synchronizing ->
+	rudel-infinote-group-document-state-synchronizing
+	(rudel-infinote-group-document-states): changed names of group
+	states
+
+	Store and use id in infinote/rudel-infinote-group-directory.el
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-directory-state-subscribing::id): new slot; stores
+	the id ob the target node of the subscription
+	(rudel-infinote-directory-state-subscribing::rudel-enter): store
+	id; added documentation string
+	(rudel-infinote-directory-state-subscribing::rudel-infinote/subscribe-session):
+	check the received id against the stored id; send message through
+	group
+
+	Subscription ack in infinote/rudel-infinote-group-directory.el
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-directory-state-subscribing;:rudel-leave): new
+	method; send subscription acknowledgment
+
+	Reversed order of superclasses of rudel-infinote-document
+	* infinote/rudel-infinote-document.el (rudel-infinote-document):
+	reversed order of superclasses; added documentation string
+
+2010-06-01  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed parens in rudel-infinote-embed-in-request
+	* infinote/rudel-infinote-util.el
+	(rudel-infinote-parse-sequence-number): validate input
+	(rudel-infinote-embed-in-request): fixed parens
+
+	Exploit auto sequence numbers in rudel-infinote-group-directory
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-directory-state-exploring::rudel-enter): do not
+	add sequence number to message since the super class of the group
+	does that automatically
+	(rudel-infinote-group-directory): changed superclass to
+	`rudel-infinote-sequence-number-group' to get automatic sequence
+	number injection
+
+	New rudel-make-and-add-group in rudel-infinote-group-directory.el
+	* infinote/rudel-infinote-group-directory.el
+	(rudel-infinote-group-directory::rudel-add-node): changed call
+	`rudel-add-new-node' -> `rudel-make-and-add-node'
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-make-and-add-group): new
+	method; create a new group object and add it to the list of groups
+	(rudel-infinote-client-connection::rudel-make-and-add-node):
+	renamed `rudel-add-new-node' -> `rudel-make-and-add-node'
+
+	Use self user in rudel-local-operation in rudel-infinote-client.el
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-local-operation): obtain
+	self user from session object
+
+	Added methods rudel-self and rudel-find-user in rudel.el
+	* rudel.el (rudel-client-session::rudel-self): new reader method;
+	returns the self user
+	(rudel-document::rudel-find-user): new method; finds ands returns
+	a specified user
+
+	Removed obsolete method from infinote/rudel-infinote-client.el
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::rudel-register-state): removed
+	obsolete method
+
+	Added slot plugins to class rudel-infinote-client-connection
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::plugins): new slot; list of
+	plugins advertised by the remote side
+	(rudel-infinote-client-connection::initialize-instance): minor
+	cleanup
+
 2010-05-30  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Store remote side id in infinote/rudel-infinote-group.el

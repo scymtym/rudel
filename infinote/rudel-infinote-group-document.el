@@ -40,6 +40,7 @@
 
 (require 'eieio)
 
+(require 'rudel-color) ;; for HSV color functions
 (require 'rudel-xml)
 
 (require 'rudel-infinote-group)
@@ -71,10 +72,8 @@
 		     (hue       hue       number)) xml
       (let ((user (rudel-infinote-user
 		   name
-		   :color  (format "#%04x%04x%04x"
-				   (* 65535 hue)
-				   (* 65535 0.8)
-				   (* 65535 0.8)) ;; TODO temp
+		   :color  (rudel-hsv->string
+			    hue 0.3 (rudel-color-background-value))
 		   :id     id
 		   :status (intern-soft status))))
 	;; Add user to session if necessary.
@@ -110,10 +109,8 @@
 		       (id1     :id)
 		       (status1 :status)) user
 	    (setq name1   name
-		  color1  (format "#%04x%04x%04x"
-				  (* 65535 hue)
-				  (* 65535 0.8)
-				  (* 65535 0.8)) ;; TODO temp
+		  color1  (rudel-hsv->string
+			   hue 0.3 (rudel-color-background-value))
 		  id1     id
 		  status1 (intern-soft status)))
 	  (rudel-change-notify user)))))
@@ -155,10 +152,8 @@
 	     :warning)
 
 	  ;; If we found the user, change its status
-	  (oset user :color (format "#%04x%04x%04x"
-				    (* 65535 hue)
-				    (* 65535 0.8)
-				    (* 65535 0.8))) ;; TODO temp
+	  (oset user :color (rudel-hsv->string
+			     hue 0.3 (rudel-color-background-value)))
 	  (rudel-change-notify user)))))
   nil)
 
@@ -231,10 +226,8 @@
 		     (hue       hue       number)) xml
       (let ((user (rudel-infinote-user
 		   name
-		   :color  (format "#%04x%04x%04x"
-				   (* 65535 hue)
-				   (* 65535 0.8)
-				   (* 65535 0.8)) ;; TODO temp
+		   :color  (rudel-hsv->string
+			    hue 0.3 (rudel-color-background-value))
 		   :id     id
 		   :status (intern-soft status))))
 
@@ -361,10 +354,8 @@ expect a 'user-join' or 'user-rejoin' message in response.")
 		       (id1     :id)
 		       (status1 :status)) self
 	    (setq name1   name
-		  color   (format "#%04x%04x%04x"
-				  (* 65535 hue)
-				  (* 65535 0.8)
-				  (* 65535 0.8)) ;; TODO temp
+		  color   (rudel-hsv->string
+			   hue 0.3 (rudel-color-background-value))
 		  id1     id
 		  status1 (intern-soft status)))
 	  (rudel-change-notify self)
@@ -403,10 +394,8 @@ expect a 'user-join' or 'user-rejoin' message in response.")
 		       (id1     :id)
 		       (status1 :status))     self
 	    (setq name1   name
-		  color1  (format "#%04x%04x%04x"
-				  (* 65535 hue)
-				  (* 65535 0.8)
-				  (* 65535 0.8)) ;; TODO temp
+		  color1  (rudel-hsv->string
+			   hue 0.3 (rudel-color-background-value))
 		  id1     id
 		  status1 (intern-soft status)))
 	  (rudel-change-notify self)))))
