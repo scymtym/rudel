@@ -161,12 +161,23 @@
 (defmethod rudel-infinote/request
   ((this rudel-infinote-group-document-state-idle) xml)
   ""
-  (with-tag-attrs (user user number) xml
-    (let* ((operation (car (xml-node-children xml))) ;; TODO are multiple operations possible?
-	   (type      (xml-node-name operation)))
-      (rudel-dispatch this
-		      "rudel-infinote/request/" (symbol-name type)
-		      (list user operation))))
+  (with-slots (document) this
+    (with-tag-attrs ((user-id user number)) xml
+      (let* ((operation (car (xml-node-children xml))) ;; TODO are multiple operations possible?
+	     (type      (xml-node-name operation))
+	     (user      (rudel-find-user
+			 document user-id #'= #'rudel-id)))
+	(if (not user)
+	    ;; Warn if we cannot find the user.
+	    (display-warning
+	     '(rudel infinote)
+	     (format "Could not find user: %d'" user-id)
+	     :warning)
+	  ;; Dispatch to handler.
+	  (rudel-dispatch
+	   this
+	   "rudel-infinote/request/" (symbol-name type)
+	   (list user operation))))))
   nil)
 
 (defmethod rudel-infinote/session-close
@@ -316,14 +327,21 @@ expect a 'user-join' or 'user-rejoin' message in response.")
 (defmethod rudel-enter
   ((this rudel-infinote-group-document-state-joining))
   ""
-  ;;(with-slots ((name object-name)) user
-  (rudel-send this
-	      `(user-join
-		((name   . "jan")
-		 (status . "active")
-		 (time   . "")
-		 (caret  . ,(format "%d" 0))
-		 (hue    . ,(format "%f" 0.67007399999999995)))))
+  (with-slots (document) this
+    (let ((self (rudel-self (oref document :session))))
+      (with-slots ((name :object-name)
+		   color
+		   status) self
+	(let ((hue (car (apply #'rudel-rgb->hsv
+			       (color-values color)))))
+	  (rudel-send this
+		      `(user-join
+			((name   . ,name)
+			 (status . ,(symbol-name status))
+			 (time   . "")
+			 (caret  . ,(format "%d" 0)) ;; selection
+			 (hue    . ,(format "%f" hue)))))))))
+  ;; Remain in this state and wait for reply.
   nil)
 
 (defmethod rudel-infinote/user-join
