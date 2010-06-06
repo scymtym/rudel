@@ -24,6 +24,9 @@
 
 ;;; Commentary:
 ;;
+;; This file contains the `rudel-infinote-text-document' class which
+;; implements text documents in the infinote backend. (See
+;; rudel-infinote-node.el for an overview)
 
 
 ;;; History:
@@ -42,7 +45,7 @@
 
 (defclass rudel-infinote-text-document (rudel-infinote-document)
   ()
-  "")
+  "Objects of this class implement infinote text documents.")
 
 (provide 'rudel-infinote-text-document)
 ;;; rudel-infinote-text-document.el ends here
