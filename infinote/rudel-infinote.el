@@ -126,6 +126,52 @@ Return the connection object."
   (rudel-infinote-text-document name
 				:session session))
 
+(defmethod rudel-make-node ((this rudel-infinote-backend)
+			    type name id parent)
+  "Create a node object according to TYPE, NAME, ID and PARENT.
+The new node will be named NAME and have id ID. It will be a
+child node of PARENT unless PARENT is nil in which case the new
+node will be the root node."
+  (cond
+   ;; Text
+   ((string= type "InfText")
+    (rudel-infinote-text-document
+     name
+     :id     id
+     :parent parent))
+
+   ;; SubDirectory
+   ((string= type "InfSubdirectory")
+    (rudel-infinote-node-directory
+     name
+     :id     id
+     :parent parent
+     :group  (rudel-get-group this "InfDirectory")))
+
+   ;; unknown type
+   (t
+    (error "No such node type: `%s'" type)))
+  )
+
+(defmethod rudel-make-group ((this rudel-infinote-backend)
+			     type name method &optional node)
+  "Create a new group according to TYPE, NAME and METHOD.
+The optional argument NODE can specify the node (usually a
+document) associated to the new group."
+  (cond
+   ;; Text document
+   ((string= type "InfText")
+    (rudel-infinote-group-text-document
+     name
+     :publisher "you"
+     :method    method
+     :document  node))
+
+   ;; unknown type
+   (t
+    (error "No such node type: `%s'" type)))
+  )
+
 
 ;;; Autoloading
 ;;
