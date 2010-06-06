@@ -43,7 +43,7 @@
 ;;
 
 (defclass rudel-infinote-user (rudel-user)
-  ((id     :initarg  :user-id
+  ((id     :initarg  :id
 	   :type     integer
 	   :accessor rudel-id
 	   :documentation
@@ -65,23 +65,30 @@ sessions.")
   ""
   (with-slots ((name :object-name) status) this
     (concat (call-next-method)
-	    (apply #'propertize
-		   (case status
-		     ('active
-		      "a"
-		      'display   rudel-icon-connected ;; TODO typing?
-		      'help-echo (format "%s is connected"
-					 name))
-		     ('inactive
-		      "i"
-		      'display   rudel-icon-connected
-		      'help-echo (format "%s is connected, but inactive"
-					 name))
-		     ('unavailable
-		      "-"
-		      'display   rudel-icon-disconnected
-		      'help-ehco (format "%s is not connected"
-					 name))))))
+	    (case status
+	      ('active
+	       (propertize
+		"a"
+		'display   rudel-icon-connected ;; TODO typing?
+		'help-echo (format "%s is connected"
+				   name)))
+
+	      ('inactive
+	       (propertize
+		"i"
+		'display   rudel-icon-connected
+		'help-echo (format "%s is connected, but inactive"
+				   name))
+
+	      ('unavailable
+	       (propertize
+		"-"
+		'display   rudel-icon-disconnected
+		'help-ehco (format "%s is not connected"
+				   name)))
+
+	      (t
+	       "?")))))
   )
 
 (provide 'rudel-infinote-user)
