@@ -60,36 +60,5 @@ unsubscribed from the session.")) ;; TODO in infinote the status has to be inter
   "Objects of this class represent participants of infinote
 sessions.")
 
-(defmethod rudel-display-string ((this rudel-infinote-user) ;; TODO move to -display.el
-				 &optional use-images)
-  ""
-  (with-slots ((name :object-name) status) this
-    (concat (call-next-method)
-	    (case status
-	      ('active
-	       (propertize
-		"a"
-		'display   rudel-icon-connected ;; TODO typing?
-		'help-echo (format "%s is connected"
-				   name)))
-
-	      ('inactive
-	       (propertize
-		"i"
-		'display   rudel-icon-connected
-		'help-echo (format "%s is connected, but inactive"
-				   name)))
-
-	      ('unavailable
-	       (propertize
-		"-"
-		'display   rudel-icon-disconnected
-		'help-ehco (format "%s is not connected"
-				   name)))
-
-	      (t
-	       "?"))))
-  )
-
 (provide 'rudel-infinote-user)
 ;;; rudel-infinote-user.el ends here
