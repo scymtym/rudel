@@ -78,7 +78,7 @@ sessions.")
 		"i"
 		'display   rudel-icon-connected
 		'help-echo (format "%s is connected, but inactive"
-				   name))
+				   name)))
 
 	      ('unavailable
 	       (propertize
@@ -88,7 +88,7 @@ sessions.")
 				   name)))
 
 	      (t
-	       "?")))))
+	       "?"))))
   )
 
 (provide 'rudel-infinote-user)
