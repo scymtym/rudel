@@ -52,88 +52,80 @@
   "")
 
 (defmethod rudel-infinote/request/insert
-  ((this rudel-infinote-group-text-document-state-idle) xml)
+  ((this rudel-infinote-group-text-document-state-idle)
+   user xml)
   ""
-  (with-slots (group) this
-    (with-tag-attrs ((position pos number)) xml
-      (let ((text (car (xml-node-children xml)))) ;; TODO with-tag-children?
-	(rudel-remote-operation
-	 group
-	 ;; user
-	 (rudel-user "bla" :color "light sky blue") ;; TODO
-	 (rudel-insert-op "insert"
-			  :position position
-			  :data     (or text "\n")))))) ;; TODO is this correct?
+  (with-tag-attrs ((position pos  number)
+		   (text     text))       xml
+    (rudel-remote-operation
+     this user
+     (rudel-insert-op
+      "insert"
+      :position position
+      :data     (or text "\n")))) ;; TODO is this correct?
   nil)
 
 (defmethod rudel-infinote/request/insert-caret
   ((this rudel-infinote-group-text-document-state-idle)
    user xml)
   ""
-  (with-slots (group) this
-    (with-tag-attrs ((position pos number)) xml
-      (let ((text (car (xml-node-children xml)))) ;; TODO with-tag-children?
-	;; Perform the insert operation
-	(rudel-remote-operation
-	 group
-	 ;user
-	 (rudel-user "bla" :color "light sky blue")
-	 (rudel-insert-op "insert"
-			  :from position
-			  :data (or text "\n")))
+  (with-tag-attrs ((position pos  number)
+		   (text     text))       xml
+    ;; Perform the insert operation
+    (rudel-remote-operation
+     this user
+     (rudel-insert-op
+      "insert"
+      :from position
+      :data (or text "\n")))
 
-	;; Perform the cursor movement operation
-	(rudel-remote-operation
-	 group
-	 ;user
-	 (rudel-user "bla" :color "light sky blue")
-	 (rudel-move-cursor-op "move-cursor"
-			       :position position)))))
+    ;; Perform the cursor movement operation
+    (rudel-remote-operation
+     this user
+     (rudel-move-cursor-op
+      "move-cursor"
+      :from position)))
   nil)
 
 (defmethod rudel-infinote/request/delete
   ((this rudel-infinote-group-text-document-state-idle)
    user xml)
   ""
-  (with-slots (group) this
-    (with-tag-attrs ((position pos number)
-		     (length   len number)) xml
-      (rudel-remote-operation
-       group
-       ;; user
-       (rudel-user "bla" :color "red")
-       (rudel-delete-op "delete"
-			:from   position
-			:length length))))
+  (with-tag-attrs ((position pos number)
+		   (length   len number)) xml
+    (rudel-remote-operation
+     this user
+     (rudel-delete-op
+      "delete"
+      :from   position
+      :length length)))
   nil)
 
 (defmethod rudel-infinote/request/delete-caret
   ((this rudel-infinote-group-text-document-state-idle)
    user xml)
   ""
-  (with-slots (group) this
-    (with-tag-attrs ((position pos number)
-		     (length   len number)) xml
-      ;; Perform the delete operation
-      (rudel-remote-operation
-       group
-       ;; user
-       (rudel-user "bla" :color "red")
-       (rudel-delete-op "delete"
-			:from   position
-			:length length))
+  (with-tag-attrs ((position pos number)
+		   (length   len number)) xml
+    ;; Perform the delete operation
+    (rudel-remote-operation
+     this user
+     (rudel-delete-op
+      "delete"
+      :from   position
+      :length length))
 
-      ;; Perform the cursor movement operation
-      (rudel-remote-operation
-       group
-       ;; user
-       (rudel-user "bla" :color "light sky blue")
-       (rudel-move-cursor-op "move-cursor"
-			     :position position))))
+    ;; Perform the cursor movement operation
+    (rudel-remote-operation
+     this user
+     (rudel-move-cursor-op
+      "move-cursor"
+      :from position)))
   nil)
 
 (defmethod rudel-infinote/request/no-op
-  ((this rudel-infinote-group-text-document-state-idle) xml)
+  ((this rudel-infinote-group-text-document-state-idle)
+   user xml)
   ""
   nil)
 
@@ -141,25 +133,22 @@
   ((this rudel-infinote-group-text-document-state-idle)
    user xml)
   ""
-  (with-slots (group) this
-    (with-tag-attrs ((position caret     number)
-		     (length   selection number)) xml
-      ;; Perform the cursor movement operation
-      (rudel-remote-operation
-       group
-       ;; user
-       (rudel-user "bla" :color "red")
-       (rudel-move-cursor-op "move-cursor"
-			     :position position))
+  (with-tag-attrs ((position caret     number)
+		   (length   selection number)) xml
+    ;; Perform the cursor movement operation
+    (rudel-remote-operation
+     this user
+     (rudel-move-cursor-op
+      "move-cursor"
+      :from position))
 
-      ;; Perform the selection movement operation
-      (rudel-remote-operation
-       group
-       ;; user
-       (rudel-user "bla" :color "red")
-       (rudel-move-selection-op "move-selection"
-				:position position
-				:length   length))))
+    ;; Perform the selection movement operation
+    (rudel-remote-operation
+     this user
+     (rudel-move-selection-op
+      "move-selection"
+      :from   position
+      :length length)))
   nil)
 
 (defmethod rudel-infinote/request/undo
@@ -194,20 +183,28 @@
 (defmethod rudel-infinote/sync-segment ;; TODO text documents only?
   ((this rudel-infinote-group-text-document-state-synchronizing) xml)
   ""
-  (with-slots (group remaining-items) this
-    (with-tag-attrs (author author number) xml
-      (let ((text (car (xml-node-children xml))))
-	;; Perform the insert operation
-	(rudel-remote-operation
-	 group
-	 ;; user
-	 (rudel-user "bla" :color "light sky blue")
-	 (rudel-insert-op "insert-sync-segment"
-			  :from nil
-			  :data text)))) ;; TODO can text be nil?
+  (with-slots (remaining-items) this
+    (with-tag-attrs ((author-id author number)
+		     (text      text))         xml
+      (let ((author (rudel-find-user
+		     document author-id #'= #'rudel-id)))
+	(if (not author)
+	    ;; We did not find the user, display a warning and give
+	    ;; up.
+	    (display-warning
+	     '(rudel infinote)
+	     (format "Could not find user: %d" author-id)
+	     :warning)
+	  ;; Perform the insert operation
+	  (rudel-remote-operation
+	   this author
+	   (rudel-insert-op
+	    "insert-sync-segment"
+	    :from nil
+	    :data (or text "\n")))))
 
-    ;; Expect one less synchronization item.
-    (decf remaining-items))
+      ;; Expect one less synchronization item.
+      (decf remaining-items)))
   nil)
 
 (defmethod rudel-infinote/request/delete
@@ -251,7 +248,7 @@
 ;;
 
 (defclass rudel-infinote-group-text-document (rudel-infinote-group-document)
-  ()
+  ((parent :type rudel-infinote-node-directory-child))
   "")
 
 (defmethod initialize-instance
@@ -261,7 +258,8 @@
   (when (next-method-p)
     (call-next-method))
 
-  ;; Register states.
+  ;; We have our own states, register them.
+  (oset this :states nil)
   (rudel-register-states
    this rudel-infinote-group-text-document-states))
 
