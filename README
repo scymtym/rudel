@@ -14,19 +14,21 @@
   been activated.
 
   The user interface consists of a set of key bindings, a menu entry
-  and some visual status indicators, which are added to the text and
-  mode line of buffers for which Rudel has been activated.
+  and some visual status indicators, which are added to the text,
+  header line and/or mode line of buffers for which Rudel has been
+  activated.
 
 * GETTING STARTED
 
-  Assuming Rudel has already been installed and auto loading has been
-  set up, a global Rudel mode can be enabled as follows:
+  Assuming Rudel has already been installed (see file:INSTALL) and
+  auto loading has been set up, a global Rudel mode can be enabled as
+  follows:
 
   : M-x global-rudel-minor-mode
 
-  This will enabled Rudel's key bindings and menu entry. To enable
-  this mode permanently, the following fragment can be added to the
-  Emacs initialization file (usually .emacs):
+  This will enable Rudel's key bindings and add a menu entry. To
+  enable this mode permanently, the following fragment can be added to
+  the Emacs initialization file (usually file:~/.emacs):
 
   #+BEGIN_SRC emacs-lisp
   (global-rudel-minor-mode 1)
@@ -90,8 +92,24 @@
 
 * LICENSE
 
-  Rudel is licensed under the same terms as GNU Emacs.
+  This file is part of Rudel.
 
+  Rudel is free software: you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Rudel is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+  License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with Rudel.  If not, see <http://www.gnu.org/licenses/>.
+
+#+STARTUP: showeverything
+#+TITLE:   Rudel README
+#+AUTHOR:  Jan Moringen
 Local variables:
 mode: org
 end:
