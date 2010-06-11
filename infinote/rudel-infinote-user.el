@@ -36,8 +36,6 @@
 
 (require 'rudel) ;; TODO organize this
 
-(require 'rudel-icons) ;; TODO user interface stuff
-
 
 ;;; Class rudel-infinote-user
 ;;
