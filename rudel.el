@@ -354,7 +354,8 @@ client protocols have to obey."
 		      eieio-speedbar-file-button
 		      rudel-hook-object)
   ((color       :initarg  :color
-		:accessor rudel-color
+		:reader   rudel-color
+		:writer   rudel-set-color
 		:documentation
 		"Color used to indicate ownership or authorship
 by the user. Examples includes text written by the user or the
