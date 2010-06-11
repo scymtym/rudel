@@ -64,6 +64,7 @@ sessions.")
    (id                        :initarg  :id
 			      :type     integer
 			      :reader   rudel-id
+			      :writer   rudel-set-id
 			      :documentation
 			      "A number identifying the user
 inside the session.")
