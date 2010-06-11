@@ -36,27 +36,51 @@
 
 (require 'rudel) ;; TODO organize this
 
+(require 'rudel-util) ;; for `rudel-impersonator' and `rudel-delegator'
+
 
-;;; Class rudel-infinote-user
+;;; Class `rudel-infinote-user'
 ;;
 
 (defclass rudel-infinote-user (rudel-user)
-  ((id     :initarg  :id
-	   :type     integer
-	   :accessor rudel-id
-	   :documentation
-	   "")
-   (status :initarg  :status
-	   :type     symbol
-	   ;;:accessor rudel-status
-	   :documentation
-	   "Status of the user. The following values are legal:
-'active:
-'inactive:
-'unavailable: The host that joined the user to the session
-unsubscribed from the session.")) ;; TODO in infinote the status has to be interpreted per session, not globally
+  ((id     :initarg  :id)
+   (status :initarg  :status))
   "Objects of this class represent participants of infinote
 sessions.")
+
+
+;;; Class `rudel-infinote-document-user'
+;;
+
+(defclass rudel-infinote-document-user (rudel-user
+					rudel-impersonator
+					rudel-delegator)
+  ((session-user              :initarg  :session-user
+			      :type     rudel-infinote-user-child
+			      :documentation
+			      "")
+   (impersonation-target-slot :initform session-user)
+   (delegation-target-slot    :initform session-user)
+   (id                        :initarg  :id
+			      :type     integer
+			      :reader   rudel-id
+			      :documentation
+			      "A number identifying the user
+inside the session.")
+   (status                    :initarg  :status
+			      :type     symbol
+			      :reader   rudel-status
+			      :writer   rudel-set-status
+			      :documentation
+			      "Status of the user. Some
+well-known values are:
+'active: The user did something recently.
+'inactive: The user did not do something for some time.
+'unavailable: The host that joined the user to the session
+unsubscribed from the session."))
+  "Objects of this class are used to represent users subscribed
+to infinote documents."
+  :method-invocation-order :c3)
 
 (provide 'rudel-infinote-user)
 ;;; rudel-infinote-user.el ends here
