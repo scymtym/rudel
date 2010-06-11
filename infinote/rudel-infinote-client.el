@@ -116,7 +116,12 @@ side."))
 
   ;;
   (with-slots (session) this
-    (let ((user (rudel-infinote-user "scymtym" :color "red"))) ;(plist-get info ;; TODO
+    (let ((user (rudel-infinote-user
+		 "scymtym"
+		 :color  "red"
+		 ;:status 'active
+		 )))
+      ;;(plist-get info ;; TODO
 
       (with-slots (self) session
 	(setq self user))) ;; TODO temp
@@ -171,14 +176,14 @@ which case it is the name of a group."
       (remhash name groups))))
 
 (defmethod rudel-make-and-add-group ((this rudel-infinote-client-connection)
-				     type)
+				     type name method &optional node)
   "Create a group object and add it to THIS."
   (let ((group (rudel-infinote-group-text-document ;; TODO class
 		name
 		:publisher "you" ;; TODO temp
 		:method    method
 		;;:id        id
-		:document  document)))
+		:document  node)))
     (rudel-add-group group)))
 
 (defmethod rudel-find-node ((this rudel-infinote-client-connection)
