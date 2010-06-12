@@ -83,6 +83,32 @@
    want to participate in the session you host, you have to join it as
    described above.
 
+* REPORTING BUGS AND GETTING HELP
+
+** EmacsWiki
+
+   The EmacsWiki page about Rudel has
+   [[http://www.emacswiki.org/emacs/Rudel#toc8][a section for feedback and questions]].
+   Feel free leave feedback or ask questions there. If a reply does
+   not occur promptly, try writing to the mailing list of visiting the
+   IRC channel.
+
+** Issue Tracker
+
+   Bugs can be reported using the issue tracker on the sourceforge
+   project page: http://sourceforge.net/tracker/?group_id=249139
+
+** Mailing List
+
+   Another possibility for getting help and reporting problems is
+   writing to the Rudel mailing list:
+   http://sourceforge.net/mail/?group_id=249139
+
+** IRC Channel
+
+   Rudel users and developers can also be reached on the #rudel IRC
+   channel on the freenode network: irc:/irc.freenode.net:6667/#rudel
+
 * KNOWN ISSUES
 
   + Publishing eshell buffers will cause your session to be
