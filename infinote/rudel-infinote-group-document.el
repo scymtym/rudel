@@ -56,8 +56,9 @@
 
 (defmethod rudel-infinote/sync-begin
   ((this rudel-infinote-group-document-state-idle) xml)
-  ""
+  "Handle 'sync-begin' message."
   (with-tag-attrs ((num-messages num-messages number)) xml
+    ;; Switch to synchronizing state.
     (list 'synchronizing num-messages)))
 
 (defmethod rudel-infinote/user-join
@@ -189,7 +190,8 @@
 
 (defmethod rudel-infinote/session-close
   ((this rudel-infinote-group-document-state-idle) xml)
-  ""
+  "Handle 'session-close' message."
+  ;; Switch to closed state.
   'closed)
 
 ;; we can receive
@@ -235,7 +237,7 @@
   ((this rudel-infinote-group-document-state-synchronizing) xml)
   "Create a user object and add it to the document."
   ;; TODO send sync-error if remaining-items is already zero
-  (with-slots (document remaining-items) this
+  (with-slots (remaining-items) this
     (with-tag-attrs ((id        id        number)
 		     name
 		     status
@@ -249,36 +251,36 @@
 		   :id     id
 		   :status (intern-soft status))))
 
-	;; TODO try to find the user in the session first?
-	;; TODO add user to session?
-
 	;; Add user to the list of subscribed users of the document.
 	(rudel-add-user document user)))
 
     ;; Expect one less synchronization item.
     (decf remaining-items))
+  ;; Stay in this state.
   nil)
 
 (defmethod rudel-infinote/sync-request
   ((this rudel-infinote-group-document-state-synchronizing) xml)
-  ""
+  "Handle 'sync-request' message."
   (with-slots (remaining-items) this
     (with-tag-attrs (user time) xml
       ) ;; TODO
 
     ;; Expect one less synchronization item.
     (decf remaining-items))
+  ;; Stay in this state.
   nil)
 
 (defmethod rudel-infinote/sync-segment ;; TODO text documents only?
   ((this rudel-infinote-group-document-state-synchronizing) xml)
-  ""
+  "Handle 'sync-segment' message."
   (with-slots (remaining-items) this
     (with-tag-attrs (author) xml
       ) ;; TODO
 
     ;; Expect one less synchronization item.
     (decf remaining-items))
+  ;; Stay in this state.
   nil)
 
 (defmethod rudel-infinote/sync-end
@@ -307,11 +309,13 @@
 	"Received less synchronization items (%d) than previously announced (%d)"
 	(- all-items remaining-items)
 	:warning))))
+  ;; Stay in this state.
   'idle)
 
 (defmethod rudel-infinote/sync-cancel
   ((this rudel-infinote-group-document-state-synchronizing) xml)
   "Handle 'sync-cancel' message."
+  ;; Stay in this state.
   'idle)
 
 ;; In this state, we can send
@@ -352,7 +356,7 @@ expect a 'user-join' or 'user-rejoin' message in response.")
 
 (defmethod rudel-infinote/user-join
   ((this rudel-infinote-group-document-state-joining) xml)
-  ""
+  "Handle 'user-join' message."
   (with-tag-attrs ((id        id        number)
 		   name
 		   status
@@ -364,22 +368,24 @@ expect a 'user-join' or 'user-rejoin' message in response.")
     ;; session, update its slots and add it to the document.
     (let ((self (rudel-self (oref this :session))))
       ;; When we did not find the self user display a warning.
-      (if (not self)
-	  (display-warning
-	   '(rudel infinote)
-	   "No self user in session"
-	   :warning)
+      (when (not self)
+	(display-warning
+	 '(rudel infinote)
+	 "No self user in session"
+	 :warning))
 
-	(let ((user (rudel-add-user
-		     this
-		     (rudel-infinote-document-user
-		      name
-		      :color        (rudel-hsv->string
-				     hue 0.3 (rudel-color-background-value))
-		      :session-user self
-		      :id           id
-		      :status       (intern-soft status)))))
-	  (rudel-set-self this user)))))
+      (let ((user (rudel-add-user
+		   this
+		   (apply
+		    #'rudel-infinote-document-user
+		    name
+		    :color  (rudel-hsv->string
+			     hue 0.3 (rudel-color-background-value))
+		    :id     id
+		    :status (intern-soft status)
+		    (when self
+		      (list :session-user self))))))
+	(rudel-set-self this user))))
 
   ;; Since we expect the join or rejoin message for our own user, we
   ;; can leave the state and go to idle.

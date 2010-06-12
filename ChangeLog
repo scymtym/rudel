@@ -1,3 +1,171 @@
+2010-06-12  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added docs, comments to infinote/rudel-infinote-group-document.el
+	* infinote/rudel-infinote-group-document.el
+	(rudel-infinote-group-document-state-idle::rudel-infinote/sync-begin):
+	added documentation string; added some comments
+	(rudel-infinote-group-document-state-idle::rudel-infinote/session-close):
+	added documentation string; added some comments
+	(rudel-infinote-group-document-state-synchronizing::rudel-infinote/sync-user):
+	cleanup; updated some comments
+	(rudel-infinote-group-document-state-synchronizing::rudel-infinote/sync-segment):
+	added documentation string; added some comments
+	(rudel-infinote-group-document-state-synchronizing::rudel-infinote/sync-end):
+	added some comments
+	(rudel-infinote-group-document-state-synchronizing::rudel-infinote/sync-cancel):
+	added some comments
+	(rudel-infinote-group-document-state-joining::rudel-infinote/user-join):
+	improved handling of self user; added documentation string
+
+	Specialize rudel-display-string on rudel-infinote-document-user
+	* infinote/rudel-infinote-display.el
+	(rudel-infinote-document-user::rudel-display-string): specialize
+	for `rudel-infinote-document-user' instead of
+	`rudel-infinote-user'
+
+	Only set :session-user if unset in rudel-infinote-document
+	* infinote/rudel-infinote-document.el
+	(rudel-infinote-document::rudel-add-user): only set the value of
+	the :session-user slot if it unset
+
+	Handle document users in infinote/rudel-infinote-group-document.el
+	* infinote/rudel-infinote-group-document.el
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-join):
+	display a warning if the user is already subscribed; do not use
+	the document slot explicitly
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-rejoin):
+	use writer methods to update user's slots; do not use the document
+	slot explicitly
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-status-change):
+	use writer methods to update user's slots; do not use the document
+	slot explicitly
+	(rudel-infinote-group-document-state-idle::rudel-infinote/user-color-change):
+	use writer methods to update user's slots; do not use the document
+	slot explicitly
+	(rudel-infinote-group-document-state-idle::rudel-infinote/request):
+	do not use the document slot explicitly
+	(rudel-infinote-group-document-state-synchronizing::rudel-infinote/sync-user):
+	construct an instance of `rudel-infinote-document-user', not
+	`rudel-infinote-user'
+	(rudel-infinote-group-document-state-joining::rudel-enter): the
+	session user does not have a status, send "active" instead; no dot
+	explicitly use the :document slot
+	(rudel-infinote-group-document-state-joining::rudel-infinote/user-join):
+	add a document user object to the document; set the self user of
+	the document
+	(rudel-infinote-group-document-state-joining::rudel-infinote/user-rejoin):
+	use writer methods to update user's slots; do not use the document
+	slot explicitly
+	(rudel-infinote-group-document): added superclasses
+	`rudel-impersonator' and `rudel-delegator'
+
+2010-06-11  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added handling of self user to infinote/rudel-infinote-document.el
+	* infinote/rudel-infinote-document.el
+	(rudel-infinote-document::self): new slot; the self user of the
+	document
+	(rudel-infinote-document::rudel-add-user): new method; add a user
+	to the document, also adding it to the session if necessary
+	(rudel-infinote-document::rudel-set-self): set the self user of
+	the document also setting the self user of the session if possible
+
+	Split accessor of rudel-user::color into reader and writer
+	* rudel.el (rudel-user::color): split accessor into reader and
+	writer
+
+	Added reader rudel-set-id to rudel-infinote-document-user::id
+	* infinote/rudel-infinote-user.el
+	(rudel-infinote-document-user::id): added reader `rudel-set-id'
+
+	Added class rudel-infinote-document-user to infinote backend
+	* infinote/rudel-infinote-user.el (require rudel-util): new
+	require; for `rudel-impersonator' and `rudel-delegator'
+	(rudel-infinote-document-user): new class; specialized infinote
+	user class for documents; in infinote, user properties can vary on
+	a per-session basis
+
+	Added args to infinote-client-connection::rudel-make-and-add-group
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::initialize-instance): cosmetic
+	changes
+	(rudel-infinote-client-connection::rudel-make-and-add-group):
+	accept additional arguments name, method and node
+
+	Removed unused require in infinote/rudel-infinote-user.el
+	* infinote/rudel-infinote-user.el (require rudel-icons): remove;
+	unused
+
+2010-06-07  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Moved display functions of infinote backend into separate file
+	* infinote/Project.ede (target infinote): added
+	infinote/rudel-infinote-display.el
+	* infinote/rudel-infinote-user.el
+	(rudel-infinote-user::rudel-display-string): moved to file
+	infinote/rudel-infinote-display.el
+	* infinote/rudel-infinote-display.el: new file; display functions
+	for infinote objects
+
+2010-06-06  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Fixed incorrect parenthesis in infinote/rudel-infinote-user.el
+	* infinote/rudel-infinote-user.el
+	(rudel-infinote-user::rudel-display-string): fixed incorrect
+	parenthesis
+
+	Added rudel-make-{node, group} to rudel-infinote-backend
+	* infinote/rudel-infinote.el
+	(rudel-infinote-backend::rudel-make-node): new method; create node
+	object according to specified type and properties
+	(rudel-infinote-backend::rudel-make-group): new method; create
+	group object according to specified type and properties
+
+	Changed initarg of rudel-infinote-user::id to :id
+	* infinote/rudel-infinote-user.el (rudel-infinote-user::id):
+	changed initarg to :id
+	(rudel-infinote-user::rudel-display-string): minor cosmetic
+	changes
+
+	Added some docs in infinote/rudel-infinote-text-document.el
+	* infinote/rudel-infinote-text-document.el (header): added
+	commentary section
+	(rudel-infinote-text-document): added documentation string
+
+	Use correct users in requests of infinote-group-text-document
+	* infinote/rudel-infinote-group-text-document.el
+	(rudel-infinote-group-text-document-state-idle::rudel-infinote/request/insert):
+	accept user argument; use passed in user object instead of dummy
+	user object
+	(rudel-infinote-group-text-document-state-idle::rudel-infinote/request/insert-caret):
+	use passed in user object instead of dummy user object
+	(rudel-infinote-group-text-document-state-idle::rudel-infinote/request/delete):
+	use passed in user object instead of dummy user object
+	(rudel-infinote-group-text-document-state-idle::rudel-infinote/request/delete-caret):
+	use passed in user object instead of dummy user object
+	(rudel-infinote-group-text-document-state-idle::rudel-infinote/request/delete-caret):
+	accept user argument; use passed in user object instead of dummy
+	user object
+	(rudel-infinote-group-text-document-state-idle::rudel-infinote/request/no-op):
+	accept user argument
+	(rudel-infinote-group-text-document-state-idle::rudel-infinote/request/move):
+	use passed in user object instead of dummy user object
+	(rudel-infinote-group-text-document-state-synchronizing::rudel-infinote/sync-segment):
+	find user object in document and use it instead of the dummy user
+	object
+	(rudel-infinote-group-text-document::parent): restrict type to
+	rudel-infinote-node-directory-child
+	(rudel-infinote-group-text-document::initialize-instance): reset
+	state list before adding rudel-infinote-group-text-document-states
+
+	Use correct users in infinote document group states idle, joining
+	* infinote/rudel-infinote-group-document.el
+	(rudel-infinote-group-document-state-idle::rudel-infinote/request):
+	retrieve user object from document object and use it in request
+	processing
+	(rudel-infinote-group-document-state-joining::rudel-enter): do not
+	use a dummy user object, but the self object from the session
+
 2010-06-03  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added rudel-color.el and use it in infinote backend
