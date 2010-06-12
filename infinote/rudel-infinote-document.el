@@ -71,7 +71,8 @@ session user is looked up and created if necessary."
 		user)))))
 
       ;; Associate the user object of the session to USER.
-      (oset user :session-user session-user)
+      (unless (slot-boundp user :session-user)
+	(oset user :session-user session-user))
 
       ;; This actually adds the user to THIS.
       (call-next-method this user) ;; TODO the next method should return the user
