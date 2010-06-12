@@ -40,35 +40,37 @@
 
 (require 'rudel-infinote-user)
 
-(defmethod rudel-display-string ((this rudel-infinote-user)
+(defmethod rudel-display-string ((this rudel-infinote-document-user)
 				 &optional use-images)
   "Return a textual representation of THIS for user interface purposes."
   (with-slots ((name :object-name) status) this
-    (concat (call-next-method)
-	    (case status
-	      ('active
-	       (propertize
-		"a"
-		'display   rudel-icon-connected ;; TODO typing?
-		'help-echo (format "%s is connected"
-				   name)))
+    (concat
+     (call-next-method)
 
-	      ('inactive
-	       (propertize
-		"i"
-		'display   rudel-icon-connected
-		'help-echo (format "%s is connected, but inactive"
-				   name)))
+     (case status
+       (active
+	(propertize
+	 "a"
+	 'display   rudel-icon-connected
+	 'help-echo (format "%s is connected"
+			    name)))
 
-	      ('unavailable
-	       (propertize
-		"-"
-		'display   rudel-icon-disconnected
-		'help-ehco (format "%s is not connected"
-				   name)))
+       (inactive
+	(propertize
+	 "i"
+	 'display   rudel-icon-connected
+	 'help-echo (format "%s is connected, but inactive"
+			    name)))
 
-	      (t
-	       "?"))))
+       (unavailable
+	(propertize
+	 "-"
+	 'display   rudel-icon-disconnected
+	 'help-ehco (format "%s is not connected"
+			    name)))
+
+       (t
+	"?"))))
   )
 
 (provide 'rudel-infinote-display)
