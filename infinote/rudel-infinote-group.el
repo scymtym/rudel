@@ -139,7 +139,8 @@ message.")
   ((connection :initarg :connection
 	       ;:type    rudel-infinote-connection ;; TODO
 	       :documentation
-	       "")
+	       "The connection used by this group object to do
+its communication.")
    (publisher  :initarg  :publisher
 	       :type     string
 	       :documentation
@@ -158,10 +159,8 @@ sessions. Groups are basically modeled as named state
 machines. Subclasses have to provide their own states."
   :abstract t)
 
-;; TODO we could introduce rudel-message to pass data to rudel accept
-
 (defmethod rudel-register-state ((this rudel-infinote-group) symbol state)
-  "TODO"
+  "Set the :group slot of STATE to THIS."
   ;; Associate THIS connection to STATE.
   (oset state :group this)
 
@@ -170,7 +169,7 @@ machines. Subclasses have to provide their own states."
     (call-next-method)))
 
 (defmethod rudel-send ((this rudel-infinote-group) data)
-  ""
+  "Send DATA through the connection associated to THIS."
   (with-slots (connection) this
     (rudel-send connection
 		(rudel-infinote-embed-in-group this data))))
