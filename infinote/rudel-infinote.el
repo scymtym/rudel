@@ -97,24 +97,16 @@ Return the connection object."
   (let* ((session    (plist-get info :session))
 	 (host       (plist-get info :host)) ;; Just as name
 	 (connection (rudel-infinote-client-connection
-		      (format "to %s" host)
+		      (format "to %s" (or host "unknown host"))
 		      :session   session
 		      :transport transport)))
 
-    ;; Start the transport and wait until the basic session setup is
-    ;; complete.
+    ;; Start the transport.
     (rudel-start transport)
-    (rudel-state-wait transport
-		      '(idle)
-		      '(we-finalize they-finalize disconnected)
-		      progress-callback) ;; TODO this should be in the transport itself
 
     ;; Wait until the connection has done its session initiation on
     ;; the protocol level.
-    (rudel-state-wait connection
-		      '(idle)
-		      '()
-		      progress-callback)
+    (rudel-wait connection progress-callback)
 
     ;; The connection is now ready for action; Return it.
     connection)
@@ -145,8 +137,7 @@ node will be the root node."
     (rudel-infinote-node-directory
      name
      :id     id
-     :parent parent
-     :group  (rudel-get-group this "InfDirectory")))
+     :parent parent))
 
    ;; unknown type
    (t

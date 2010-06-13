@@ -128,8 +128,8 @@ side."))
 
     ;; The special 'InfDirectory' group is there from the beginning.
     (let ((directory-group (rudel-infinote-group-directory
-		  "InfDirectory"
-		  :publisher "you"))) ;; TODO use correct publisher name
+			    "InfDirectory"
+			    :publisher "you"))) ;; TODO use correct publisher name
       (rudel-add-group this directory-group)
 
       (require 'rudel-infinote-node-directory)
@@ -178,7 +178,8 @@ which case it is the name of a group."
 (defmethod rudel-make-and-add-group ((this rudel-infinote-client-connection)
 				     type name method &optional node)
   "Create a group object and add it to THIS."
-  (let ((group (rudel-infinote-group-text-document ;; TODO class
+  ;; TODO the backend creates these
+  (let ((group (rudel-infinote-group-text-document
 		name
 		:publisher "you" ;; TODO temp
 		:method    method
@@ -205,6 +206,7 @@ WHICH is compared to the result of KEY using TEST."
 
 (defmethod rudel-make-and-add-node ((this rudel-infinote-client-connection)
 				    id parent-id name type)
+  ;; TODO the backend does the creation
   (with-slots (session) this
     (let ((parent (and parent-id
 		       (rudel-find-node this parent-id))))
@@ -261,7 +263,11 @@ WHICH is compared to the result of KEY using TEST."
 	    (xml   (xml-node-children xml))
 	    (group (rudel-get-group this name)))
        (if group
+
+	   ;; Dispatch to GROUP
 	   (rudel-accept group (car xml))
+
+	 ;; Display a warning and ignore the message.
 	 (display-warning
 	  '(rudel infinote)
 	  (format "Could not find group: `%s'" name)
@@ -279,6 +285,12 @@ WHICH is compared to the result of KEY using TEST."
   ""
   (with-slots (transport) this
     (rudel-disconnect transport)))
+
+(defmethod rudel-wait ((this rudel-infinote-client-connection)
+		       &optional progress-callback)
+  "Block until THIS is done with the session setup."
+  (let ((group (rudel-get-group this "InfDirectory")))
+    (rudel-state-wait group '(idle) '() progress-callback)))
 
 (defmethod rudel-publish ((this rudel-infinote-client-connection) document)
   ""
