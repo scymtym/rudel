@@ -43,8 +43,7 @@
 ;;
 
 (defclass rudel-infinote-user (rudel-user)
-  ((id     :initarg  :id)
-   (status :initarg  :status))
+  ()
   "Objects of this class represent participants of infinote
 sessions.")
 
