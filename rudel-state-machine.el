@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
-;; Keywords: Rudel, FSM
+;; Keywords: rudel, fsm
 ;; X-RCS: $Id:$
 ;;
 ;; This file is part of Rudel.
@@ -33,6 +33,8 @@
 
 ;;; History:
 ;;
+;; 0.2 - Hookable state machine
+;;
 ;; 0.1 - Initial version
 
 
@@ -45,6 +47,7 @@
 (require 'eieio)
 
 (require 'rudel-errors)
+(require 'rudel-util) ;; for `rudel-hook-object'
 
 
 ;;; Errors related to the state machine
@@ -125,6 +128,7 @@
 and STATE is an object of a class derived from rudel-state.")
    (state  :initarg  :state
 	   :type     rudel-state-child
+	   :writer   rudel-set-state
 	   :documentation
 	   "The current state of the machine."))
   "A finite state machine.")
@@ -166,7 +170,7 @@ that fails as well, the first state in the state list is used."
 
       ;; Make start state the current state and call send an enter
       ;; message.
-      (oset this :state start)
+      (rudel-set-state this start)
       (rudel--switch-to-return-value
        this start (apply #'rudel-enter start args))))
   )
@@ -255,10 +259,13 @@ state."
 	     (null arguments))
 	;; Return state
 	state
+
       ;; Notify (old) current state.
       (rudel-leave state)
+
       ;; Update current state.
-      (setq state next)
+      (rudel-set-state this next)
+
       ;; Notify (new) current state. Using the call's value as next
       ;; state is a bit dangerous since a long sequence of immediate
       ;; state switches could exhaust the stack.
@@ -295,6 +302,51 @@ NEXT can nil, a list or a `rudel-state' object."
 	       strings))
     (call-next-method this " state: #start" strings))
   )
+
+
+;;; Class rudel-hook-state-machine
+;;
+
+(defclass rudel-hook-state-machine (rudel-hook-object
+				    rudel-state-machine)
+  ((last-args   :initarg  :last-args
+	        :type     list
+	        :initform nil
+	        :documentation
+	        "In this slot `rudel-switch' stores the switch
+arguments for processing in the `rudel-set-state' method.")
+   ;; Hooks
+   (accept-hook :initarg  :accept-hook
+	        :type     list
+	        :initform nil
+		:documentation
+		"This hook is run when the state machine accepts
+input.")
+   (switch-hook :initarg  :switch-hook
+		:type     list
+		:initform nil
+		:documentation
+		"This hook is run when the state machine switches
+between states."))
+  "State machine objects of this class run hooks when they accept
+arguments and when they switch states.")
+
+(defmethod rudel-accept :before ((this rudel-hook-state-machine)
+				 &rest arguments)
+  "This method runs 'accept-hook' before ARGUMENTS are processed."
+  (apply #'object-run-hook-with-args this 'accept-hook arguments))
+
+(defmethod rudel-switch :before ((this rudel-hook-state-machine) next
+				 &rest arguments)
+  "This method stores ARGUMENTS for later processing."
+  (oset this :last-args arguments))
+
+(defmethod rudel-set-state :before ((this rudel-hook-state-machine) next
+				    &rest arguments)
+  "This method runs 'switch-hook' when switching states."
+  (with-slots (last-args) this
+    (apply #'object-run-hook-with-args
+	   this 'switch-hook next last-args)))
 
 
 ;;; Miscellaneous functions
