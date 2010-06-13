@@ -1,6 +1,6 @@
 #+TITLE:  Rudel Developer Manual
 #+AUTHOR: Jan Moringen
-#+EMAIL: scymtym@users.sourceforge.net
+#+EMAIL:  scymtym@users.sourceforge.net
 
 * Related Work
 ** SubEthaEdit
@@ -12,6 +12,10 @@
 ** Saros
    https://www.inf.fu-berlin.de/w/SE/DPP
 * Rudel's Architecture
+  #+BEGIN_CENTER
+  #+CAPTION: Overview of Rudel's architecture
+  [[file:./architecture.png]]
+  #+END_CENTER
 * Rudel's API
 ** Connections
    #+BEGIN: tag :project "../rudel.el" :pivot "rudel-connection"
@@ -30,47 +34,23 @@
    [[file:/homes/jmoringe/code/emacs/rudel/trunk/doc//rudel-connection.png]]
    #+END:
 
-* Developer Documentation
+* Backends
 ** Protocol Backends
-*** &obby; Backend
-	 <para>
-	   Bla
-
-	   <figure>
-	     <title>Client connection state machine</title>
-
-	     <mediaobject>
-	       <imageobject>
-		 <imagedata fileref="images/obby-client-connection-states.png"
-			    align="center"
-			    width="50%"/>
-	       </imageobject>
-	     </mediaobject>
-	   </figure>
-	 </para>
-       </section>
-
-*** &infinote; Backend
-	 <para>
-	   <figure>
-	     <title>Client connection state machine</title>
-
-	     <mediaobject>
-	       <imageobject>
-		 <imagedata fileref="images/infinote-client-connection-states.png"
-			    align="center"
-			    width="50%"/>
-	       </imageobject>
-	     </mediaobject>
-	   </figure>
-
-	 </para>
-       </section>
+*** Obby Backend
+    #+BEGIN_CENTER
+    #+CAPTION: Client connection state machine</title>
+    file:./images/obby-client-connection-states.png
+    #+END_CENTER
+*** Infinote Backend
+    #+BEGIN_CENTER
+    #+CAPTION: Client connection state machine</title>
+    file:./images/infinote-client-connection-states.png
+    #+END_CENTER
 ** Transport Backends
 *** TCP
 *** XMPP
-    The XMPP <!-- entity? --> backend transports arbitrary messages,
-    which can be strings or XML documents, through XMPP streams.
+    The XMPP backend transports arbitrary messages, which can be
+    strings or XML documents, through XMPP streams.
 
 * Tricks
 ** Simulating a Slow Network Connection
