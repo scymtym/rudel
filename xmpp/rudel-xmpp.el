@@ -96,7 +96,10 @@ XMPP connections.")
 				  &optional progress-callback)
   "Connect to an XMPP server using the information in INFO.
 INFO has to be a property list containing at least the
-keys :host, :port and :jid.
+keys
++ :host a server name
++ :port TCP port to connect to
++ :jid  jabber id that should be used
 If non-nil, PROGRESS-CALLBACK has to be a function which is
 called repeatedly to report progress."
   ;; Ensure that INFO contains all necessary information.
