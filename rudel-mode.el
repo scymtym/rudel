@@ -42,7 +42,7 @@
 ;;
 ;; 0.2 - Use define-minor-mode.
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial version.
 
 
 ;;; Code:
@@ -52,6 +52,7 @@
 (require 'easymenu)
 
 (require 'rudel)
+(require 'rudel-util) ;; for `object-add-hook', `object-remove-hook'
 (require 'rudel-hooks)
 (require 'rudel-display)
 

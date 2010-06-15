@@ -1,3 +1,101 @@
+2010-06-15  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Require rudel-util.el in rudel-mode.el
+	* rudel-mode.el (header): minor fix in history section
+	(require rudel-util): new require; for object-{add,remove}-hook
+
+	New milestones and tags, reassigned items in TODO
+	* TODO (Future): reassigned and updated some items
+	(Milestone rudel-0.5): new milestone
+	(Milestone rudel-0.4): added tag 0.4; scheduled tasks "show cursor
+	positions of other users", "integrate unit tests", "only read
+	color hue"; minor fixes
+	(Milestone rudel-0.3): added tag 0.3
+	(Milestone rudel-0.2): added tags 0.2 and released
+	(Milestone rudel-0.1): added tags 0.1 and released
+
+	Hopefully fixed some notorious problems in rudel-compile.el
+	* rudel-compile.el (require cl): new require; for flet
+	(toplevel compilation): let-bind filename since there have been
+	some compilation problems related to `filename' being void; inject
+	requires for cl and rudel-backend into rudel-loaddefs.el
+
+	Mention Debian/Ubuntu packages in INSTALL
+	* INSTALL (REQUIREMENTS): mention Debian/Ubuntu packages for
+	gnutls-cli and Avahi
+	(footer): added settings startup, title and author
+
+	Removed redundant checks in -factory::rudel-suitable-backends
+	* rudel-backend.el
+	(rudel-backend-factory::rudel-suitable-backends): do not check the
+	cdr being an object twice
+
+	Better handling of loading errors in rudel-backend.el
+	* rudel-backend.el (header): minor fix in history
+	(rudel-backend-factory::rudel-all-backends): added optional
+	argument only-loaded; only return unloaded backends if requested
+	(rudel-backend-factory::rudel-suitable-backends): only consider
+	loaded backends
+	(rudel-backend-factory::rudel-load-backends): if the loading
+	fails, install the error message as a symbol property of the
+	backend name symbol
+	(rudel-backend-dump): format backends differently depending on
+	whether they have been loaded successfully or not
+	(rudel-backend--format-backend-normal): new function; format a
+	loaded or unloaded backend
+	(rudel-backend--format-backend-error): new function; format a
+	backend for which loading has failed
+
+2010-06-14  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Added some docstrings in infinote/rudel-infinote-group.el
+	* infinote/rudel-infinote-group.el
+	(rudel-infinote-group::connection): added documentation string
+	(rudel-infinote-group::rudel-register-state): added documentation
+	string
+	(rudel-infinote-group::rudel-send): added documentation string
+
+	Improved session startup in infinote/rudel-infinote{,client}.el
+	* infinote/rudel-infinote.el
+	(rudel-infinote-backend::rudel-connect): use `rudel-wait' to
+	ensure the connection is ready for use; handle missing :host
+	property
+	(rudel-infinote-backend::rudel-make-node): do not set the :group
+	slot when creating nodes
+	* infinote/rudel-infinote-client.el
+	(rudel-infinote-client-connection::initialize-instance): cosmetic
+	changes
+	(rudel-infinote-client-connection::rudel-make-and-add-group):
+	added a comment
+	(rudel-infinote-client-connection::rudel-make-and-add-node): added
+	a comment
+	(rudel-infinote-client-connection::rudel-receive): added comments
+	(rudel-infinote-client-connection::rudel-wait): new method; block
+	until the connection is ready for use; this is determined by
+	monitoring the state of the directory group
+
+2010-06-13  Jan Moringen  <scymtym@users.sourceforge.net>
+
+	Improved docstring of rudel-xmpp-backend::rudel-make-connection
+	* xmpp/rudel-xmpp.el (rudel-xmpp-backend::rudel-make-connection):
+	improved documentation string
+
+	Removed temporary slots id and status from rudel-infinote-user
+	* infinote/rudel-infinote-user.el (rudel-infinote-user::id):
+	removed; was temporary
+	(rudel-infinote-user::status): removed; was temporary
+
+	Added new class rudel-hook-state-machine to rudel-state-machine.el
+	* rudel-state-machine.el (header): fixed keyword; added version
+	0.2 to history section
+	(require rudel-util): new require; used by the hook state machine
+	(rudel-state-machine::state): added writer method
+	`rudel-set-state'
+	(rudel-state-machine::initialize-instance): use `rudel-set-state'
+	(rudel-state-machine::rudel-switch): use `rudel-set-state'
+	(rudel-hook-state-machine): new class; a state machine that runs
+	hooks when it accepts input or when it switches states
+
 2010-06-12  Jan Moringen  <scymtym@users.sourceforge.net>
 
 	Added docs, comments to infinote/rudel-infinote-group-document.el
