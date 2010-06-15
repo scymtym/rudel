@@ -1,6 +1,6 @@
 ;;; rudel-hooks.el --- Hooks for Rudel events
 ;;
-;; Copyright (C) 2009 Jan Moringen
+;; Copyright (C) 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: Rudel, hook
@@ -30,13 +30,15 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial version.
 
 
 ;;; Code:
 ;;
 
 (require 'eieio)
+
+(require 'rudel-util) ;; for `object-add-hook', `object-remove-hook'
 
 
 ;;; Hook variables
