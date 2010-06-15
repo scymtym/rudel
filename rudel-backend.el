@@ -40,7 +40,7 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -142,13 +142,18 @@ Backends are loaded, if necessary."
 	(cons name backend))))
   )
 
-(defmethod rudel-all-backends ((this rudel-backend-factory))
+(defmethod rudel-all-backends ((this rudel-backend-factory)
+			       &optional only-loaded)
   "Return a list of all backends registered with THIS.
-Each list element is of the form (NAME . CLASS-OR-OBJECT)."
+Each list element is of the form (NAME . CLASS-OR-OBJECT).
+If optional argument ONLY-LOADED is non-nil, return only elements
+for which CLASS-OR-OBJECT is an object."
   (let ((backend-list))
     (with-slots (backends) this
       (maphash (lambda (name class)
-		 (push (cons name class) backend-list))
+		 (when (or (not only-loaded)
+			   (object-p class))
+		   (push (cons name class) backend-list)))
 	       backends))
     backend-list)
   )
@@ -157,18 +162,18 @@ Each list element is of the form (NAME . CLASS-OR-OBJECT)."
   "Return a list of backends which satisfy PREDICATE.
 Each list element is of the form (NAME . OBJECT).
 Backends are loaded, if necessary."
-  ;; Load all available backends
+  ;; Load all available backends.
   (rudel-load-backends this)
 
-  ;; Retrieve and return all backends, possibly filtering the list
-  ;; using PREDICATE.
+  ;; Retrieve and return all backends, filtering the list using
+  ;; PREDICATE. Backends that could not be loaded, are ignored.
   (if predicate
       (remove-if-not
        (lambda (cell)
 	 (and (object-p (cdr cell))
 	      (funcall predicate (cdr cell))))
-       (rudel-all-backends this))
-    (rudel-all-backends this))
+       (rudel-all-backends this t))
+    (rudel-all-backends this t))
   )
 
 (defmethod rudel-load-backends ((this rudel-backend-factory))
@@ -185,12 +190,19 @@ objects."
 	 (condition-case error
 	     (puthash name (make-instance
 			    class (symbol-name name)) backends)
-	   (error (display-warning
-		   '(rudel backend)
-		   (format "Could not load backend `%s': %s"
-			   name
-			   (error-message-string error))
-		   :warning)))))
+	   (error
+	    ;; Store this error on the name symbol of the backend for
+	    ;; later display.
+	    (put name 'rudel-backend-last-load-error
+		 (error-message-string error))
+
+	    ;; Emit a warning.
+	    (display-warning
+	     '(rudel backend)
+	     (format "Could not load backend `%s': %s"
+		     name
+		     (error-message-string error))
+	     :warning)))))
 	 backends))
   )
 
@@ -279,31 +291,60 @@ available information available for the backends"
 
      ;; Insert all backends provided by this factory.
      (dolist (backend (rudel-all-backends factory))
-       (insert (format "  %-20s %-6s %-7s (%s)\n"
-		       (propertize
-			(symbol-name (car backend))
-			'face 'font-lock-type-face)
-		       (propertize
-			(prin1-to-string (object-p (cdr backend)))
-			'face 'font-lock-variable-name-face)
-		       (propertize
-			(if (object-p (cdr backend))
-			    (mapconcat #'prin1-to-string
-				       (oref (cdr backend) :version)
-				       ".")
-			  "?")
-			'face 'font-lock-constant-face)
-		       (propertize
-			(if (object-p (cdr backend))
-			    (mapconcat #'prin1-to-string
-				       (oref (cdr backend) :capabilities)
-				       " ")
-			  "?")
-			'face 'font-lock-constant-face))))
+       (if (or (object-p (cdr backend))
+	       (null (get (car backend)
+			  'rudel-backend-last-load-error)))
+	   (insert (rudel-backend--format-backend-normal backend))
+	 (insert (rudel-backend--format-backend-error backend))))
 
      ;; One empty line between backend categories.
      (insert "\n"))
    (oref rudel-backend-factory factories))
+  )
+
+(defun rudel-backend--format-backend-normal (backend)
+  "Format name, version and other properties of BACKEND."
+  (format "  %-20s %-6s %-7s (%s)\n"
+	  ;; Backend name
+	  (propertize
+	   (symbol-name (car backend))
+	   'face 'font-lock-type-face)
+	  ;; Backend loading status
+	  (propertize
+	   (prin1-to-string (object-p (cdr backend)))
+	   'face 'font-lock-variable-name-face)
+	  ;; Backend version
+	  (propertize
+	   (if (object-p (cdr backend))
+	       (mapconcat #'prin1-to-string
+			  (oref (cdr backend) :version)
+			  ".")
+	     "?")
+	   'face 'font-lock-constant-face)
+	  ;; Backend capabilities
+	  (propertize
+	   (if (object-p (cdr backend))
+	       (mapconcat #'prin1-to-string
+			  (oref (cdr backend) :capabilities)
+			  " ")
+	     "?")
+	   'face 'font-lock-constant-face))
+  )
+
+(defun rudel-backend--format-backend-error (backend)
+  "Format name and loading error message of BACKEND."
+  (format "  %-20s %s %s\n"
+	  ;; Backend name
+	  (propertize
+	   (symbol-name (car backend))
+	   'face 'font-lock-type-face)
+	  ;; Loading error message
+	  (propertize
+	   "error:"
+	   'face 'font-lock-warning-face)
+	  (propertize
+	   (get (car backend) 'rudel-backend-last-load-error)
+	   'face 'font-lock-comment-face))
   )
 
 (provide 'rudel-backend)
