@@ -50,7 +50,7 @@
 ;;
 
 (defcustom rudel-tls-client-program
-  "gnutls-cli"
+  (executable-find "gnutls-cli")
   "The gnutls client program to use for encrypted connections."
   :group 'rudel
   :type  'file)
@@ -256,7 +256,10 @@ support STARTTLS behavior.")
   (when (next-method-p)
     (call-next-method))
 
-  (oset this :version rudel-tls-version))
+  (oset this :version rudel-tls-version)
+
+  (unless rudel-tls-client-program
+    (error "Required program 'gnutls-cli' not available")))
 
 (defmethod rudel-ask-connect-info ((this rudel-start-tls-backend)
 				   &optional info)
