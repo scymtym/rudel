@@ -170,8 +170,7 @@ Backends are loaded, if necessary."
   (if predicate
       (remove-if-not
        (lambda (cell)
-	 (and (object-p (cdr cell))
-	      (funcall predicate (cdr cell))))
+	 (funcall predicate (cdr cell)))
        (rudel-all-backends this t))
     (rudel-all-backends this t))
   )
