@@ -41,11 +41,6 @@
    + Assigned ::
    Somehow communicate to peers at which documents the user is
    currently looking
-** TODO Use auth-source or secrets.el for passwords
-   + Components ::
-   + Type :: task
-   + Reporter :: jan
-   + Assigned ::
 ** TODO Set buffer filename
    + Components ::
    + Type :: task
@@ -105,13 +100,6 @@
    + Assigned ::
    When no remote operations are received, the log of local operation
    is not reset and therefore grows beyond all bounds.
-** NEW Terminating sessions does not work (#47)
-   + Component :: rudel-general
-   + Type :: defect
-   + Reporter :: jan
-   + Assigned ::
-   There is a menu entry for terminating sessions which are hosted by
-   Rudel, but it does not do anything.
 ** NEW Rename document message is not understood (#7)
    + Component :: obby-client
    + Type :: defect
@@ -139,14 +127,29 @@
    + Assigned ::
    Extend protocols to allow synchronizing graph- (or just tree-) like
    data structures like XML or Emacs Lisp objects.
+** TODO Histories for read functions
+   Relevant read functions
+   + username
+   + hostname
+   + color(?)
+** TODO Robust mode-line modification
+   + Component :: user-interface
+   + Type :: enhancement
+   + Reporter :: jan
+   + Assigned ::
+   Currently, the mode-line is modified in an ugly way in
+   + [[file:rudel-mode.el::defun rudel-mode-line-publish-state--add-indicator-to-mode-line][rudel-mode-line-publish-state--add-indicator-to-mode-line]]
+   + [[file:rudel-mode.el::defun rudel-mode-line-publish-state--remove-indicator-from-mode-line][rudel-mode-line-publish-state--remove-indicator-from-mode-line]]
+   Presumably, this cannot be fixed before Emacs developers come up
+   with an API for this
+** TODO Make backend capabilities available without loading
+   + Component :: rudel-general
+   + Type :: enhancement
+   + Reporter :: Jan
+   + Assigned ::
 ** TODO Notification mechanism
    + Component :: user-interface
    + Type :: task
-   + Reporter :: jan
-   + Assigned ::
-** TODO Show cursor positions of other users (#5)
-   + Component :: rudel-user-interface
-   + Type :: enhancement
    + Reporter :: jan
    + Assigned ::
 ** TODO Some kind of server log buffer (#11)
@@ -183,11 +186,13 @@
 ** TODO State machine diagram (#59)
    + Component :: obby-client
    + Type :: task
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
 ** TODO State machine diagram (#60)
    + Component :: obby-backend
    + Type :: task
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
 ** TODO Send key presses as chat messages (#61)
@@ -197,16 +202,21 @@
    + Assigned ::
    Sending key presses as chat messages could be really useful for
    somebody something using rudel.
-** STARTED Allow multiple listeners per server session	  :branch_networking:
-   + Components :: multiple components affected
+** TODO Developer guide
+   + Component :: documentation
    + Type :: task
-   + Priority :: major
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
-   For protocol backends that work with multiple transports, it would
-   be convenient to create a single server with multiple transport
-   listeners. For example, This would be useful to create an obby over
-   IRC server with an additional TCP listener as a LAN gateway.
+** TODO Shorten user display strings of they are too long
+   + Component :: user-interface
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
+   `rudel-header-subscriptions-minor-mode' displays users in the
+   header line. This string can get too long, displacing some elements
+   from the screen. It has to be shortened then.
 ** STARTED Consolidate operations before sending		 :branch_irc:
    + Components :: protocol backends
    + Type :: task
@@ -217,12 +227,6 @@
    protocols. Bandwidth can be conserved by queuing operations before
    sending and merging adjacent operations when possible. This would
    be most important for the IRC backend.
-** STARTED IRC transport backend				 :branch_irc:
-   + Component :: irc backend
-   + Type :: task
-   + Priority :: major
-   + Reporter :: jan
-   + Assigned ::
 ** STARTED Make document history available			 :branch_irc:
    + Components :: user interface
    + Type :: task
@@ -231,29 +235,28 @@
    + Assigned ::
    We should create a separate buffer and put it into a kind of
    history browse mode
-** STARTED Typing/activity notification			    :branch_activity:
-   + Components :: user interface
-   + Type :: task
-   + Priority :: minor
-   + Reporter :: jan
-   + Assigned ::
-   + Indicate who is currently editing a document
-   + Idle mechanism for users?
-** STARTED Reference manual (#46)
-   + Component :: documentation
+
+
+* Milestone rudel-0.5							:0.5:
+
+* Milestone rudel-0.4							:0.4:
+** TODO Use auth-source or secrets.el for passwords
+   + Components ::
    + Type :: task
    + Reporter :: jan
    + Assigned ::
-   In addition to the [[file:README][README]], a proper reference manual would be
-   nice. At some point, complete info documentation may be
-   desirable. Docbook or org-mode seem to be the best approach since
-   we get (at least):
-   + Pdf
-   + Html
-   + Info
-
-
-* Milestone rudel-0.4
+** NEW Terminating sessions does not work (#47)
+   + Component :: rudel-general
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
+   There is a menu entry for terminating sessions which are hosted by
+   Rudel, but it does not do anything.
+** TODO Show cursor positions of other users (#5)
+   + Component :: rudel-user-interface
+   + Type :: enhancement
+   + Reporter :: jan
+   + Assigned ::
 ** TODO Integrate existing unit tests			  :branch_unit_tests:
    + Component :: multiple components affected
    + Type :: task
@@ -267,6 +270,42 @@
    + Assigned ::
    Taking control over saturation and value away from the user makes
    it impossible to choose unreadable colors.
+** STARTED Reference manual (#46)
+   + Component :: documentation
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   In addition to the [[file:README][README]], a proper reference manual would be
+   nice. At some point, complete info documentation may be
+   desirable. Docbook or org-mode seem to be the best approaches since
+   we get (at least):
+   + Pdf
+   + Info
+   + Html
+** STARTED Allow multiple listeners per server session	  :branch_networking:
+   + Components :: multiple components affected
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned ::
+   For protocol backends that work with multiple transports, it would
+   be convenient to create a single server with multiple transport
+   listeners. For example, This would be useful to create an obby over
+   IRC server with an additional TCP listener as a LAN gateway.
+** STARTED IRC transport backend				 :branch_irc:
+   + Component :: irc backend
+   + Type :: task
+   + Priority :: major
+   + Reporter :: jan
+   + Assigned ::
+** STARTED Typing/activity notification			    :branch_activity:
+   + Components :: user interface
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
+   + Indicate who is currently editing a document
+   + Idle mechanism for users?
 ** STARTED Telepathy transport				   :branch_telepathy:
    + Component :: telepathy-backend
    + Type :: task
@@ -287,7 +326,7 @@
    + Assigned :: jan
 
 
-* Milestone rudel-0.3
+* Milestone rudel-0.3							:0.3:
 ** TODO Enable modes by default?
    + Component :: configuration
    + Type :: task
@@ -318,6 +357,11 @@
    When requiring the Zeroconf backend and immediately asking for
    discovered sessions, none are returned, even if there are
    some. Retrying later returns these sessions.
+** NEW Fix use of &rest slots in initialize-instance methods
+   + Component :: rudel-general
+   + Type :: defect
+   + Reporter :: jan
+   + Assigned ::
 ** NEW Get rid of error calls in the server (#58)
    + Component :: obby-backend
    + Type :: defect
@@ -400,7 +444,7 @@
    + Assigned :: jan
 
 
-* Milestone rudel-0.2
+* Milestone rudel-0.2					       :0.2:released:
 ** DONE Use state pattern (#18)
    + Component :: obby-backend
    + Resolution :: fixed
@@ -535,7 +579,7 @@
    + Reporter :: jan
 
 
-* Milestone rudel-0.1
+* Milestone rudel-0.1					       :0.1:released:
 ** FIXED User names and colors are not checked for conflicts (#12)
    + Component :: obby-backend
    + Resolution :: fixed
