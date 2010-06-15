@@ -46,6 +46,7 @@
 
 (require 'eieio)
 (require 'bytecomp)
+(require 'cl) ;; required for `flet' below
 
 ;; This makes adding our directories to the load path into an
 ;; autoload. This way, loading rudel-loaddefs.el is the only thing
@@ -69,7 +70,9 @@
 		   (lambda (subdir)
 		     (concat rudel-dir subdir))
 		   '("." "jupiter" "adopted" "socket" "tls" "xmpp" "telepathy" "obby" "infinote" "zeroconf")))
-       (loaddefs  (concat rudel-dir "rudel-loaddefs.el")))
+       (loaddefs  (concat rudel-dir "rudel-loaddefs.el"))
+       (filename  nil)) ;; TODO this is just a workaround for the
+			;; "void-variable: filename" compilation error
 
   (flet ((byte-compile-cl-warn (&rest) nil))
 
@@ -91,7 +94,7 @@
     (with-current-buffer (find-file-noselect loaddefs)
       (goto-char 1)
       (unless (looking-at "(require 'eieio)")
-	(insert "(require 'eieio)\n\n")
+	(insert "(require 'eieio)\n(require 'cl)\n(require 'rudel-backend)\n\n")
 	(save-buffer))
       (kill-buffer))))
 
