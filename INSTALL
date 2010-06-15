@@ -15,7 +15,7 @@
    object-oriented implementation. Cedet can be obtained from
    http://cedet.sourceforge.net/
 
-   IMPORTANT: It is necessary to use at least the 1.0pre6 version of
+   *IMPORTANT*: It is necessary to use at least the 1.0pre6 version of
    CEDET since it fixes a serious problem in the object system Eieio.
 
    As of October 2009, Eieio is included in GNU Emacs. If you are
@@ -25,12 +25,18 @@
 ** GnuTLS (optional)
    Connections to Gobby servers require the gnutls-cli program.
 
+   Users of Debian or Ubuntu Linux should install the gnutls-bin
+   package to make the gnutls-cli program available.
+
 ** Avahi (optional)
    The Avahi daemon (http://avahi.org) is required for automatic
    session discovery and advertising.
 
    A version of GNU Emacs with Zeroconf support (GNU Emacs 23 or
    above) is required to talk to the Avahi daemon.
+
+   Users of Debian or Ubuntu Linux can install the Avahi daemon via
+   the avahi-daemon package.
 
 * INSTALLING
 
@@ -53,6 +59,9 @@
   Rudel code. This can be done by opening [[./rudel-compile.el]] in Emacs
   and invoking M-x eval-buffer.
 
+#+STARTUP: showeverything
+#+TITLE:   Rudel INSTALL Instructions
+#+AUTHOR:  Jan Moringen
 Local variables:
 mode: org
 end:
