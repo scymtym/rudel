@@ -1,6 +1,6 @@
 ;;; rudel-overlay.el --- Overlay functions for Rudel
 ;;
-;; Copyright (C) 2008, 2009 Jan Moringen
+;; Copyright (C) 2008, 2009, 2010 Jan Moringen
 ;;
 ;; Author: Jan Moringen <scymtym@users.sourceforge.net>
 ;; Keywords: rudel, overlay
@@ -28,7 +28,7 @@
 
 ;;; History:
 ;;
-;; 0.1 - Initial revision.
+;; 0.1 - Initial version
 
 
 ;;; Code:
@@ -38,6 +38,8 @@
 
 (eval-when-compile
   (require 'cl))
+
+(require 'eieio)
 
 
 ;;; Rudel overlay faces
@@ -56,7 +58,7 @@
 
 (defface rudel-author-overlay-face
   '((default (:background "black")))
-  "*Face used to highlight contributions according to their authors.
+  "Face used to highlight contributions according to their authors.
 Attributes involving color are not applied literally. Instead the
 color is replaced with the color associated with the respective
 author."
@@ -269,7 +271,7 @@ latter case, FACE is returned unmodified."
   "Update Rudel overlays after a change of customization options."
   (dolist (buffer (buffer-list))
     (with-current-buffer buffer
-      (mapc #'rudel-overlay-author-update (rudel-overlays)))))
+      (mapc #'rudel-overlay-author-update (rudel-author-overlays)))))
 
 (provide 'rudel-overlay)
 ;;; rudel-overlay.el ends here
