@@ -663,13 +663,13 @@ connections to this server.")
 		   "List of objects representing clients
 connected to the server.")
    (next-client-id :initarg  :next-client-id
-		   :type     integer
+		   :type     (integer 1)
 		   :initform 1
 		   :documentation
 		   "An id that will be assigned to the next
 client that connects to the server.")
    (next-user-id   :initarg  :next-user-id
-		   :type     integer
+		   :type     (integer 1)
 		   :initform 1
 		   :documentation
 		   "An id that will be assigned to the next user
