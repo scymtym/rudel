@@ -59,9 +59,10 @@
   Rudel code. This can be done by opening [[./rudel-compile.el]] in Emacs
   and invoking M-x eval-buffer.
 
-#+STARTUP: showeverything
 #+TITLE:   Rudel INSTALL Instructions
 #+AUTHOR:  Jan Moringen
-Local variables:
-mode: org
-end:
+#+STARTUP: showeverything
+
+# Local variables:
+# mode: org
+# end:
