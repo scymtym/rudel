@@ -229,8 +229,9 @@ failed encryption negotiation."
 ;;
 
 (defclass rudel-obby-server-state-idle
-  (rudel-obby-server-connection-state)
-  ()
+  (rudel-obby-server-connection-state
+   rudel-obby-document-handler)
+  ((document-container-slot :initform 'server))
   "Idle state of a server connection.
 
 The connection enters this state when all setup work is finished,
@@ -320,25 +321,6 @@ of her color to COLOR."
 	  ;; Add a jupiter context for (THIS DOCUMENT).
 	  (rudel-add-context server (oref this :connection) document))))
     nil)
-  )
-
-(defmethod rudel-obby/obby_document
-  ((this rudel-obby-server-state-idle) doc-id action &rest arguments)
-  "Handle obby 'document' messages."
-  (with-parsed-arguments ((doc-id document-id))
-    ;; Locate the document based on owner id and document id
-    (let ((document (with-slots (server) (oref this :connection)
-		      (rudel-find-document server doc-id
-					   #'equal #'rudel-both-ids))))
-      (if document
-	  (rudel-dispatch
-	   this "rudel-obby/obby_document/" action
-	   (append (list document) arguments))
-	;; Display a warning if we cannot find the document.
-	(display-warning
-	 '(rudel obby)
-	 (format "Could not find document: `%s'" doc-id)
-	 :warning))))
   )
 
 (defmethod rudel-obby/obby_document/subscribe
