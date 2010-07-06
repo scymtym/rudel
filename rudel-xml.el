@@ -70,6 +70,61 @@ PRETTY-PRINT is currently ignored."
 ;;; Additional XML macros
 ;;
 
+(defun rudel-xml--node-component (node-var name &optional type)
+  "Generate code for accessing the NAME component of NODE-VAR.
+The optional argument TYPE is used when name is :child
+or :children to specify the element name of the child."
+  (case name
+    ;; Retrieve child text node of NODE-VAR.
+    (:text
+     (list
+      `(car (xml-node-children ,node-var))
+      nil))
+
+    ;; Retrieve a single child named TYPE of NODE-VAR.
+    (:child
+     (unless type
+       (signal 'wrong-number-of-arguments
+	       (list 'rudel-xml--node-component name 2)))
+     (list
+      `(car (xml-get-children ,node-var (quote,type)))
+      t))
+
+    ;; Retrieve a list of children, optionally filtering by NAME.
+    (:children
+     (if type
+	 (list
+	  `(xml-get-children ,node-var (quote ,type))
+	  t)
+       (list
+	`(xml-node-children ,node-var)
+	nil)))
+
+    ;; Retrieve an attribute value.
+    (t
+     (list
+      `(xml-get-attribute ,node-var (quote ,name))
+      nil)))
+  )
+
+(defun rudel-xml--parse-value (value-var type)
+  "Generate code to parse the value of VALUE-VAR as TYPE.
+Currently, TYPE can be one of 'string and 'number."
+  (case type
+    ;; String; no conversion
+    (string
+     value-var)
+
+    ;; Convert to number
+    (number
+     `(when ,value-var
+	(string-to-number ,value-var)))
+
+    ;; For other types, signal an error.
+    (t
+     (signal 'wrong-type-argument (list 'type type))))
+  )
+
 (defmacro with-tag-attrs (attrs tag &rest body)
   "Execute BODY with bindings of attribute values of TAG according to forms in ATTRS.
 ATTRS is structured as follows:
@@ -79,7 +134,7 @@ VAR is a symbol. ATTR is a symbol whose symbol-name is used as
 tag name. TYPE can be 'number."
   (declare (indent 2)
 	   (debug (listp form &rest form)))
-  (let* ((tag-var (make-symbol "tag-var"))
+  (let* ((node-var (make-symbol "node-var"))
 	 (bindings
 	  (mapcar
 	   (lambda (attr)
@@ -87,40 +142,28 @@ tag name. TYPE can be 'number."
 
 	      ;; Simple form
 	      ((symbolp attr)
-	       `(,attr (xml-get-attribute ,tag-var (quote ,attr))))
-
-	      ;; Variable name, attribute name and type
-	      ((= (length attr) 3)
-	       (let* ((attr-var (nth 0 attr))
-		      (name     (nth 1 attr))
-		      (type     (nth 2 attr))
-		      (value    (if (eq name 'text)
-				    `(car (xml-node-children ,tag-var))
-				  `(xml-get-attribute ,tag-var (quote ,name))))
-		      (string   (make-symbol "value-string")))
-		 `(,attr-var (let ((,string ,value))
-			       ,(cond
-				 ;; Convert to number
-				 ((eq type 'number)
-				  `(when ,string
-				     (string-to-number ,string)))
-
-				 ;; String; no conversion
-				 ((eq type 'string)
-				  string)
-
-				 ;; For other types, signal an error.
-				 (t
-				  (error "Invalid type: %s" type)))))))
+	       `(,attr ,(car (rudel-xml--node-component
+			      node-var attr))))
 
 	      ;; Variable name and attribute name
 	      ((= (length attr) 2)
-	       (let* ((attr-var (nth 0 attr))
-		      (name     (nth 1 attr))
-		      (value    (if (eq name 'text)
-				    `(car (xml-node-children ,tag-var))
-				  `(xml-get-attribute ,tag-var (quote ,name)))))
-		 `(,attr-var ,value)))
+	       (destructuring-bind (attr-var name) attr
+		 (let ((value (car (rudel-xml--node-component
+				    node-var name))))
+		   `(,attr-var ,value))))
+
+	      ;; Variable name, attribute name and type
+	      ((= (length attr) 3)
+	       (destructuring-bind (attr-var name type) attr
+		 (destructuring-bind (value type-consumed)
+		     (rudel-xml--node-component
+		      node-var name type)
+		   (if type-consumed
+		       `(,attr-var ,value)
+		     (let ((string (make-symbol "value-string")))
+		       `(,attr-var (let ((,string ,value))
+				     ,(rudel-xml--parse-value
+				       string type))))))))
 
 	      ;; Invalid form
 	      (t
@@ -129,7 +172,7 @@ tag name. TYPE can be 'number."
 	   attrs)))
 
     ;; Construct binding forms
-    `(let ((,tag-var ,tag))
+    `(let ((,node-var ,tag))
        (let (,@bindings)
 	 (progn
 	   ,@body))))
