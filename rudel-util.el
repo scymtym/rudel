@@ -121,12 +121,17 @@ the slots of some other object as if they were their own slots."
 			 slot-name operation &optional new-value)
   "Look up SLOT-NAME in the state machine associated to THIS."
   (let ((target (slot-value this (oref this impersonation-target-slot))))
-    (case operation
-      (oref
-       (slot-value target slot-name))
+    (condition-case error
+	(case operation
+	  (oref
+	   (slot-value target slot-name))
 
-      (oset
-       (set-slot-value target slot-name new-value))))
+	  (oset
+	   (set-slot-value target slot-name new-value)))
+      (invalid-slot-name
+       (if (next-method-p)
+	   (call-next-method)
+	 (apply #'signal error)))))
   )
 
 
