@@ -850,8 +850,6 @@ will be prompted for."
   (let* ((session-name      (plist-get info :name))
 	 (transport-backend (cdr (plist-get info :transport-backend)))
 	 (protocol-backend  (cdr (plist-get info :protocol-backend)))
-
-	 ;; First, create the session object.
 	 (session           (rudel-client-session
 			     session-name
 			     :backend protocol-backend))
