@@ -49,11 +49,16 @@
 ;;; Class rudel-obby-state
 ;;
 
-(defclass rudel-obby-state (rudel-state)
-  ((connection :initarg :connection
-	       :type    object
-	       :documentation
-	       "Connection object that uses the state."))
+(defclass rudel-obby-state (rudel-state
+			    rudel-impersonator
+			    rudel-delegator)
+  ((impersonation-target-slot :initform 'connection)
+   (delegation-target-slot    :initform 'connection)
+   (connection                :initarg  :connection
+			      :type     object
+			      :documentation
+			      "Connection object that uses the
+state."))
   "Base class for state classes used in the obby backend."
   :abstract t)
 
@@ -86,11 +91,6 @@ Display a warning if no such handler is found."
 	  :debug)
 	 nil))))
   )
-
-(defmethod rudel-send ((this rudel-obby-state) &rest args)
-  "Send ARGS through the connection associated with THIS."
-  (with-slots (connection) this
-    (apply #'rudel-send connection args)))
 
 
 ;;; Class rudel-obby-client-connection-state

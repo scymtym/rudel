@@ -61,7 +61,8 @@
 (defclass rudel-obby-client-state-new
   (rudel-obby-client-connection-state)
   ()
-  "Start state of newly established connections.")
+  "Start state of newly established connections."
+  :method-invocation-order :c3)
 
 (defmethod rudel-obby/obby_welcome
   ((this rudel-obby-client-state-new) version)
@@ -79,7 +80,8 @@
 (defclass rudel-obby-client-state-encryption-negotiate
   (rudel-obby-client-connection-state)
   ()
-  "Start state of the encryption handshake.")
+  "Start state of the encryption handshake."
+  :method-invocation-order :c3)
 
 (defmethod rudel-obby/net6_encryption
   ((this rudel-obby-client-state-encryption-negotiate) value)
@@ -94,7 +96,8 @@
 (defclass rudel-obby-client-state-encryption-start
   (rudel-obby-client-connection-state)
   ()
-  "Second state of the encryption handshake.")
+  "Second state of the encryption handshake."
+  :method-invocation-order :c3)
 
 (defmethod rudel-obby/net6_encryption_begin
   ((this rudel-obby-client-state-encryption-start))
@@ -124,7 +127,8 @@
   ()
   "State entered when the connection is established and
 potentially needs additional information for joining the
-session.")
+session."
+  :method-invocation-order :c3)
 
 
 ;;; Class rudel-obby-client-state-joining
@@ -133,7 +137,8 @@ session.")
 (defclass rudel-obby-client-state-joining
   (rudel-obby-client-connection-state)
   ()
-  "First state after the connection has been properly set up.")
+  "First state after the connection has been properly set up."
+  :method-invocation-order :c3)
 
 (defmethod rudel-enter ((this rudel-obby-client-state-joining) info)
   "When entering this state, send a login request."
@@ -221,7 +226,8 @@ login failure.")
 		 :documentation
 		 "Additional error data describing the login
 failure."))
-  "State for failed login attempts.")
+  "State for failed login attempts."
+  :method-invocation-order :c3)
 
 (defmethod rudel-enter ((this rudel-obby-client-state-join-failed)
 			error)
@@ -239,7 +245,8 @@ failure."))
   (rudel-obby-client-connection-state
    rudel-obby-document-handler)
   ((document-container-slot :initform 'session))
-  "Default state of the connection.")
+  "Default state of the connection."
+  :method-invocation-order :c3)
 
 (defmethod rudel-obby/net6_client_join
   ((this rudel-obby-client-state-idle)
@@ -538,7 +545,8 @@ received from the server.")
 		    :documentation
 		    "Flag that remembers, whether the session has
 a 'self' user object."))
-  "State used for synching session data.")
+  "State used for synching session data."
+  :method-invocation-order :c3)
 
 (defmethod rudel-enter ((this rudel-obby-client-state-session-synching)
 			num-items)
@@ -654,7 +662,8 @@ a 'self' user object."))
 			    :type     rudel-obby-document-child
 			    :documentation
 			    ""))
-  "")
+  ""
+  :method-invocation-order :c3)
 
 (defmethod rudel-enter ((this rudel-obby-client-state-subscribing)
 			user document)
@@ -700,7 +709,8 @@ a 'self' user object."))
 			    :type     (integer 0)
 			    :documentation
 			    ""))
-  "")
+  ""
+  :method-invocation-order :c3)
 
 (defmethod rudel-enter ((this rudel-obby-client-state-document-synching)
 			document num-bytes)
@@ -750,7 +760,8 @@ a 'self' user object."))
 	   :type    (or symbol string)
 	   :documentation
 	   "The reason for the finalization."))
-  "State used to indicate that we closed the connection.")
+  "State used to indicate that we closed the connection."
+  :method-invocation-order :c3)
 
 (defmethod rudel-enter ((this rudel-obby-client-state-we-finalized)
 			&optional reason1)
@@ -773,7 +784,8 @@ a 'self' user object."))
 	   :type    (or symbol string)
 	   :documentation
 	   "The reason for the finalization."))
-  "State used to indicate that the connection was closed by the peer.")
+  "State used to indicate that the connection was closed by the peer."
+  :method-invocation-order :c3)
 
 (defmethod rudel-enter ((this rudel-obby-client-state-they-finalized)
 			&optional reason1)
@@ -793,7 +805,8 @@ a 'self' user object."))
 (defclass rudel-obby-client-state-disconnected
   (rudel-obby-client-connection-state)
   ()
-  "State used to indicated that the connection is closed.")
+  "State used to indicated that the connection is closed."
+  :method-invocation-order :c3)
 
 
 ;;; Client connection states.

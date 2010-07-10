@@ -72,7 +72,8 @@
 (defclass rudel-obby-server-state-new
   (rudel-obby-server-connection-state)
   ()
-  "State in which new connections start out.")
+  "State in which new connections start out."
+  :method-invocation-order :c3)
 
 (defmethod rudel-enter ((this rudel-obby-server-state-new))
   "Sends welcome messages to the client and starts the session
@@ -92,7 +93,8 @@ timeout timer."
 (defclass rudel-obby-server-state-encryption-negotiate
   (rudel-obby-server-connection-state)
   ()
-  "Encryption negotiation state.")
+  "Encryption negotiation state."
+  :method-invocation-order :c3)
 
 (defmethod rudel-enter ((this rudel-obby-server-state-encryption-negotiate))
   "Send net6 'encryption' message requesting to not enable encryption."
@@ -121,7 +123,8 @@ failed encryption negotiation."
 (defclass rudel-obby-server-state-before-join
   (rudel-obby-server-connection-state)
   ()
-  "Waiting for client request joining the session.")
+  "Waiting for client request joining the session."
+  :method-invocation-order :c3)
 
 (defmethod rudel-obby/net6_client_login
   ((this rudel-obby-server-state-before-join) username color
@@ -239,7 +242,8 @@ the client has joined the session and no operation is in
 progress. In this state, the connection waits for new messages
 from the client that initiate operations. Simple (which means
 stateless in this case) operations are performed without leaving
-the idle state.")
+the idle state."
+  :method-invocation-order :c3)
 
 (defmethod rudel-obby/obby_user_colour
   ((this rudel-obby-server-state-idle) color-)
