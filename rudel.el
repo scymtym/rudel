@@ -259,8 +259,10 @@ WHICH is compared to the result of KEY using TEST."
 	       "The connection used for communication by this
 session.")
    (self       :initarg  :self
-	       :type     rudel-user-child
+	       :type     (or null rudel-user-child)
+	       :initform nil
 	       :reader   rudel-self
+	       :writer   rudel-set-self
 	       :documentation
 	       "Points into USERS to the user object representing
 the local user"))
@@ -286,10 +288,10 @@ client perspective.")
 
 (defmethod rudel-unsubscribed-documents ((this rudel-client-session))
   "Return documents in THIS to which the self user is not subscribed."
-  (unless (slot-boundp this :self)
-    (error "Cannot find unsubscribed documents unless slot self is bound"))
-
   (with-slots (documents self) this
+    (unless self
+      (error "Cannot find unsubscribed documents without self user"))
+
     (remove-if
      (lambda (document)
        (with-slots (subscribed) document
