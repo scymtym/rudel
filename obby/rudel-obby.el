@@ -99,44 +99,30 @@ connections and creates obby servers.")
 				   &optional info)
   "Ask user for the information required to connect to an obby server."
   ;; Read server host and port.
-  (let* ((host              (or (plist-get info :host)
-				(read-string "Server: ")))
-	 (port              (or (plist-get info :port)
-				(read-number
-				 "Port: " rudel-obby-default-port)))
+  (let* (;; TODO encryption is also not handled here
 	 (encryption        (if (member :encryption info)
 				(plist-get info :encryption)
 			      (y-or-n-p "Use encryption (Required by Gobby server, not supported by Rudel server)? ")))
-	 (transport-backend (or (plist-get info :transport-backend)
-				(rudel-backend-get
-				 'transport
-				 (if encryption 'start-tls 'tcp))))
-	 (protocol-backend  (or (plist-get info :protocol-backend)
-				(rudel-backend-get 'protocol 'obby)))
 	 ;; Read desired username and color
-	 (username          (or (plist-get info :username)
-				(rudel-read-user-name)))
-	 (color             (or (plist-get info :color)
-				(rudel-read-user-color)))
-	 (global-password   (if (member :global-password info)
-				(plist-get info :global-password)
-			      (rudel-obtain-password
-			       'global info "Global password: ")))
-	 (user-password     (if (member :user-password info)
-				(plist-get info :user-password)
-			      (rudel-obtain-password
-			       'user info "User password: "))))
-    (append (list :transport-backend transport-backend
-		  :protocol-backend  protocol-backend
-		  :host              host
-		  :port              port
-		  :username          username
-		  :color             color
-		  :encryption        encryption
-		  :global-password   (unless (string= global-password "")
-				       global-password)
-		  :user-password     (unless (string= user-password "")
-				       user-password))
+	 (username        (or (plist-get info :username)
+			      (rudel-read-user-name)))
+	 (color           (or (plist-get info :color)
+			      (rudel-read-user-color)))
+	 (global-password (if (member :global-password info)
+			      (plist-get info :global-password)
+			    (rudel-obtain-password
+			     'global info "Global password: ")))
+	 (user-password   (if (member :user-password info)
+			      (plist-get info :user-password)
+			    (rudel-obtain-password
+			     'user info "User password: "))))
+    (append (list :encryption      encryption
+		  :username        username
+		  :color           color
+		  :global-password (unless (string= global-password "")
+				     global-password)
+		  :user-password   (unless (string= user-password "")
+				     user-password))
 	    info))
   )
 
