@@ -299,7 +299,7 @@ available information available for the backends"
      ;; One empty line between backend categories.
      (insert "\n"))
    (oref rudel-backend-factory factories))
-  )
+  (current-buffer))
 
 (defun rudel-backend--format-backend-normal (backend)
   "Format name, version and other properties of BACKEND."
