@@ -53,6 +53,7 @@
 ;;;  Class rudel-telepathy-backend
 ;;
 
+;;;###autoload
 (defclass rudel-telepathy-backend (rudel-transport-backend)
   ((capabilities :initform '()))
   "Class rudel-telepathy-backend ")
