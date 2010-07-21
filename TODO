@@ -85,14 +85,6 @@
    + Type :: task
    + Reporter :: jan
    + Assigned ::
-** TODO Allow users to insert comments			    :branch_comments:
-   + Component :: multiple components affected
-   + Type :: task
-   + Reporter :: jan
-   + Assigned ::
-   It should be possible to start a threaded comment discussion at any
-   point of a document. The comments should not be part of the buffer
-   content.
 ** NEW Handle messages spanning multiple frames
    + Component :: beep-transport
    + Type :: defect
@@ -206,13 +198,6 @@
    + Priority :: minor
    + Reporter :: jan
    + Assigned ::
-** TODO Send key presses as chat messages (#61)
-   + Component :: rudel-general
-   + Type :: task
-   + Reporter :: jan
-   + Assigned ::
-   Sending key presses as chat messages could be really useful for
-   somebody something using rudel.
 ** TODO Developer guide
    + Component :: documentation
    + Type :: task
@@ -228,6 +213,22 @@
    `rudel-header-subscriptions-minor-mode' displays users in the
    header line. This string can get too long, displacing some elements
    from the screen. It has to be shortened then.
+** STARTED Allow users to insert comments		    :branch_comments:
+   + Component :: multiple components affected
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
+   It should be possible to start a threaded comment discussion at any
+   point of a document. The comments should not be part of the buffer
+   content.
+** STARTED Transmit interactive function calls to peers	   :branch_data:sync:
+   + Component :: rudel-general
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
+   Transmitting interactive function calls could be really useful to
+   implement things like a shared shell buffer.
 ** STARTED Consolidate operations before sending		 :branch_irc:
    + Components :: protocol backends
    + Type :: task
@@ -251,11 +252,6 @@
 * Milestone rudel-0.5							:0.5:
 
 * Milestone rudel-0.4							:0.4:
-** TODO Use auth-source or secrets.el for passwords
-   + Components ::
-   + Type :: task
-   + Reporter :: jan
-   + Assigned ::
 ** NEW Terminating sessions does not work (#47)
    + Component :: rudel-general
    + Type :: defect
@@ -282,6 +278,11 @@
    + Assigned ::
    Taking control over saturation and value away from the user makes
    it impossible to choose unreadable colors.
+** STARTED Use auth-source or secrets.el for passwords
+   + Components ::
+   + Type :: task
+   + Reporter :: jan
+   + Assigned ::
 ** STARTED Reference manual (#46)
    + Component :: documentation
    + Type :: task
