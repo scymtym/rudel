@@ -1,4 +1,12 @@
 * Future
+** TODO Transmit text properties
+   + Components :: multiple components affected
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: Jan
+   For use cases such as sharing buffer in comint mode, it would be
+   useful to transmit text properties from the "real" comint buffer to
+   the remote buffer
 ** TODO Status icons of users should be clickable	    :branch_activity:
    + Components :: user interface
    + Type :: task
