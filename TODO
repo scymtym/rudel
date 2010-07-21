@@ -26,6 +26,11 @@
    + Assigned ::
    Indicate offscreen events like in ERC's [#,i] indicators
 ** TODO Track last modification of chunks
+   + Component :: user interface
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
    This would be useful for
    + Fading old changes towards transparent
    + Showing tooltips like
@@ -113,6 +118,7 @@
 ** TODO Backend factory hooks
    + Component :: backend
    + Type :: improved
+   + Priority :: minor
    + Reporter :: jan
    + Assigned ::
 ** TODO Display error message property of join errors?
@@ -128,6 +134,11 @@
    Extend protocols to allow synchronizing graph- (or just tree-) like
    data structures like XML or Emacs Lisp objects.
 ** TODO Histories for read functions
+   + Component :: user interface
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: jan
+   + Assigned ::
    Relevant read functions
    + username
    + hostname
@@ -248,6 +259,7 @@
 ** NEW Terminating sessions does not work (#47)
    + Component :: rudel-general
    + Type :: defect
+   + Priority :: major
    + Reporter :: jan
    + Assigned ::
    There is a menu entry for terminating sessions which are hosted by
@@ -379,7 +391,7 @@
    + Assigned ::
    `global-mode-line-publish-state-mode` is define using
    `define-globalized-mode`. This seems to only enabled the associated
-   minor mode for buffers create by `find-file` and after major mode
+   minor mode for buffers created by `find-file` and after major mode
    changes. The minor mode is not activated for buffers create by
    `create-buffer`. Since this is used when subscribing to documents,
    this is a problem.
