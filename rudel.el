@@ -1040,7 +1040,7 @@ If BUFFER is nil, the current buffer is used."
       (rudel-add-document rudel-current-session document)
 
       (rudel-attach-to-buffer document buffer)
-      (object-add-to-list document :subscribed self)
+      (rudel-add-user document self)
 
       (rudel-publish connection document)))
   )
