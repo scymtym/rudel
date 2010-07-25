@@ -1,3 +1,9 @@
+2010-07-25  Joseph Corneli  <jac2349@dhcp-pub-248.open.pub>
+
+        Updates to INSTALL file.
+	* INSTALL: Rearranged and updated instructions so they make more
+	sense.
+
 2010-07-02  Jan Moringen  <jmoringe@techfak.uni-bielefeld.de>
 
 	Proper comments for local variables in README, INSTALL
