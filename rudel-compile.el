@@ -48,22 +48,6 @@
 (require 'bytecomp)
 (require 'cl) ;; required for `flet' below
 
-;; This makes adding our directories to the load path into an
-;; autoload. This way, loading rudel-loaddefs.el is the only thing
-;; users need to do.
-;;;###autoload
-(let* ((rudel-dir (file-name-directory (or #$
-					   load-file-name
-					   (buffer-file-name))))
-       (subdirs   (mapcar
-		   (lambda (subdir)
-		     (concat rudel-dir subdir))
-		   '("." "jupiter" "adopted" "socket" "tls" "xmpp" "telepathy" "obby" "infinote" "zeroconf"))))
-    ;; Adjust load path. We need to have all Rudel subdirectories on
-    ;; the load path.
-    (dolist (subdir subdirs)
-      (add-to-list 'load-path subdir)))
-
 (let* ((rudel-dir (file-name-directory
 		   (or load-file-name (buffer-file-name))))
        (subdirs   (mapcar
@@ -82,7 +66,7 @@
       (add-to-list 'load-path subdir))
 
     ;; Byte compile everything.
-    (byte-recompile-directory rudel-dir 0)
+    ;(byte-recompile-directory rudel-dir 0)
 
     ;; Update autoloads.
     (let ((generated-autoload-file loaddefs))
@@ -93,8 +77,20 @@
     ;; (auto)loaded.
     (with-current-buffer (find-file-noselect loaddefs)
       (goto-char 1)
-      (unless (looking-at "(require 'eieio)")
-	(insert "(require 'eieio)\n(require 'cl)\n(require 'rudel-backend)\n\n")
+      (unless (looking-at "(let*")
+	(insert "(let* ((rudel-dir (file-name-directory (or #$
+					   load-file-name
+					   (buffer-file-name))))
+       (subdirs   (mapcar
+		   (lambda (subdir)
+		     (concat rudel-dir subdir))
+		   '(\".\" \"jupiter\" \"adopted\" \"socket\" \"tls\" \"xmpp\" \"telepathy\" \"obby\" \"infinote\" \"zeroconf\"))))
+  ;; Adjust load path. We need to have all Rudel subdirectories on
+  ;; the load path.
+  (dolist (subdir subdirs)
+    (add-to-list 'load-path subdir)))
+
+\(require 'eieio\)\n(require 'cl)\n(require 'rudel-backend)\n\n")
 	(save-buffer))
       (kill-buffer))))
 
