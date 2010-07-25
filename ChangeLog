@@ -1,4 +1,13 @@
-2010-07-25  Joseph Corneli  <jac2349@dhcp-pub-248.open.pub>
+2010-07-25  Joseph Corneli  <holtzermann17@gmail.com>
+
+	Renamed rudel-unpublish-buffer to rudel-unsubscribe
+	* rudel.el (rudel-attach-to-buffer): changed
+	rudel-unpublish-buffer to rudel-unsubscribe
+	(rudel-detach-from-buffer): likewise
+	(rudel-unsubscribe): likewise
+	* rudel-mode.el (rudel-minor-keymap): likewise
+	* rudel-interactive.el (rudel-allocate-buffer-clear-existing):
+	likewise
 
         Updates to INSTALL file.
 	* INSTALL: Rearranged and updated instructions so they make more

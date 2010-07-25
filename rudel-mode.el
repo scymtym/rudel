@@ -556,7 +556,7 @@ line publish state mode; otherwise, turn it off."
       [ "Publish current Buffer"   rudel-publish-buffer
 	                           (and rudel-current-session
 					(not (rudel-buffer-has-document-p))) ]
-      [ "Unpublish current Buffer" rudel-unpublish-buffer
+      [ "Unsubscribe from current Buffer" rudel-unpublish-buffer
 	                           (rudel-buffer-has-document-p) ]
       [ "Subscribe to Document"    rudel-subscribe
 	                           rudel-current-session ]
