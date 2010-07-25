@@ -205,7 +205,7 @@ sources for a matching password entry."
 	      (error "Buffer `%s' already attached to a document" name)))
 	  ;; Delete buffer contents; maybe detach buffer first.
 	  (when (rudel-buffer-has-document-p buffer)
-	    (rudel-unpublish-buffer buffer))
+	    (rudel-unsubscribe buffer))
 	  (with-current-buffer buffer
 	    (erase-buffer)))
       (setq buffer (get-buffer-create name)))
