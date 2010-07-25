@@ -1,5 +1,13 @@
 2010-07-25  Joseph Corneli  <holtzermann17@gmail.com>
 
+        Extensive documentation changes, new README sections
+	* README: Extensive documentation changes, including
+	documentation for renamed functions and also:
+	(LISTING BACKENDS): new section
+	(SAVING AND REUSING CONFIGURED SESSIONS): new section
+	(WORKING WITHIN A CONNECTED SESSION): new section
+	(EXTRA MINOR MODES): new section
+
 	Renamed rudel-end-session to rudel-leave-session
 	* rudel.el (rudel-end-session): changed
 	rudel-end-session to rudel-leave-session
