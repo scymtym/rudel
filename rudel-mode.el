@@ -563,6 +563,8 @@ line publish state mode; otherwise, turn it off."
       "---"
       [ "Rudel Overview"           rudel-speedbar
 	                           t ]
+      [ "Show Backends"            rudel-backend-dump
+	                           t ]
       "---"
       ( "Options"
 	[ "Highlight Contributions in Authors' Colors"
