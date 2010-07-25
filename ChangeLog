@@ -1,5 +1,10 @@
 2010-07-25  Joseph Corneli  <holtzermann17@gmail.com>
 
+	Renamed rudel-end-session to rudel-leave-session
+	* rudel.el (rudel-end-session): changed
+	rudel-end-session to rudel-leave-session
+	* rudel-mode.el (rudel-minor-keymap): likewise
+
 	Renamed rudel-unpublish-buffer to rudel-unsubscribe
 	* rudel.el (rudel-attach-to-buffer): changed
 	rudel-unpublish-buffer to rudel-unsubscribe

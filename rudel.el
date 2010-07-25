@@ -938,13 +938,13 @@ will be prompted for."
     session))
 
 ;;;###autoload
-(defun rudel-end-session ()
-  "End the current collaborative editing session."
+(defun rudel-leave-session ()
+  "Leave the current collaborative editing session."
   (interactive)
   (unless rudel-current-session
     (error "No active Rudel session"))
 
-  ;; Actually end the session.
+  ;; Close the connection.
   (rudel-end rudel-current-session)
   )
 

@@ -541,7 +541,7 @@ line publish state mode; otherwise, turn it off."
     '("Rudel"
       [ "Join Session"             rudel-join-session
 	                           (not rudel-current-session) ]
-      [ "Leave Session"            rudel-end-session
+      [ "Leave Session"            rudel-leave-session
 	                           rudel-current-session ]
       "---"
       [ "Host a Session"           rudel-host-session
