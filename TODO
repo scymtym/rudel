@@ -1,20 +1,8 @@
 * Future
-** TODO Rename rudel-end-session -> rudel-leave-session
-   + Components ::
-   + Type :: task
-   + Priority :: minor
-   + Reporter :: Joe
-   + Assigned ::
 ** TODO Have a function to terminate the server
    + Components ::
    + Type :: task
    + Priority :: major
-   + Reporter :: Joe
-   + Assigned ::
-** TODO Rename rudel-unpublish-buffer -> rudel-unsubscribe
-   + Components ::
-   + Type :: task
-   + Priority :: minor
    + Reporter :: Joe
    + Assigned ::
 ** TODO Remember inputs and use as default when prompting again
@@ -448,6 +436,18 @@
    + Priority :: major
    + Reporter :: jan
    + Assigned :: jan
+** DONE Rename rudel-unpublish-buffer -> rudel-unsubscribe
+   + Components ::
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: Joe
+   + Assigned :: Joe
+** DONE Rename rudel-end-session -> rudel-leave-session
+   + Components ::
+   + Type :: task
+   + Priority :: minor
+   + Reporter :: Joe
+   + Assigned :: Joe
 ** FIXED TLS transport does not start in stopped state
    + Component :: tls-transport
    + Type :: defect
