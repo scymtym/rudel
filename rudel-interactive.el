@@ -29,6 +29,8 @@
 
 ;;; History:
 ;;
+;; 0.3 - History and defaults for most prompts
+;;
 ;; 0.2 - Password function
 ;;
 ;; 0.1 - Initial version
@@ -44,21 +46,29 @@
 ;;; Function for reading Rudel objects from the user.
 ;;
 
-(defun rudel-read-backend (backends &optional prompt return)
+(defun rudel-read-backend (backends
+			   &optional prompt return category)
   "Read a backend name from BACKENDS and return that name or the actual backend depending on RETURN.
 If RETURN is 'object, return the backend object which is of the
 form (NAME . CLASS-OR-OBJECT); Otherwise return the name as
 string."
   (unless prompt
     (setq prompt "Backend: "))
-  (let* ((backend-names (mapcar (lambda (cell)
-				  (symbol-name (car cell)))
-				backends))
-	 (backend-name  (completing-read prompt backend-names nil t)))
+  (let* ((history (when category
+		    (rudel-interactive--make-read-backend-history-symbol
+		     category)))
+	 (names   (mapcar (lambda (cell)
+			    (symbol-name (car cell)))
+			  backends))
+	 (name    (completing-read
+		   (rudel-interactive--make-prompt
+		    prompt category history)
+		   names nil t nil history
+		   (car (symbol-value history)))))
     (cond
      ((eq return 'object)
-       (assoc (intern backend-name) backends))
-     (t backend-name)))
+       (assoc (intern name) backends))
+     (t name)))
   )
 
 (defun rudel-read-session (sessions &optional prompt return)
@@ -86,10 +96,22 @@ the name as string."
        (t session-name))))
   )
 
+(defvar rudel-read-user-name-history nil
+  "History of inputs read by `rudel-read-user-name'.")
+
 (defun rudel-read-user-name ()
   "Read a username.
 The default is taken from `rudel-default-username'."
-  (read-string "Username: " rudel-default-username))
+  (read-string
+   (if (car rudel-read-user-name-history)
+       (format "Username (default %s): "
+	       (car rudel-read-user-name-history))
+     (format "Username: "))
+   (when (not rudel-read-user-name-history)
+     rudel-default-username)
+   'rudel-read-user-name-history
+   (or (car rudel-read-user-name-history)
+       rudel-default-username)))
 
 (defun rudel-read-user-color ()
   "Read a color."
@@ -108,6 +130,7 @@ the name as string."
       (error "No user list and no active Rudel session")))
   (unless prompt
     (setq prompt "User: "))
+
   ;; Construct a list of user name, read a name with completion and
   ;; return a user name of object.
   (let* ((user-names (mapcar 'object-name-string users))
@@ -239,6 +262,30 @@ suitable for `rudel-state-wait'"
 	 reporter nil label1)
 	(progress-reporter-done reporter)))))
   )
+
+
+;;; Utility Functions
+;;
+
+(defun rudel-interactive--make-read-backend-history-symbol (category)
+  "Make a symbol for the read history of backends of CATEGORY."
+  (let ((symbol (intern
+		 (format "rudel-interactive-read-backend-history-%s"
+			 category))))
+    (unless (boundp symbol)
+      (set symbol nil))
+    symbol))
+
+(defun rudel-interactive--make-prompt (prompt category history)
+  "Make a prompt based on PROMPT for backends of CATEGORY and HISTORY."
+  (if (and category (symbol-value history))
+      (format
+       "%s (default %s): "
+       (if (string-match-p ": $" prompt)
+	   (substring prompt 0 -2)
+	 prompt)
+       (car (symbol-value history)))
+    prompt))
 
 (provide 'rudel-interactive)
 ;;; rudel-interactive.el ends here
