@@ -177,14 +177,31 @@ The transport backend is a factory for TCP transport objects.")
 
   (oset this :version rudel-tcp-version))
 
+(defvar rudel-tcp-ask-connect-info-host-history nil
+  "History of hosts read by TCP backend's `rudel-ask-connect-info'.")
+
+(defvar rudel-tcp-ask-connect-info-port-last nil
+  "Last port read by TCP backend's `rudel-ask-connect-info'.")
+
 (defmethod rudel-ask-connect-info ((this rudel-tcp-backend)
 				   &optional info)
   "Augment INFO by read a hostname and a port number."
   ;; Read server host and port.
   (let ((host (or (plist-get info :host)
-		  (read-string "Server: ")))
+		  (read-string
+		   (if (car rudel-tcp-ask-connect-info-host-history)
+		       (format "Server (default %s): "
+			       (car rudel-tcp-ask-connect-info-host-history))
+		     "Server: ")
+		   nil
+		   'rudel-tcp-ask-connect-info-host-history
+		   (car rudel-tcp-ask-connect-info-host-history))))
 	(port (or (plist-get info :port)
-		  (read-number "Port: "))))
+		  (setq
+		   rudel-tcp-ask-connect-info-port-last
+		   (read-number
+		    "Port: "
+		    rudel-tcp-ask-connect-info-port-last))))) ;; TODO rudel-read-port PROMPT CATEGORY ?
     (append (list :host host
 		  :port port)
 	    info)))
